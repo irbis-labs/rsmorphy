@@ -1,0 +1,15 @@
+[package]
+name = "rsmorphy-dict-uk"
+version = "0.0.0"
+authors = ["Alexander Irbis <irbis.labs@gmail.com>", "Mikhail Korobov <kmike84@gmail.com>"]
+license = "MIT"
+description = "Ukrainian dictionary stub for rsmorphy"
+keywords = ["nlp", "ukrainian"]
+categories = ["text-processing", "value-formatting"]
+homepage = "https://github.com/alexander-irbis/rsmorphy"
+repository = "https://github.com/alexander-irbis/rsmorphy"
+documentation = "https://docs.rs/rsmorphy/"
+publish = true
+
+
+[dependencies]
