@@ -1,0 +1,15 @@
+[package]
+name = "rsmorphy-dict-ru"
+version = "0.1.0"
+authors = ["Alexander Irbis <irbis.labs@gmail.com>", "Mikhail Korobov <kmike84@gmail.com>"]
+license = "MIT"
+description = "Russian dictionary for rsmorphy"
+keywords = ["nlp", "russian"]
+categories = ["text-processing", "value-formatting"]
+homepage = "https://github.com/alexander-irbis/rsmorphy"
+repository = "https://github.com/alexander-irbis/rsmorphy"
+documentation = "https://docs.rs/rsmorphy/"
+publish = true
+
+
+[dependencies]
