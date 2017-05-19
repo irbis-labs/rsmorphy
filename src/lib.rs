@@ -13,6 +13,7 @@
 use std::path::Path;
 
 
+extern crate base64;
 extern crate flate2;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate log;
@@ -20,7 +21,6 @@ extern crate flate2;
 extern crate num;
 extern crate regex;
 extern crate roman;
-extern crate rustc_serialize;
 extern crate serde_json;
 extern crate string_cache;
 extern crate unicode_categories as uc;

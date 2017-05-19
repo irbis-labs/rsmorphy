@@ -4,6 +4,7 @@ use std::io::Read;
 use std::marker::PhantomData;
 use std::path::Path;
 
+use base64;
 use flate2::read::GzDecoder;
 
 use super::completer::Completer;
@@ -137,13 +138,15 @@ impl <V> CompletionDawg<V> where V: DawgValue {
     fn value_for_index_(&self, index: u32) -> Vec<V> {
         trace!(r#"DAWG::value_for_index_() "#);
         trace!(r#" index: {} "#, index);
-        use rustc_serialize::base64::FromBase64;
         let mut result: Vec<V> = Vec::new();
         let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, &[]);
         while completer.prepare_next() {
             trace!(r#"DAWG::value_for_index_() "#);
-            trace!(r#" key: "{}" "#, String::from_utf8(completer.key.clone()).unwrap());
-            let value = completer.key.from_base64().unwrap();
+            // FIXME .trim_right() for &[u8]
+            let key = String::from_utf8_lossy(&completer.key).trim_right().to_string();
+            trace!(r#" key: "{:?}" "#, completer.key);
+            trace!(r#" key: "{}" "#, key);
+            let value = base64::decode(&key).unwrap();
             trace!(r#" bytes: {:?} "#, value);
             result.push(V::from_bytes(value.as_slice()));
         }
