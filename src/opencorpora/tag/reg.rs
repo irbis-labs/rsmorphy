@@ -134,11 +134,11 @@ impl OpencorporaTagReg {
 }
 
 
-#[cfg(test)]
-mod tests {
-    use opencorpora::tag::OpencorporaTagReg;
-    use opencorpora::kind::*;
-
+//#[cfg(test)]
+//mod tests {
+//    use opencorpora::tag::OpencorporaTagReg;
+//    use opencorpora::kind::*;
+//
 //    #[test]
 //    fn from_str() {
 //        let sample = OpencorporaTagReg::from_str("PRTF,impf,tran,past,actv anim,masc,sing,accs,Infr");
@@ -159,4 +159,4 @@ mod tests {
 //        };
 //        assert_eq!(tag, sample);
 //    }
-}
+//}

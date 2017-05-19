@@ -97,11 +97,11 @@ impl MorphAnalyzer {
 }
 
 
-#[cfg(test)]
-mod tests {
-    use std::path::Path;
-    use super::*;
-
+//#[cfg(test)]
+//mod tests {
+//    use std::path::Path;
+//    use super::*;
+//
 //    #[test]
 //    #[ignore]
 //    fn load() {
@@ -119,7 +119,7 @@ mod tests {
 //    fn load_uk() {
 //        let morph = MorphAnalyzer::from_file(Path::new("./assets/pymorphy2-dicts-uk-2.4.1.1.1460299261"));
 //    }
-
+//
 //    #[test]
 //    #[ignore]
 //    fn parse() {
@@ -127,4 +127,4 @@ mod tests {
 //        morph.parse("менимальный");
 //
 //    }
-}
+//}
