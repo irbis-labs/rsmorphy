@@ -5,6 +5,8 @@
 
 ## RsMorphy
 
+[![Join the chat at https://gitter.im/rsmorphy/Lobby](https://badges.gitter.im/rsmorphy/Lobby.svg)](https://gitter.im/rsmorphy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Morphological analyzer (POS tagger + inflection engine) for Russian and Ukrainian languages.
 
 RsMorphy is a native Rust implementation of [PyMorphy2](https://github.com/kmike/pymorphy2).
