@@ -32,7 +32,7 @@ impl Default for InitialsAnalyzer {
                     for gender in &["masc", "femn"] {
                         for case in &["nomn", "gent", "datv", "accs", "ablt", "loct"] {
                             result.push(
-                                OpencorporaTagReg::from_str(
+                                OpencorporaTagReg::new(
                                     format!("NOUN,anim,{gender},Sgtm,{kind},Fixd,Abbr,Init sing,{case}",
                                             kind = kind, gender = gender, case = case)
                                         .as_str()

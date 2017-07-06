@@ -31,6 +31,7 @@ pub struct OpencorporaTagReg {
 }
 
 
+// FIXME implement PartialEq and Eq
 impl Hash for OpencorporaTagReg {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.string.hash(state)
@@ -39,33 +40,37 @@ impl Hash for OpencorporaTagReg {
 
 
 impl OpencorporaTagReg {
-    pub fn from_str<'a, P>(s: P) -> Self where P: Into<&'a str> {
-        let s = s.into();
+    pub fn new<S>(s: S) -> Self where S: Into<String> {
+        let string = s.into();
+
+        let grammemes = GrammemeSet::new(&string);
+
+        let pos = PartOfSpeach::try_from_str(&string);
+        let animacy = Animacy::try_from_str(&string);
+        let aspect = Aspect::try_from_str(&string);
+        let case = Case::try_from_str(&string);
+        let gender = Gender::try_from_str(&string);
+        let involvement = Involvement::try_from_str(&string);
+        let mood = Mood::try_from_str(&string);
+        let number = Number::try_from_str(&string);
+        let person = Person::try_from_str(&string);
+        let tense = Tense::try_from_str(&string);
+        let transitivity = Transitivity::try_from_str(&string);
+        let voice = Voice::try_from_str(&string);
+
+        let has_apro = string.contains("Apro");
+
         OpencorporaTagReg {
-            string: s.to_owned(),
-            grammemes: GrammemeSet::from_str(s),
-
-            pos: PartOfSpeach::try_from_str(s),
-            animacy: Animacy::try_from_str(s),
-            aspect: Aspect::try_from_str(s),
-            case: Case::try_from_str(s),
-            gender: Gender::try_from_str(s),
-            involvement: Involvement::try_from_str(s),
-            mood: Mood::try_from_str(s),
-            number: Number::try_from_str(s),
-            person: Person::try_from_str(s),
-            tense: Tense::try_from_str(s),
-            transitivity: Transitivity::try_from_str(s),
-            voice: Voice::try_from_str(s),
-
-            has_apro: s.contains("Apro"),
+            string, grammemes, has_apro,
+            pos, animacy, aspect, case, gender, involvement, mood,
+            number, person, tense, transitivity, voice,
         }
     }
 
     pub fn vec_from_json(data: Value) -> Vec<Self> {
         let data = data.as_array().unwrap();
         Vec::from_iter(data.into_iter().map(
-            |v| OpencorporaTagReg::from_str(v.as_str().unwrap())
+            |v| OpencorporaTagReg::new(v.as_str().unwrap())
         ))
     }
 
@@ -79,7 +84,7 @@ impl OpencorporaTagReg {
         let mut new_grammemes = self.grammemes.set.clone();
         new_grammemes.extend(required.set.iter().cloned());
         for grammeme in &required.set {
-            let meta = morph.dict.grammeme_metas.get(grammeme).unwrap();
+            let meta = &morph.dict.grammeme_metas[grammeme];
             new_grammemes = &new_grammemes - &meta.incompatible;
         }
         GrammemeSet { set: new_grammemes }

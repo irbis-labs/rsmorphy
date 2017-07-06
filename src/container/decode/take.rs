@@ -7,7 +7,7 @@ pub fn take_1_char(s: &str) -> Result<(&str, char), DecodeError> {
 }
 
 
-pub fn take_str_while_char<'s, P>(s: &'s str, mut predicate: P) -> Result<(&'s str, &'s str), DecodeError>
+pub fn take_str_while_char<P>(s: &str, mut predicate: P) -> Result<(&str, &str), DecodeError>
     where
         P: FnMut(char) -> bool
 {
@@ -23,7 +23,7 @@ pub fn take_str_while_char<'s, P>(s: &'s str, mut predicate: P) -> Result<(&'s s
 }
 
 
-pub fn take_str_until<'s, P>(s: &'s str, mut predicate: P) -> Result<(&'s str, &'s str), DecodeError>
+pub fn take_str_until<P>(s: &str, mut predicate: P) -> Result<(&str, &str), DecodeError>
     where
         P: FnMut(char) -> bool
 {
@@ -39,10 +39,10 @@ pub fn take_str_until<'s, P>(s: &'s str, mut predicate: P) -> Result<(&'s str, &
 }
 
 
-pub fn take_str_while_char_is<'s>(s: &'s str, chr: char) -> Result<(&'s str, &'s str), DecodeError> {
+pub fn take_str_while_char_is(s: &str, chr: char) -> Result<(&str, &str), DecodeError> {
     take_str_while_char(s, |ch| ch == chr )
 }
 
-pub fn take_str_until_char_is<'s>(s: &'s str, chr: char) -> Result<(&'s str, &'s str), DecodeError> {
+pub fn take_str_until_char_is(s: &str, chr: char) -> Result<(&str, &str), DecodeError> {
     take_str_until(s, |ch| ch == chr )
 }

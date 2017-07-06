@@ -24,7 +24,7 @@ impl Default for LatinAnalyzer {
     fn default() -> Self {
         LatinAnalyzer {
             score: 0.9,
-            tag: OpencorporaTagReg::from_str("LATN")
+            tag: OpencorporaTagReg::new("LATN")
         }
     }
 }

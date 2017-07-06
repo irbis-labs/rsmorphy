@@ -24,7 +24,7 @@ impl Default for PunctuationAnalyzer {
     fn default() -> Self {
         PunctuationAnalyzer {
             score: 0.9,
-            tag: OpencorporaTagReg::from_str("PNCT")
+            tag: OpencorporaTagReg::new("PNCT")
         }
     }
 }

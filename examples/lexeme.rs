@@ -8,7 +8,7 @@ use util::print_row_lex;
 
 
 fn print_lexeme(morph: &MorphAnalyzer, id: &str) {
-    let lex = Lex::from_id(&morph, id).unwrap();
+    let lex = Lex::from_id(morph, id).unwrap();
     for (i, lex) in lex.iter_lexeme(morph).enumerate() {
         print_row_lex(morph, i, &lex);
     }

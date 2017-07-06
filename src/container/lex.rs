@@ -45,7 +45,7 @@ impl Lex {
         self.inflect(morph, &self.get_tag(morph).numeral_agreement_grammemes(num))
     }
 
-    pub fn inflect<'m>(&self, morph: &MorphAnalyzer, required: &GrammemeSet) -> Option<Lex> {
+    pub fn inflect(&self, morph: &MorphAnalyzer, required: &GrammemeSet) -> Option<Lex> {
         let new_grammemes = self.get_tag(morph).prepare_required(morph, required);
         self.iter_lexeme(morph)
             .map(|lex| {

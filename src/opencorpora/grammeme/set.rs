@@ -13,10 +13,10 @@ regex!(SEP, r"(,| )");
 
 
 impl GrammemeSet {
-    pub fn from_str<'s, S>(s: S) -> Self where S: AsRef<str> {
+    pub fn new<S>(s: S) -> Self where S: AsRef<str> {
         GrammemeSet {
             set: SEP.split(s.as_ref())
-                .map(|g: &str| Grammeme::new(g) )
+                .map(Grammeme::new)
                 .collect()
         }
     }

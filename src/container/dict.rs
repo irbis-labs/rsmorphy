@@ -155,7 +155,7 @@ impl MorphySerde for Dictionary {
             .and_then(parse_hex_int)?;
         let (s, idx) = follow_str(s, ",").ok()
             .map(|s| take_str_while_char(s, is_hex_digit).and_then(parse_hex_int))
-            .unwrap_or(Ok((s, 0)))?;
+            .unwrap_or_else(|| Ok((s, 0)))?;
 
         Ok( (s, Dictionary {
             word_lower: Word {

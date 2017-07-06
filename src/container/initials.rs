@@ -139,7 +139,7 @@ fn decode_tag_idx(kind: char, gender: char, case: char) -> u8 {
         _ => unreachable!(),
     };
     let case = match case {
-        '0' | '1' | '2' | '3' | '4' | '5' => case as u8 - '0' as u8,
+        '0' | '1' | '2' | '3' | '4' | '5' => case as u8 - b'0',
         _ => unreachable!(),
     };
     kind + gender + case

@@ -30,8 +30,8 @@ impl Default for NumberAnalyzer {
     fn default() -> Self {
         NumberAnalyzer {
             score: 0.9,
-            tag_int: OpencorporaTagReg::from_str("NUMB,intg"),
-            tag_real: OpencorporaTagReg::from_str("NUMB,real"),
+            tag_int: OpencorporaTagReg::new("NUMB,intg"),
+            tag_real: OpencorporaTagReg::new("NUMB,real"),
         }
     }
 }
@@ -45,12 +45,10 @@ impl Analyzer for NumberAnalyzer {
         // TODO "," => "."
         let kind = if u64::from_str(word_lower).is_ok() {
             ShapeKind::Number { is_float: false }
+        } else if f64::from_str(word_lower).is_ok() {
+            ShapeKind::Number { is_float: true }
         } else {
-            if f64::from_str(word_lower).is_ok() {
-                ShapeKind::Number { is_float: true }
-            } else {
-                return;
-            }
+            return;
         };
 
         let container = Shaped {

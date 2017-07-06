@@ -20,7 +20,7 @@ impl Default for RomanAnalyzer {
     fn default() -> Self {
         RomanAnalyzer {
             score: 0.9,
-            tag: OpencorporaTagReg::from_str("ROMN")
+            tag: OpencorporaTagReg::new("ROMN")
         }
     }
 }

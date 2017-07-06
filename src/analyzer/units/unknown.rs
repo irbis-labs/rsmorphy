@@ -17,7 +17,7 @@ pub struct UnknownAnalyzer {
 impl Default for UnknownAnalyzer {
     fn default() -> Self {
         UnknownAnalyzer {
-            tag: OpencorporaTagReg::from_str("UNKN")
+            tag: OpencorporaTagReg::new("UNKN")
         }
     }
 }

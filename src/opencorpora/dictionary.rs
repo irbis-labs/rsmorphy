@@ -60,15 +60,15 @@ impl Dictionary {
         let p = p.as_ref();
         let meta = meta_from_json(load_json(&p.join("meta.json.gz")));
         let paradigm_prefixes: Vec<String> = {
-            meta.get("compile_options".into()).unwrap()
+            meta["compile_options"]
                 .as_object().unwrap().get("paradigm_prefixes").unwrap()
                 .as_array().unwrap()
                 .iter().map(|v| v.as_str().unwrap().to_owned() )
                 .collect()
         };
         let max_suffix_length: usize = {
-            meta.get("prediction_options".into())
-                .unwrap_or_else(|| meta.get("compile_options".into()).unwrap())
+            meta.get("prediction_options")
+                .unwrap_or_else(|| &meta["compile_options"])
                 .as_object().unwrap().get("max_suffix_length").unwrap()
                 .as_u64().unwrap() as usize
         };
@@ -99,9 +99,9 @@ impl Dictionary {
             let plur = Grammeme::new("plur");
             let gndr = Grammeme::new("GNdr");
             let mut extra_incompatible = hashset!{ gndr.clone() };
-            extra_incompatible.extend(grammeme_metas.get(&gndr).unwrap().children.iter().cloned());
+            extra_incompatible.extend(grammeme_metas[&gndr].children.iter().cloned());
 
-            for (grammeme, _gram_reg) in &grammemes {
+            for grammeme in grammemes.keys() {
                 let gm: &mut GrammemeMeta = grammeme_metas.get_mut(grammeme).unwrap();
                 if grammeme == &plur {
                     gm.incompatible.extend(
@@ -203,7 +203,10 @@ fn load_json(p: &Path) -> Value {
 
 
 pub fn meta_from_json(data: Value) -> HashMap<String, Value> {
-    let data = data.as_array().unwrap();
+    let data = match data {
+        Value::Array(data) => data,
+        _ => unreachable!(),
+    };
     data.into_iter().map(|tuple| {
         //trace!("{:?}", tuple);
         let tuple = tuple.as_array().unwrap();
@@ -215,7 +218,10 @@ pub fn meta_from_json(data: Value) -> HashMap<String, Value> {
 
 
 fn suffixes_from_json(data: Value) -> Vec<String> {
-    let data = data.as_array().unwrap();
+    let data = match data {
+        Value::Array(data) => data,
+        _ => unreachable!(),
+    };
     data.into_iter().map(|v| {
         let v = v.as_str().unwrap();
         v.to_owned()

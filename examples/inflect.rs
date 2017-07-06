@@ -19,7 +19,7 @@ fn main() {
     let bread = Lex::from_id(&morph_ru, "ru:d:хлеб,878").unwrap();
     // let fish = Lex::from_id(&morph_ru, "ru:d:рыба,35").unwrap();
 
-    let ablt_set = GrammemeSet::from_str("ablt");
+    let ablt_set = GrammemeSet::new("ablt");
 
     println!(
         " ::: {} {} + {} {} = {} {}",

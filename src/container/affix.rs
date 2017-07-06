@@ -16,7 +16,7 @@ pub struct Affix {
 impl Affix {
     pub fn is_known(&self) -> bool {
         match self.kind {
-            AffixKind::KnownSuffix      => true,
+            AffixKind::KnownSuffix |
             AffixKind::KnownPrefix      => true,
             AffixKind::UnknownPrefix    => false,
         }

@@ -49,7 +49,7 @@ assert_eq!(unescape(r"a\")  .collect::<String>(),   String::from(r"a\"));
 pub fn unescape<'s: 'i, 'i>(s: &'s str) -> impl Iterator<Item = &'s str> + 'i {
     // trace!(r#"unescape: "{}""#, s);
     let i1 = s.split("");
-    let i2 = s.split("").skip(1);
+    let i2 = i1.clone().skip(1);
     let mut esc = false;
     i1.zip(i2)
         .filter(move |&(c1, c2)| {

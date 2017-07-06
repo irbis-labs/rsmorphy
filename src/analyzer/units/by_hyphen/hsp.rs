@@ -35,7 +35,7 @@ impl Analyzer for HyphenSeparatedParticleAnalyzer {
         trace!("HyphenSeparatedParticleAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
-        for particle in PARTICLES_AFTER_HYPHEN.iter() {
+        for particle in &PARTICLES_AFTER_HYPHEN {
             if word_lower.len() <= particle.len() || !word_lower.ends_with(particle) {
                 continue
             };
