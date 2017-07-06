@@ -9,7 +9,7 @@ use opencorpora::grammeme::GrammemeSet;
 use opencorpora::kind::*;
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq)]
 pub struct OpencorporaTagReg {
     pub string:         String,
     pub grammemes:      GrammemeSet,
@@ -31,10 +31,15 @@ pub struct OpencorporaTagReg {
 }
 
 
-// FIXME implement PartialEq and Eq
 impl Hash for OpencorporaTagReg {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.string.hash(state)
+    }
+}
+
+impl PartialEq for OpencorporaTagReg {
+    fn eq(&self, other: &OpencorporaTagReg) -> bool {
+        self.string.eq(&other.string)
     }
 }
 
