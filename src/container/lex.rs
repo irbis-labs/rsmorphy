@@ -4,7 +4,7 @@ use std::fmt;
 use analyzer::MorphAnalyzer;
 use container::Score;
 use container::Seen;
-use container::stack::Stack;
+use container::stack::StackParticle;
 use container::abc::*;
 use opencorpora::OpencorporaTagReg;
 use opencorpora::GrammemeSet;
@@ -16,7 +16,7 @@ pub type Lexeme = Vec<Lex>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lex {
-    pub stack: Stack,
+    pub stack: StackParticle,
 }
 
 
@@ -25,7 +25,7 @@ impl Lex {
         Self::decode(id.into()).map(|(_, lex)| Ok(lex))?
     }
 
-    pub fn from_stack<S>(_morph: &MorphAnalyzer, stack: S) -> Self where S: Into<Stack> {
+    pub fn from_stack<S>(_morph: &MorphAnalyzer, stack: S) -> Self where S: Into<StackParticle> {
         Lex { stack: stack.into() }
     }
 
@@ -54,7 +54,6 @@ impl Lex {
             })
             .max_by_key(|&(_, hsl)| hsl)
             .map(|(lex, _)| lex)
-
     }
 }
 
@@ -121,7 +120,7 @@ impl MorphySerde for Lex {
 
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let s = follow_str(s, "ru").map_err(|_| DecodeError::UnknownPartType)?;
-        let (s, stack) = Stack::decode(follow_str(s, ":")?)?;
+        let (s, stack) = StackParticle::decode(follow_str(s, ":")?)?;
         Ok( (s, Lex { stack: stack }))
     }
 }

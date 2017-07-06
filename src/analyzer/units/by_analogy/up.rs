@@ -3,7 +3,6 @@ use analyzer::units::abc::Analyzer;
 use container::{Parsed, ParseResult, SeenSet};
 use container::Lex;
 use container::abc::*;
-use container::stack::Stack;
 use container::stack::StackAffix;
 use container::Affix;
 use container::AffixKind;
@@ -47,16 +46,12 @@ impl Analyzer for UnknownPrefixAnalyzer {
                 if !tag.is_productive() {
                     continue 'iter_parses
                 }
-                let container = match parsed.lex.stack {
-                    Stack::Source(stack) =>
-                        StackAffix {
-                            stack: stack,
-                            affix: Some(Affix {
-                                part: prefix.to_string(),
-                                kind: AffixKind::UnknownPrefix,
-                            })
-                        },
-                    _ => unreachable!(),
+                let container = StackAffix {
+                    stack: parsed.lex.stack.stack.left.stack,
+                    affix: Some(Affix {
+                        part: prefix.to_string(),
+                        kind: AffixKind::UnknownPrefix,
+                    })
                 };
                 add_parse_if_not_seen(morph, result, seen_parses, Parsed {
                     lex: Lex::from_stack(morph, container),

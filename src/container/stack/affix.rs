@@ -3,11 +3,11 @@ use std::fmt;
 
 use analyzer::MorphAnalyzer;
 use container::abc::*;
+use container::Dictionary;
 use container::Lex;
 use container::Score;
 use container::affix::Affix;
 use container::affix::AffixKind;
-use container::stack::Stack;
 use container::stack::StackSource;
 use opencorpora::OpencorporaTagReg;
 
@@ -120,18 +120,18 @@ impl Source for StackAffix {
 
 impl StackAffix {
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        let stem = match self.affix {
-            Some(ref affix) if affix.kind == AffixKind::KnownSuffix => true,
+        let has_known_suffix = match self.affix {
+            Some(ref affix) => affix.kind == AffixKind::KnownSuffix,
             _ => false,
         };
-        let make_affix = move |new_source_stack: &StackSource| {
-            if stem {
+        let make_affix = move |new_source: &StackSource| {
+            if has_known_suffix {
                 Some(Affix {
                     kind: AffixKind::KnownSuffix,
-                    part: match *new_source_stack {
-                        StackSource::Dictionary(ref dic) => {
-                            let stem = morph.dict.build_stem(dic.para_id, dic.idx, dic.word_lower.word.as_str());
-                            dic.word_lower.word[stem.len()..].to_string()
+                    part: match *new_source {
+                        StackSource::Dictionary(Dictionary { para_id, idx, ref word_lower }) => {
+                            let stem = morph.dict.build_stem(para_id, idx, &word_lower.word);
+                            word_lower.word[stem.len()..].to_string()
                         }
                         _ => unreachable!(),
                     },
@@ -142,14 +142,10 @@ impl StackAffix {
         };
 
         self.stack.iter_lexeme(morph).map(move |lex: Lex| {
-            let new_source_stack = match lex.stack {
-                Stack::Source(stack) => stack,
-                _ => unreachable!()
-            };
             Lex {
                 stack: StackAffix {
-                    affix: make_affix(&new_source_stack),
-                    stack: new_source_stack,
+                    affix: make_affix(&lex.stack.stack.left.stack),
+                    stack: lex.stack.stack.left.stack,
                 }.into()
             }
         })

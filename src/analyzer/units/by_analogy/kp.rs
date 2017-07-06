@@ -3,7 +3,6 @@ use analyzer::units::abc::Analyzer;
 use container::{Parsed, ParseResult, SeenSet};
 use container::Lex;
 use container::abc::*;
-use container::stack::Stack;
 use container::stack::StackAffix;
 use container::Affix;
 use container::AffixKind;
@@ -43,19 +42,33 @@ impl Analyzer for KnownPrefixAnalyzer {
                 if !tag.is_productive() {
                     continue 'iter_parses
                 }
-                let container = match parsed.lex.stack {
-                    Stack::Source(stack) =>
-                        StackAffix {
-                            stack: stack,
-                            affix: Some(Affix {
-                                part: prefix.to_string(),
-                                kind: AffixKind::KnownPrefix,
-                            })
-                        },
-                    // FIXME (ad #3)
-//                    _ => unreachable!(),
-                    _ => continue,
+                // FIXME is it equivalent for `FIXME (ad #3)` below?
+                if parsed.lex.stack.particle.is_some() ||
+                    parsed.lex.stack.stack.right.is_some() ||
+                    parsed.lex.stack.stack.left.affix.is_some()
+                {
+                    continue;
+                }
+                let container = StackAffix {
+                    stack: parsed.lex.stack.stack.left.stack,
+                    affix: Some(Affix {
+                        part: prefix.to_string(),
+                        kind: AffixKind::KnownPrefix,
+                    })
                 };
+//                let container = match parsed.lex.stack {
+//                    Stack::Source(stack) =>
+//                        StackAffix {
+//                            stack: stack,
+//                            affix: Some(Affix {
+//                                part: prefix.to_string(),
+//                                kind: AffixKind::KnownPrefix,
+//                            })
+//                        },
+//                    // FIXME (ad #3)
+////                    _ => unreachable!(),
+//                    _ => continue,
+//                };
                 add_parse_if_not_seen(morph, result, seen_parses, Parsed {
                     lex: Lex::from_stack(morph, container),
                     score: parsed.score * self.estimate_decay,

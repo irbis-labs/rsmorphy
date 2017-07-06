@@ -3,8 +3,6 @@ use analyzer::units::abc::*;
 use container::HyphenSeparatedParticle;
 use container::{Parsed, ParseResult, SeenSet};
 use container::Lex;
-use container::stack::Stack;
-use container::stack::StackHyphenated;
 use container::stack::StackParticle;
 
 
@@ -45,15 +43,10 @@ impl Analyzer for HyphenSeparatedParticleAnalyzer {
 
             'subparse: for parsed in morph.parse(unsuffixed_word) {
                 trace!(r#" subparsed: {:?} "#, parsed);
-                let stack: StackHyphenated = match parsed.lex.stack {
-                    // If a word ends with with one of the particles, it can't ends with an another.
-                    Stack::HSP(_)               => continue 'subparse,
-                    Stack::Hyphenated(ref v)    => v.clone(),
-                    Stack::Affix(ref v)         => v.clone().into(),
-                    Stack::Source(ref v)        => v.clone().into(),
-                };
+                // If a word ends with with one of the particles, it can't ends with an another.
+                if parsed.lex.stack.particle.is_some() { continue 'subparse };
                 let container = StackParticle {
-                    stack: stack,
+                    stack: parsed.lex.stack.stack.clone(),
                     particle: Some(HyphenSeparatedParticle {
                         particle: particle.to_string(),
                     })

@@ -6,7 +6,6 @@ use ::container::abc::*;
 use ::container::Lex;
 use ::container::HyphenSeparatedParticle;
 use ::container::Score;
-use ::container::stack::Stack;
 use ::container::stack::StackAffix;
 use ::container::stack::StackHyphenated;
 use ::container::stack::StackSource;
@@ -23,7 +22,7 @@ pub struct StackParticle {
 
 
 impl From<StackHyphenated> for StackParticle {
-    fn from(stack: StackHyphenated) -> Self { StackParticle { stack: stack, particle: None } }
+    fn from(stack: StackHyphenated) -> Self { StackParticle { stack, particle: None } }
 }
 
 impl From<StackAffix> for StackParticle {
@@ -102,10 +101,7 @@ impl StackParticle {
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
         self.stack.iter_lexeme(morph).map(move |lex: Lex| Lex {
             stack: StackParticle {
-                stack: match lex.stack {
-                    Stack::Hyphenated(stack) => stack,
-                    _ => unreachable!()
-                },
+                stack: lex.stack.stack,
                 particle: self.particle.clone()
             }.into()
         } )

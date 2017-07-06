@@ -5,7 +5,6 @@ use ::analyzer::MorphAnalyzer;
 use ::container::Lex;
 use ::container::Score;
 use ::container::abc::*;
-use ::container::stack::Stack;
 use ::container::stack::StackAffix;
 use ::container::stack::StackSource;
 use ::opencorpora::OpencorporaTagReg;
@@ -111,10 +110,7 @@ impl StackHyphenated {
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
         self.left.iter_lexeme(morph).map(move |lex: Lex| Lex {
             stack: StackHyphenated {
-                left: match lex.stack {
-                    Stack::Affix(stack) => stack,
-                    _ => unreachable!()
-                },
+                left: lex.stack.stack.left,
                 // TODO right
                 right: None
             }.into()
