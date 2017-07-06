@@ -1,6 +1,6 @@
 ![](https://img.shields.io/crates/l/rsmorphy.svg)
 [![crates.io](https://img.shields.io/crates/v/rsmorphy.svg)](https://crates.io/crates/rsmorphy)
-[![Build Status](https://travis-ci.org/alexander-irbis/rsmorphy.svg)](https://travis-ci.org/alexander-irbis/rsmorphy)
+[![Build Status](https://travis-ci.org/irbis-labs/rsmorphy.svg)](https://travis-ci.org/alexander-irbis/rsmorphy)
 [![Join the chat at https://gitter.im/rsmorphy/Lobby](https://badges.gitter.im/rsmorphy/Lobby.svg)](https://gitter.im/rsmorphy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## RsMorphy

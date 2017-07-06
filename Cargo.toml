@@ -12,6 +12,9 @@ repository = "https://github.com/irbis-labs/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
 publish = true
 
+[badges]
+travis-ci = { repository = "irbis-labs/rsmorphy" }
+
 
 [features]
 default         = ["simd-accel"]
