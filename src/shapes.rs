@@ -3,10 +3,10 @@ use uc::UnicodeCategories;
 use roman;
 
 
-#[cfg_attr(feature="clippy", allow(char_lit_as_u8))]
+#[inline]
 pub fn is_alpha(&ch: &u8) -> bool {
     let ch = ch | 0x20;
-    ch >= 'a' as u8 && ch <= 'z' as u8
+    ch >= b'a' && ch <= b'z'
 }
 
 /**
