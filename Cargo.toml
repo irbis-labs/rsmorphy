@@ -1,14 +1,14 @@
 [package]
 name = "rsmorphy"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Morphological analyzer / inflection engine for Russian and Ukrainian (soon) languages (WIP)"
 keywords = ["nlp", "inflection", "pluralize", "russian", "ukrainian"]
 categories = ["text-processing", "value-formatting"]
 readme = "README.md"
-homepage = "https://github.com/alexander-irbis/rsmorphy"
-repository = "https://github.com/alexander-irbis/rsmorphy"
+homepage = "https://github.com/irbis-labs/rsmorphy"
+repository = "https://github.com/irbis-labs/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
 publish = true
 
