@@ -121,7 +121,7 @@ impl Source for StackAffix {
 impl StackAffix {
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
         let has_known_suffix = match self.affix {
-            Some(ref affix) => affix.kind == AffixKind::KnownSuffix,
+            Some(ref affix) => affix.is_known_suffix(),
             _ => false,
         };
         let make_affix = move |new_source: &StackSource| {

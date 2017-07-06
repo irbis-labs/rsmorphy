@@ -21,4 +21,25 @@ impl Affix {
             AffixKind::UnknownPrefix    => false,
         }
     }
+
+    pub fn is_known_suffix(&self) -> bool {
+        match self.kind {
+            AffixKind::KnownSuffix => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_known_prefix(&self) -> bool {
+        match self.kind {
+            AffixKind::KnownPrefix => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_unknown_prefix(&self) -> bool {
+        match self.kind {
+            AffixKind::UnknownPrefix => true,
+            _ => false,
+        }
+    }
 }
