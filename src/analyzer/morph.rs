@@ -33,7 +33,7 @@ pub struct MorphAnalyzer {
 
 
 impl MorphAnalyzer {
-    pub fn from_file(p: &Path) -> Self {
+    pub fn from_file<P>(p: P) -> Self where P: AsRef<Path> {
 
         let dictionary = Dictionary::from_file(p);
         // char_substitutes = dictionary.words.compile_replaces(char_substitutes or {})

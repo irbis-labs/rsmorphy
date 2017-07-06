@@ -56,7 +56,8 @@ pub struct Dictionary {
 
 
 impl Dictionary {
-    pub fn from_file(p: &Path) -> Self {
+    pub fn from_file<P>(p: P) -> Self where P: AsRef<Path> {
+        let p = p.as_ref();
         let meta = meta_from_json(load_json(&p.join("meta.json.gz")));
         let paradigm_prefixes: Vec<String> = {
             meta.get("compile_options".into()).unwrap()

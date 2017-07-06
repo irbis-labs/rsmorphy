@@ -10,9 +10,6 @@
 #![cfg_attr(feature = "quiet", allow(warnings))]
 
 
-use std::path::Path;
-
-
 extern crate base64;
 extern crate flate2;
 #[macro_use] extern crate lazy_static;
@@ -56,6 +53,5 @@ pub use opencorpora::GrammemeSet;
 
 
 pub fn load_test_morph_ru() -> MorphAnalyzer {
-    MorphAnalyzer::from_file(&Path::new(rsmorphy_dict_ru::DICT_PATH))
+    MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH)
 }
-
