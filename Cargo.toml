@@ -1,6 +1,6 @@
 [package]
 name = "rsmorphy"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Morphological analyzer / inflection engine for Russian and Ukrainian (soon) languages (WIP)"
