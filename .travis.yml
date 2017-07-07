@@ -1,3 +1,5 @@
+env:
+  - CARGO_INCREMENTAL=1
 language: rust
 rust:
 #  - stable
