@@ -25,7 +25,8 @@ use ::util::u16_from_slice;
 
 
 pub type WordsDawg = CompletionDawg<HH>;
-pub type PredictionSuffixesDAWG = CompletionDawg<HHH>;
+pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
+pub type ConditionalProbDistDawg = CompletionDawg<HH>;
 
 
 #[derive(Debug, Default, Clone)]
@@ -46,8 +47,9 @@ pub struct Dictionary {
     pub suffixes: Vec<String>,
     pub paradigms: Vec<Vec<ParadigmEntry>>,
     pub words: WordsDawg,
+    pub p_t_given_w: ConditionalProbDistDawg,
     pub prediction_prefixes: Dawg,
-    pub prediction_suffixes_dawgs: Vec<PredictionSuffixesDAWG>,
+    pub prediction_suffixes_dawgs: Vec<PredictionSuffixesDawg>,
     pub paradigm_prefixes: Vec<String>,
     pub paradigm_prefixes_rev: Vec<(u16, String)>,
     pub prediction_splits: Vec<usize>,
@@ -123,6 +125,7 @@ impl Dictionary {
             suffixes: suffixes_from_json(load_json(&p.join("suffixes.json.gz"))),
             paradigms: load_paradigms(&p.join("paradigms.array.gz")),
             words: CompletionDawg::from_file(&p.join("words.dawg.gz")),
+            p_t_given_w: CompletionDawg::from_file(&p.join("p_t_given_w.intdawg.gz")),
             prediction_prefixes: Dawg::from_file(&p.join("prediction-prefixes.dawg.gz")),
             prediction_suffixes_dawgs: Vec::from_iter(
                 (0..paradigm_prefixes.len()).into_iter().map(

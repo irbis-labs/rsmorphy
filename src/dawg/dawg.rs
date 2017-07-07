@@ -156,4 +156,8 @@ impl <V> CompletionDawg<V> where V: DawgValue {
     pub fn prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {
         self.dawg.prefixes(key)
     }
+
+    pub fn find(&self, key: &str) -> Option<u32> {
+        self.dawg.dict.find(key)
+    }
 }

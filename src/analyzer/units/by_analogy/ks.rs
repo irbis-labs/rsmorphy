@@ -8,7 +8,7 @@ use container::{Lex, Score};
 use container::stack::StackAffix;
 use container::Affix;
 use container::AffixKind;
-use opencorpora::dictionary::PredictionSuffixesDAWG;
+use opencorpora::dictionary::PredictionSuffixesDawg;
 use opencorpora::dictionary::HHH;
 
 
@@ -137,7 +137,7 @@ impl Analyzer for KnownSuffixAnalyzer {
 
 impl KnownSuffixAnalyzer {
     pub fn possible_prefixes<'m: 'i, 's: 'i, 'i>(&self, morph: &'m MorphAnalyzer, word: &'s str)
-        -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDAWG)> + 'i
+        -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i
     {
         morph.dict.paradigm_prefixes_rev.iter()
             .filter(move |&&(_prefix_idx, ref prefix)| word.starts_with(prefix.as_str()))

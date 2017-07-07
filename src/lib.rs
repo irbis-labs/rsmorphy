@@ -39,11 +39,11 @@ extern crate rsmorphy_dict_ru;
 pub mod analyzer;
 pub mod container;
 pub mod dawg;
+pub mod estimator;
 pub mod opencorpora;
 pub mod release;
 pub mod shapes;
 pub mod util;
-
 
 pub mod prelude;
 

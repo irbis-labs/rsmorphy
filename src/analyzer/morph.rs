@@ -4,6 +4,7 @@ use container::{/*Parsed, */ParseResult, SeenSet};
 use opencorpora::dictionary::Dictionary;
 
 use analyzer::units::*;
+use estimator::SingleTagProbabilityEstimator;
 
 
 #[derive(Debug, Default, Clone)]
@@ -27,7 +28,7 @@ pub struct Units {
 #[derive(Debug, Clone)]
 pub struct MorphAnalyzer {
     pub dict: Dictionary,
-    pub prob_estimator: Option<()>,
+    pub prob_estimator: SingleTagProbabilityEstimator,
     pub units: Units,
 }
 
@@ -40,7 +41,7 @@ impl MorphAnalyzer {
 
         MorphAnalyzer {
             dict: dictionary,
-            prob_estimator: None,
+            prob_estimator: SingleTagProbabilityEstimator {},
             units: Units::default()
         }
     }
@@ -60,7 +61,7 @@ impl MorphAnalyzer {
         'analyze: loop {
             macro_rules! analyze (
                 ($t: ident, $is_terminal: expr) => {{
-                    self.units.$t.parse(self, &mut result, word, word_lower.as_str(), &mut seen);
+                    self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
                     if $is_terminal && !result.is_empty() { break 'analyze };
                 }}
             );
@@ -88,10 +89,7 @@ impl MorphAnalyzer {
             unreachable!();
         }
 
-        // todo prob_estimator
-        if let Some(_prob_estimator) = self.prob_estimator {
-//            res = prob_estimator.apply_to_parses(word, word_lower, res);
-        }
+        self.prob_estimator.apply_to_parses(self, word, &word_lower, &mut result);
         result
     }
 }

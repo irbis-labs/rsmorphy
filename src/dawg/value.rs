@@ -2,7 +2,7 @@ use ::util::u16_from_slice;
 
 
 pub trait DawgValue {
-    fn from_bytes(&[u8]) -> Self;
+    fn from_bytes(bytes: &[u8]) -> Self;
 }
 
 

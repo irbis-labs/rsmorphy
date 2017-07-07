@@ -26,7 +26,8 @@ fn main() {
 //    table(&morph_ru, "яблоко");
 //    table(&morph_ru, "хлеб");
 //    table(&morph_ru, "рыба");
-    table(&morph_ru, "стали");
+//    table(&morph_ru, "стали");
+    table(&morph_ru, "того");
 //    table(&morph_ru, "И");
 //    table(&morph_ru, "БГ");
 //    table(&morph_ru, "БГ-с");
