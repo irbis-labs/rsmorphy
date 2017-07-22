@@ -119,6 +119,8 @@ impl Source for StackAffix {
 
 
 impl StackAffix {
+    // FIXME temporary workaround for ICE https://github.com/rust-lang/rust/issues/41297
+    #[inline]
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
         let has_known_suffix = match self.affix {
             Some(ref affix) => affix.is_known_suffix(),
