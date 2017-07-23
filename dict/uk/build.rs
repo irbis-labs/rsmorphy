@@ -1,4 +1,4 @@
-use std::env;
+//use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -7,7 +7,7 @@ use std::str::from_utf8;
 
 
 fn main() {
-    let out_dir = env::var("OUT_DIR").unwrap();
+    // let out_dir = env::var("OUT_DIR").unwrap();
     // let out_dir = Path::new(&out_dir);
 
     let dict_path = Path::new("./data").canonicalize().unwrap();
