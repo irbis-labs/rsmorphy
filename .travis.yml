@@ -19,7 +19,9 @@ script:
   - cargo build
   - cargo test
   # use cargo caches
-  - cargo install cargo-tarpaulin
+  - cargo install cargo-update || true
+  - cargo install cargo-tarpaulin || true
+  - cargo install-update -a
 #  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
 #  fi
 after_success: |
