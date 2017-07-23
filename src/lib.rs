@@ -1,7 +1,7 @@
 #![feature(conservative_impl_trait)]
 //#![feature(field_init_shorthand)]
 //#![feature(specialization)]
-//#![cfg_attr(test, feature(test))]
+#![cfg_attr(test, feature(test))]
 
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
@@ -32,6 +32,8 @@ extern crate string_cache;
 extern crate unicode_categories as uc;
 
 extern crate rsmorphy_dict_ru;
+
+#[cfg(test)] extern crate test;
 
 
 #[macro_use] pub mod macros;

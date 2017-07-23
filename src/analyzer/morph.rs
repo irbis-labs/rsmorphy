@@ -95,34 +95,33 @@ impl MorphAnalyzer {
 }
 
 
-//#[cfg(test)]
-//mod tests {
-//    use std::path::Path;
-//    use super::*;
-//
-//    #[test]
-//    #[ignore]
-//    fn load() {
-//        let morph = MorphAnalyzer::from_file(Path::new("./assets/pymorphy2-dicts-ru"));
-//    }
-//
-//    #[test]
-//    #[ignore]
-//    fn load_ru() {
-//        let morph = MorphAnalyzer::from_file(Path::new("./assets/pymorphy2-dicts-ru-2.4.393658.3725883"));
-//    }
-//
-//    #[test]
-//    #[ignore]
-//    fn load_uk() {
-//        let morph = MorphAnalyzer::from_file(Path::new("./assets/pymorphy2-dicts-uk-2.4.1.1.1460299261"));
-//    }
-//
-//    #[test]
-//    #[ignore]
-//    fn parse() {
-//        let morph = ::load_test_morph_ru();
-//        morph.parse("менимальный");
-//
-//    }
-//}
+#[cfg(test)]
+mod tests {
+    use test::black_box;
+    use super::*;
+    use ::load_test_morph_ru;
+    // use ::load_test_morph_uk;
+
+
+    lazy_static!{
+        static ref RU: MorphAnalyzer = load_test_morph_ru();
+        // static ref UK: MorphAnalyzer = load_test_morph_uk();
+    }
+
+
+    #[test]
+    fn load_ru() {
+        black_box(&RU);
+    }
+
+    // FIXME ukrainian
+    // #[test]
+    // fn load_uk() {
+    //     black_box(&UK);
+    // }
+
+    #[test]
+    fn parse() {
+        assert_eq!(RU.parse("менимальный").len(), 3);
+    }
+}
