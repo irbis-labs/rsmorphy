@@ -14,16 +14,16 @@ rust:
 #    - rust: nightly
 #env:
 #  - CARGO_INCREMENTAL=1
-#script:
+script:
 #  - cargo clean
-#  - cargo build
-#  - cargo test
+  - cargo build
+  - cargo test
+  # use cargo caches
+  - cargo install cargo-tarpaulin
 #  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+#  fi
 after_success: |
-  if [[ "$TRAVIS_RUST_VERSION" == nightly ]]; then
-    cargo install cargo-tarpaulin
     cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
-  fi
 notifications:
   webhooks:
     urls:
