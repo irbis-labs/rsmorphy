@@ -19,7 +19,8 @@ rust:
 #  - cargo build
 #  - cargo test
 after_success: |
-  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+#  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+  if [[ "$TRAVIS_RUST_VERSION" == nightly ]]; then
     cargo install cargo-tarpaulin
     cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
   fi
