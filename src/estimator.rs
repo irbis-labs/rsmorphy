@@ -20,7 +20,7 @@ impl SingleTagProbabilityEstimator {
             .map(|p: &Parsed| self.prob(morph, word_lower, p.lex.get_tag(morph)))
             .collect();
 
-        if probs.iter().map(|&v| v).sum::<f64>() == 0.0 {
+        if probs.iter().cloned().sum::<f64>() == 0.0 {
             // no P(t|w) information is available; return normalized estimate
             let k = 1.0 / parses.iter().map(|p: &Parsed| p.score.value()).sum::<f64>();
             for ref mut p in parses {

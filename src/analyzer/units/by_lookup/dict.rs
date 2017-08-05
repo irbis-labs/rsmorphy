@@ -20,7 +20,7 @@ impl Analyzer for DictionaryAnalyzer {
         let para_data = morph.dict.words.similar_items(word_lower, &morph.dict.char_substitutes);
         trace!(r#" para_data="{:?}" "#, para_data);
 
-        /// `fixed_word` is a word with proper substitute (e.g. ё) letters
+        // `fixed_word` is a word with proper substitute (e.g. ё) letters
         for (fixed_word, parses) in para_data {
 
             for HH(para_id, idx) in parses {
@@ -40,4 +40,3 @@ impl Analyzer for DictionaryAnalyzer {
         }
     }
 }
-
