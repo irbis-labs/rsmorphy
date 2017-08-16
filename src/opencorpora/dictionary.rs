@@ -234,7 +234,7 @@ fn suffixes_from_json(data: Value) -> Vec<String> {
 
 
 fn load_paradigms(p: &Path) -> Vec<Vec<ParadigmEntry>> {
-    let mut f = &mut GzDecoder::new(File::open(p).unwrap()).unwrap();
+    let f = &mut GzDecoder::new(File::open(p).unwrap()).unwrap();
     let mut buf16 = [0u8; 2];
 
     f.read_exact(&mut buf16).unwrap();

@@ -1,20 +1,16 @@
 #![feature(conservative_impl_trait)]
-//#![feature(field_init_shorthand)]
 //#![feature(specialization)]
 #![cfg_attr(test, feature(test))]
 
 
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-
-#![cfg_attr(feature = "clippy", allow(items_after_statements))]
-#![cfg_attr(feature = "clippy", allow(match_bool))]
-#![cfg_attr(feature = "clippy", allow(module_inception))]
+#![cfg_attr(feature = "cargo-clippy", allow(items_after_statements))]
+#![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
+#![cfg_attr(feature = "cargo-clippy", allow(module_inception))]
 // FIXME remove closures with `do catch`
-#![cfg_attr(feature = "clippy", allow(redundant_closure_call))]
+#![cfg_attr(feature = "cargo-clippy", allow(redundant_closure_call))]
 // TODO post a bug report; https://github.com/Manishearth/rust-clippy/wiki#regex_macro
 // false positive, this regex macro implemented in this crate and is not available in the upstream anymore
-#![cfg_attr(feature = "clippy", allow(regex_macro))]
+#![cfg_attr(feature = "cargo-clippy", allow(regex_macro))]
 
 #![cfg_attr(feature = "quiet", allow(warnings))]
 

@@ -18,7 +18,6 @@ travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 [features]
 default         = ["simd-accel"]
-verbose         = ["clippy"]
 quiet           = []
 
 simd-accel      = ["regex/simd-accel"]
@@ -36,10 +35,6 @@ roman               = "0.1"
 serde_json          = "1.0"
 string_cache        = "0.6"
 unicode_categories  = "0.1"
-
-[dependencies.clippy]
-version     = "0"
-optional    = true
 
 [dependencies.rsmorphy-dict-ru]
 version     = "0.1"
