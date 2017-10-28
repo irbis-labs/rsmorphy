@@ -12,10 +12,9 @@ rust:
 #matrix:
 #  allow_failures:
 #    - rust: nightly
-#env:
-#  - CARGO_INCREMENTAL=1
 script:
 #  - cargo clean
+  - cargo update
   - cargo build
   - cargo test
   # use cargo caches
