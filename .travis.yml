@@ -24,7 +24,7 @@ script:
 #  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
 #  fi
 after_success: |
-    cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+    travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 notifications:
   webhooks:
     urls:
