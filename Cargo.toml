@@ -1,6 +1,6 @@
 [package]
 name = "rsmorphy"
-version = "0.3.5"
+version = "0.4.0"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Morphological analyzer / inflection engine for Russian and Ukrainian (soon) languages (WIP)"
@@ -10,14 +10,16 @@ readme = "README.md"
 homepage = "https://github.com/irbis-labs/rsmorphy"
 repository = "https://github.com/irbis-labs/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
-publish = true
+publish = false
 
 [badges]
 travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 
 [features]
-default         = ["simd-accel"]
+default         = ["simd-accel", "miniz-oxide"]
+miniz-sys       = ["flate2/miniz-sys"]
+miniz-oxide     = ["flate2/rust_backend"]
 quiet           = []
 
 simd-accel      = ["regex/simd-accel"]
@@ -25,16 +27,21 @@ simd-accel      = ["regex/simd-accel"]
 
 [dependencies]
 base64              = "0.7"
-flate2              = "0.2"
 lazy_static         = "0.2"
 log                 = "0.3"
-maplit              = "0.1"
+maplit              = "1.0"
 num                 = "0.1"
 regex               = "0.2"
 roman               = "0.1"
 serde_json          = "1.0"
 string_cache        = "0.7"
 unicode_categories  = "0.1"
+
+[dependencies.flate2]
+version = "1.0"
+git = "https://github.com/alexcrichton/flate2-rs.git"
+default-features = false
+
 
 [dependencies.rsmorphy-dict-ru]
 version     = "0.1"

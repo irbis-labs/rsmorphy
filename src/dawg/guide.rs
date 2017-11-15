@@ -25,7 +25,7 @@ pub struct Guide {
 impl Guide {
     /// Reads a guide from a file.
     pub fn from_file(p: &Path) -> Self {
-        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()).unwrap())
+        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
     /// Reads a guide from an input stream.

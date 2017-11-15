@@ -21,7 +21,7 @@ pub struct Dictionary {
 impl Dictionary {
     /// Reads a dictionary from a file.
     pub fn from_file(p: &Path) -> Self {
-        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()).unwrap())
+        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
     /// Reads a dictionary from an input stream.

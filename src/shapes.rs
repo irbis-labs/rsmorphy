@@ -1,4 +1,3 @@
-use std::ascii::AsciiExt;
 use uc::UnicodeCategories;
 use roman;
 

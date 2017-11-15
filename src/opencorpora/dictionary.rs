@@ -201,7 +201,7 @@ impl Dictionary {
 }
 
 fn load_json(p: &Path) -> Value {
-    serde_json::from_reader(GzDecoder::new(File::open(p).unwrap()).unwrap()).unwrap()
+    serde_json::from_reader(GzDecoder::new(File::open(p).unwrap())).unwrap()
 }
 
 
@@ -234,7 +234,7 @@ fn suffixes_from_json(data: Value) -> Vec<String> {
 
 
 fn load_paradigms(p: &Path) -> Vec<Vec<ParadigmEntry>> {
-    let f = &mut GzDecoder::new(File::open(p).unwrap()).unwrap();
+    let f = &mut GzDecoder::new(File::open(p).unwrap());
     let mut buf16 = [0u8; 2];
 
     f.read_exact(&mut buf16).unwrap();

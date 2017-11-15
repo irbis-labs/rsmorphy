@@ -24,7 +24,7 @@ pub struct Dawg {
 
 impl Dawg {
     pub fn from_file(p: &Path) -> Self {
-        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()).unwrap())
+        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
     pub fn from_stream<T>(fp: &mut T) -> Self where T: Read {
@@ -63,7 +63,7 @@ pub struct CompletionDawg<V> where V: DawgValue {
 
 impl <V> CompletionDawg<V> where V: DawgValue {
     pub fn from_file(p: &Path) -> Self {
-        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()).unwrap())
+        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
 
