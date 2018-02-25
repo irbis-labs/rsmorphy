@@ -34,24 +34,23 @@ impl Guide {
         let mut buf = [0u8; 4];
         fp.read_exact(&mut buf).unwrap();
 
-        let base_size = u32_from_slice(&buf[..]) as usize;
+        let base_size = u32::from_le(u32_from_slice(&buf[..])) as usize;
         let buf_size = base_size * 2;
 
-        let mut buf: Vec<u8> = Vec::with_capacity(buf_size);
-        let _took = fp.take(buf_size as u64).read_to_end(&mut buf).unwrap();
-        debug_assert_eq!(buf_size, _took);
-        debug_assert_eq!(buf_size, buf.len());
-        // FIXME doubled capacity
-        //debug_assert_eq!(buf_size, buf.capacity());
+        let mut buf: Vec<u8> = vec![0; buf_size];
+        fp.read_exact(&mut buf[0..buf_size]).unwrap();
+        assert_eq!(buf_size, buf.len());
+        assert_eq!(buf_size, buf.capacity());
 
         let mut units: Vec<GuideEntry> = Vec::with_capacity(base_size);
-        units.extend((0 .. base_size).map(
-            |i| GuideEntry { child: buf[i * 2], sibling: buf[i * 2 + 1] }
-        ));
+        units.extend(buf.chunks(2).map(|ch| {
+            GuideEntry { child: ch[0], sibling: ch[1] }
+        }));
+        assert_eq!(base_size, units.len());
+        assert_eq!(base_size, units.capacity());
 
-        Guide {
-            root: 0,
-            units: units,
-        }
+        let root = 0;
+
+        Guide { root, units }
     }
 }

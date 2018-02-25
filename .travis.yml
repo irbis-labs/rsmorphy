@@ -1,35 +1,129 @@
-language: rust
+branches:
+  only:
+    - master
+    - staging
+    - trying
+
 dist: trusty
+sudo: false
+
 addons:
   apt:
     packages:
-      - libssl-dev
-cache: cargo
+    - gcc
+    - g++
+    - libssl-dev
+    - libelf-dev
+    - libdw-dev
+    - binutils-dev
+    - libiberty-dev
+    - pkg-config
+
+language: rust
+
 rust:
-#  - stable
-#  - beta
-  - nightly
-#matrix:
-#  allow_failures:
-#    - rust: nightly
-script:
-#  - cargo clean
-  - cargo update
-  - cargo build
-  - cargo test
-  # use cargo caches
-  - cargo install cargo-update || true
-  - cargo install cargo-tarpaulin || true
-  - cargo install-update -a
-#  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
-#  fi
-after_success: |
-    travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+  - nightly-2018-02-14
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+cache:
+  directories:
+  - "$HOME/.cargo"
+  - "$HOME/.local"
+  - "$TRAVIS_BUILD_DIR/target"
+
+env:
+  global:
+  - CLIPPY_VERS=0.0.186
+  - TARPAULIN_VERS=0.5.6
+  - RUSTFMT_VERS=0.9.0
+  - DEADLINKS_VERS=0.3.0
+  - RUSTFLAGS="-C link-dead-code"
+  - RUST_LOG=off
+
+install:
+- |
+  if [[ "$FEATURE" == "clippy" ]]; then
+    cargo clippy --version | grep $CLIPPY_VERS || cargo install clippy --force --vers $CLIPPY_VERS
+  fi
+- |
+  if [[ "$FEATURE" == "non-fatal-checks" ]]; then
+    cargo-deadlinks -V | grep $DEADLINKS_VERS || cargo install cargo-deadlinks --vers $DEADLINKS_VERS --force
+  fi
+- |
+  if [[ "$FEATURE" == "fmt" ]]; then
+    rustfmt -V | grep $RUSTFMT_VERS || cargo install rustfmt --vers $RUSTFMT_VERS --force
+  fi
+- |
+  if [[ "$FEATURE" == "cov" ]]; then
+    cargo tarpaulin -V | grep $TARPAULIN_VERS || cargo install cargo-tarpaulin --vers $TARPAULIN_VERS --force
+  fi
+- cargo install --list
+- cd $TRAVIS_BUILD_DIR
+- cargo update
+
+script: skip
+
+jobs:
+  include:
+  - stage: test
+    env:
+    - FEATURE=non-fatal-checks
+    script:
+    - cargo doc --no-deps && cargo deadlinks --dir target/doc || true
+
+#  - stage: test
+#    env:
+#    - FEATURE=fmt
+#    script:
+#    - cargo fmt -- --write-mode=diff --force
+
+  - stage: test
+    rust: nightly-2018-02-14
+    env:
+    - FEATURE=clippy
+    script:
+    - cargo clippy -- -D warnings
+
+  - stage: test
+    rust: nightly-2018-02-14
+    script:
+    - cargo test --verbose --all
+
+#  - stage: test
+#    rust: nightly-2018-02-14
+#    env:
+#    - FEATURE=cov
+#    script:
+#    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+
+#  - stage: test
+#    rust: 1.17.0
+#    script:
+#    - cargo test --verbose --all
+
+#  - stage: test
+#    rust: stable
+#    script:
+#    - cargo test --verbose --all
+
+#  - stage: test
+#    rust: beta
+#    script:
+#    - cargo test --verbose --all
+
+  - stage: test
+    rust: nightly
+    script:
+    - cargo test --verbose --all
+
 notifications:
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/879ba3d8386f731f57fd
-    # options: [always|never|change]
     on_success: change
-    on_failure: always
-    on_start: never
+  slack:
+    secure: RIRaNrNhgX0u13vmVZTPrUVtaKGggGvkwG6e21kvUHyhRXx0SfUaEVZDQww3Gi7zkQnC3O0H6xGp3fzhEqPl9U07FGUD2TcMOZ+NPbuOgSDdu8TYSELmqZD3bTvtWlHBJzrgkAHky8chmMC2SEAJF6FZpmYLyoUTNU1omIg6G0wMvzJ6v/GsvJX9kgTAnKTU2vDyKyLhHECptHmvmqvRvhA1URbyExulaY3wohff79pCmXPqAw92/o2lv2SdM0LLzhyJsXTDdsVPZGuSF+yG3yPMXuvz1wm7uUb2OISE4YB1VoLaX/azf6XlO8Vm0+Zhv9buJB74ry6As3fto5IaIxQFXLww8rd1zPWwo5KLGJGtG3gUtA5xJMvT2ILuxlKZk86PSJbFo9FIeQ5sgJOai9Hp+Nxtf38oUU8XdPgo3Pgf9EA2t3A9X6DFjStHBFhEkmdKA15qYd9TEbRXJ3+unIuCB+GUXS29nzLY/hd/DqyDNBChjdcenhFG0gumpAegUhmut7zCD4rK9X03ylaC2ZzsVFob4y11cOZSOtxCnl3KDQ7pTifWCrXhCBfYLIa1OOjYHa9rTBsfotx69l4DaZp63BNnstabkxiXpKubVpNqJkvbXA07+CD+mjIVV4c+9RUxiOKLvAnuDKe906h8gvWM+OxukitoCqPElg5KTcc=
+    on_success: change

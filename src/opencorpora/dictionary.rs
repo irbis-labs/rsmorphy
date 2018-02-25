@@ -239,20 +239,27 @@ fn load_paradigms(p: &Path) -> Vec<Vec<ParadigmEntry>> {
 
     f.read_exact(&mut buf16).unwrap();
     let paradigms_count = u16::from_le(u16_from_slice(&buf16)) as usize;
+
     let mut paradigms: Vec<Vec<ParadigmEntry>> = Vec::with_capacity(paradigms_count);
     paradigms.extend((0 .. paradigms_count).map(
         |_i| {
             f.read_exact(&mut buf16).unwrap();
             let paradigm_len = u16::from_le(u16_from_slice(&buf16)) as usize;
+            let buf_size = paradigm_len * 2;
+
+            let mut buf: Vec<u8> = vec![0; buf_size];
+            f.read_exact(&mut buf[..buf_size]).unwrap();
+            assert_eq!(buf_size, buf.len());
+            assert_eq!(buf_size, buf.capacity());
 
             let mut paradigm: Vec<u16> = Vec::with_capacity(paradigm_len);
-            paradigm.extend((0 .. paradigm_len).map(
-                |_ii| {
-                    f.read_exact(&mut buf16).unwrap();
-                    u16::from_le(u16_from_slice(&buf16))
+            paradigm.extend(buf.chunks(2).map(|buf16| {
+                    u16::from_le(u16_from_slice(buf16))
                 }
             ));
-            ParadigmEntry::build(paradigm)
+            assert_eq!(paradigm_len, paradigm.len());
+            assert_eq!(paradigm_len, paradigm.capacity());
+            ParadigmEntry::build(&paradigm)
         }
     ));
     paradigms

@@ -111,17 +111,18 @@ mod tests {
 
     #[test]
     fn load_ru() {
-        black_box(&RU);
+        let _dict = black_box(&RU.dict);
     }
 
-    // FIXME ukrainian
+    // TODO ukrainian
     // #[test]
     // fn load_uk() {
-    //     black_box(&UK);
+    //     let _dict = black_box(&UK.dict);
     // }
 
     #[test]
     fn parse() {
+        assert_eq!(RU.parse("минимальный").len(), 2);
         assert_eq!(RU.parse("менимальный").len(), 3);
     }
 }
