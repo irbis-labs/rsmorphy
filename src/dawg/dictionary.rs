@@ -30,26 +30,25 @@ impl Dictionary {
         let mut buf = [0u8; 4];
         reader.read_exact(&mut buf).unwrap();
 
-        let base_size = u32_from_slice(&buf[..]) as usize;
+        let base_size = u32::from_le(u32_from_slice(&buf[..])) as usize;
         let buf_size = base_size * 4;
 
-        let mut buf: Vec<u8> = Vec::with_capacity(buf_size);
-        debug_assert_eq!(buf_size, buf.capacity());
-        let _took = reader.take(buf_size as u64).read_to_end(&mut buf).unwrap();
-        debug_assert_eq!(buf_size, _took);
-        debug_assert_eq!(buf_size, buf.len());
-        // FIXME doubled capacity
-        //debug_assert_eq!(buf_size, buf.capacity());
+        let mut buf: Vec<u8> = vec![0; buf_size];
+        assert_eq!(buf_size, buf.capacity());
+        reader.read_exact(&mut buf[0..buf_size]).unwrap();
+        assert_eq!(buf_size, buf.len());
+        assert_eq!(buf_size, buf.capacity());
 
         let mut units: Vec<u32> = Vec::with_capacity(base_size);
-        units.extend((0 .. base_size).map(
-            |i| u32_from_slice(&buf[i * 4 ..])
-        ));
+        units.extend(buf.chunks(4).map(|ch| {
+            u32::from_le(u32_from_slice(ch))
+        }));
+        assert_eq!(base_size, units.len());
+        assert_eq!(base_size, units.capacity());
 
-        Dictionary {
-            root: 0,
-            units: units,
-        }
+        let root = 0;
+
+        Dictionary { root, units }
     }
 
     /// Checks if a given index is related to the end of a key.
@@ -93,9 +92,9 @@ impl Dictionary {
         trace!(r#" ttt: {} "#, ttt);
         let offset = units::offset(ttt);
         trace!(r#" offset: {} "#, offset);
-        let next_index = (index ^ offset ^ label as u32) & units::PRECISION_MASK;
+        let next_index = (index ^ offset ^ u32::from(label)) & units::PRECISION_MASK;
         trace!(r#" units::label(): {} "#, units::label(self.units[next_index as usize], None));
-        if units::label(self.units[next_index as usize], None) == label as u32 {
+        if units::label(self.units[next_index as usize], None) == u32::from(label) {
             return Some(next_index)
         }
         None

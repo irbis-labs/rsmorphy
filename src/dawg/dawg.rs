@@ -7,13 +7,13 @@ use std::path::Path;
 use base64;
 use flate2::read::GzDecoder;
 
-use super::completer::Completer;
-use super::dictionary::Dictionary;
-use super::guide::Guide;
-use super::value::DawgValue;
+use dawg::completer::Completer;
+use dawg::dictionary::Dictionary;
+use dawg::guide::Guide;
+use dawg::value::DawgValue;
 
 
-const PAYLOAD_SEPARATOR: &'static str = "\x01";
+const PAYLOAD_SEPARATOR: &str = "\x01";
 
 
 #[derive(Debug, Clone)]

@@ -10,7 +10,7 @@ pub struct SingleTagProbabilityEstimator {}
 impl SingleTagProbabilityEstimator {
     pub fn prob(&self, morph: &MorphAnalyzer, word_lower: &str, tag: &OpencorporaTagReg) -> f64 {
         let dawg_key = format!("{}:{}", word_lower, tag.string);
-        morph.dict.p_t_given_w.find(&dawg_key).unwrap_or(0) as f64 / 1000000.0
+        f64::from(morph.dict.p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1000000.0
     }
 
     pub fn apply_to_parses(&self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, parses: &mut Vec<Parsed>) {

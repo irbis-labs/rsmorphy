@@ -72,11 +72,16 @@ impl OpencorporaTagReg {
         }
     }
 
-    pub fn vec_from_json(data: Value) -> Vec<Self> {
-        let data = data.as_array().unwrap();
-        Vec::from_iter(data.into_iter().map(
-            |v| OpencorporaTagReg::new(v.as_str().unwrap())
-        ))
+    pub fn vec_from_json(json: Value) -> Vec<Self> {
+        match json {
+            Value::Array(array) => Vec::from_iter(array.into_iter().map(|v| {
+                match v {
+                    Value::String(tag) => OpencorporaTagReg::new(tag),
+                    wrong_value => panic!("Expected string, found: {:?}", wrong_value),
+                }
+            })),
+            wrong_value => panic!("Expected array, found: {:?}", wrong_value),
+        }
     }
 
     pub fn is_productive(&self) -> bool {

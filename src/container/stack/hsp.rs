@@ -103,8 +103,8 @@ impl StackParticle {
             stack: StackParticle {
                 stack: lex.stack.stack,
                 particle: self.particle.clone()
-            }.into()
-        } )
+            }
+        })
     }
 }
 

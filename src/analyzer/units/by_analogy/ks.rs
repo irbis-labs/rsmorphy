@@ -119,10 +119,10 @@ impl Analyzer for KnownSuffixAnalyzer {
         }
 
         let mut subresult: ParseResult = subresult.into_iter()
-            .map(|(cnt, prefix_id, lex)| Parsed {
-                lex: lex,
-                score: Score::Fake(
-                    self.estimate_decay * cnt as f64 / total_counts[prefix_id as usize] as f64)
+            .map(|(cnt, prefix_id, lex)| {
+                let score = Score::Fake(self.estimate_decay * f64::from(cnt)
+                    / f64::from(total_counts[prefix_id as usize]));
+                Parsed { lex, score }
             })
             .collect();
 
