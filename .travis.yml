@@ -87,15 +87,6 @@ jobs:
     script:
     - cargo clippy --features old-rustc -- -D warnings
 
-  - stage: cov
-    if: branch = master
-#    rust: stable
-    rust: beta
-    env:
-    - FEATURE=cov
-    script:
-    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
-
 #  - stage: test
 #    rust: 1.26.0
 #    script:
@@ -120,6 +111,14 @@ jobs:
     rust: nightly
     script:
     - cargo test --verbose --all
+
+#  - stage: cov
+##    rust: stable
+#    rust: beta
+#    env:
+#    - FEATURE=cov
+#    script:
+#    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
 notifications:
   webhooks:
