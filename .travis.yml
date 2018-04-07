@@ -22,7 +22,7 @@ addons:
 language: rust
 
 rust:
-  - nightly-2018-02-14
+  - beta
 
 matrix:
   allow_failures:
@@ -37,11 +37,11 @@ cache:
 env:
   global:
   - CLIPPY_VERS=0.0.186
-  - TARPAULIN_VERS=0.5.6
-  - RUSTFMT_VERS=0.9.0
   - DEADLINKS_VERS=0.3.0
   - RUSTFLAGS="-C link-dead-code"
+  - RUSTFMT_VERS=0.9.0
   - RUST_LOG=off
+  - TARPAULIN_VERS=0.5.6
 
 install:
 - |
@@ -78,29 +78,26 @@ jobs:
 #    env:
 #    - FEATURE=fmt
 #    script:
-#    - cargo fmt -- --write-mode=diff --force
+#    - cargo fmt -- --write-mode=diff
 
   - stage: test
     rust: nightly-2018-02-14
     env:
     - FEATURE=clippy
     script:
-    - cargo clippy -- -D warnings
+    - cargo clippy --features old-rustc -- -D warnings
 
-  - stage: test
-    rust: nightly-2018-02-14
+  - stage: cov
+    if: branch = master
+#    rust: stable
+    rust: beta
+    env:
+    - FEATURE=cov
     script:
-    - cargo test --verbose --all
+    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
 #  - stage: test
-#    rust: nightly-2018-02-14
-#    env:
-#    - FEATURE=cov
-#    script:
-#    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
-
-#  - stage: test
-#    rust: 1.17.0
+#    rust: 1.26.0
 #    script:
 #    - cargo test --verbose --all
 
@@ -109,10 +106,15 @@ jobs:
 #    script:
 #    - cargo test --verbose --all
 
-#  - stage: test
-#    rust: beta
-#    script:
-#    - cargo test --verbose --all
+  - stage: test
+    rust: beta
+    script:
+    - cargo test --verbose --all
+
+  - stage: test
+    rust: nightly-2018-04-04
+    script:
+    - cargo test --verbose --all
 
   - stage: test
     rust: nightly
