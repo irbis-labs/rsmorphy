@@ -1,9 +1,13 @@
 ![](https://img.shields.io/crates/l/rsmorphy.svg)
 [![crates.io](https://img.shields.io/crates/v/rsmorphy.svg)](https://crates.io/crates/rsmorphy)
+
 [![Build Status](https://travis-ci.org/irbis-labs/rsmorphy.svg)](https://travis-ci.org/irbis-labs/rsmorphy)
 [![Coverage Status](https://coveralls.io/repos/github/irbis-labs/rsmorphy/badge.svg?branch=master)](https://coveralls.io/github/irbis-labs/rsmorphy?branch=master)
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/irbis-labs/rsmorphy.svg?columns=in%20progress)](https://waffle.io/irbis-labs/rsmorphy)
+![Minimal rust version 1.26](https://img.shields.io/badge/rustc-1.26+-green.svg)
+![Nightly rust version from April 04, 2018](https://img.shields.io/badge/rustc-nightly_2018--04--04-yellow.svg)
+
 [![Join the chat at https://gitter.im/rsmorphy/Lobby](https://badges.gitter.im/rsmorphy/Lobby.svg)](https://gitter.im/rsmorphy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/irbis-labs/rsmorphy.svg?columns=inbox,backlog,in%20progress,done)](https://waffle.io/irbis-labs/rsmorphy)
 
 ## RsMorphy
 
@@ -14,12 +18,9 @@ RsMorphy is a native Rust implementation of [PyMorphy2](https://github.com/kmike
 
 ### Unstable
 
-> **WIP. Very buggy.**
+> **Work In Progress.**
 
 The implementation is at a very early stage and the API is a subject of changes.
-
-__Note that RsMorphy currently requires the nightly version of the Rust compiler.__
-
 
 ## Examples
 

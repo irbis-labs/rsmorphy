@@ -1,6 +1,9 @@
 extern crate rsmorphy;
 
-use rsmorphy::prelude::*;
+use rsmorphy::{
+    prelude::*,
+    rsmorphy_dict_ru,
+};
 
 pub mod util;
 
@@ -8,7 +11,7 @@ pub mod util;
 
 
 fn main() {
-    let morph_ru = rsmorphy::load_test_morph_ru();
+    let morph_ru = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
 
     //let lex = Lex::from_id(&morph_ru, "ru:d:стали,388,4").unwrap();
     //print_row_lex(&morph_ru, 0, &lex.inflect(&morph_ru, &GrammemeSet::from_str("plur,ablt")).unwrap());

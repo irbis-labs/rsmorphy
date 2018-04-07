@@ -1,7 +1,4 @@
-#![feature(conservative_impl_trait)]
-//#![feature(specialization)]
-#![cfg_attr(test, feature(test))]
-
+#![cfg_attr(feature = "old-rustc", feature(conservative_impl_trait))]
 
 #![cfg_attr(feature = "cargo-clippy", allow(items_after_statements))]
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
@@ -27,10 +24,7 @@ extern crate serde_json;
 extern crate string_cache;
 extern crate unicode_categories as uc;
 
-extern crate rsmorphy_dict_ru;
-
-#[cfg(test)] extern crate test;
-
+pub extern crate rsmorphy_dict_ru;
 
 #[macro_use] pub mod macros;
 
@@ -57,8 +51,3 @@ pub use container::ParseResult;
 pub use container::Score;
 pub use opencorpora::Grammeme;
 pub use opencorpora::GrammemeSet;
-
-
-pub fn load_test_morph_ru() -> MorphAnalyzer {
-    MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH)
-}

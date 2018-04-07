@@ -1,6 +1,9 @@
 extern crate rsmorphy;
 
-use rsmorphy::prelude::*;
+use rsmorphy::{
+    prelude::*,
+    rsmorphy_dict_ru,
+};
 
 pub mod util;
 
@@ -21,7 +24,7 @@ fn table(morph: &MorphAnalyzer, s: &str) {
 
 
 fn main() {
-    let morph_ru = rsmorphy::load_test_morph_ru();
+    let morph_ru = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
 
 //    table(&morph_ru, "яблоко");
 //    table(&morph_ru, "хлеб");

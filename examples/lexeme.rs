@@ -1,6 +1,9 @@
 extern crate rsmorphy;
 
-use rsmorphy::prelude::*;
+use rsmorphy::{
+    prelude::*,
+    rsmorphy_dict_ru,
+};
 
 pub mod util;
 
@@ -16,7 +19,7 @@ fn print_lexeme(morph: &MorphAnalyzer, id: &str) {
 
 
 fn main() {
-    let morph_ru = rsmorphy::load_test_morph_ru();
+    let morph_ru = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
 
 //    print_lexeme(&morph_ru, "ru:d:стали,388,4");
 //    println!();

@@ -97,28 +97,17 @@ impl MorphAnalyzer {
 
 #[cfg(test)]
 mod tests {
-    use test::black_box;
-    use super::*;
-    use ::load_test_morph_ru;
-    // use ::load_test_morph_uk;
+    use {MorphAnalyzer, rsmorphy_dict_ru};
 
 
     lazy_static!{
-        static ref RU: MorphAnalyzer = load_test_morph_ru();
-        // static ref UK: MorphAnalyzer = load_test_morph_uk();
+        static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
     }
-
 
     #[test]
     fn load_ru() {
-        let _dict = black_box(&RU.dict);
+        let _ = RU.dict;
     }
-
-    // TODO ukrainian
-    // #[test]
-    // fn load_uk() {
-    //     let _dict = black_box(&UK.dict);
-    // }
 
     #[test]
     fn parse() {
