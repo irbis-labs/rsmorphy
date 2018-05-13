@@ -86,7 +86,7 @@ impl Analyzer for KnownSuffixAnalyzer {
 
                         let seen = Seen {
                             word: fixed_word.clone(),
-                            tag: tag,
+                            tag,
                             para_id: Some(para_id)
                         };
 
@@ -94,15 +94,9 @@ impl Analyzer for KnownSuffixAnalyzer {
                             continue 'iter_parses;
                         }
 
+                        let word_lower = Word::new(seen.word, false);
                         let container = StackAffix {
-                            stack: Dictionary {
-                                word_lower: Word {
-                                    is_known: false,
-                                    word: seen.word.into_owned(),
-                                },
-                                para_id: para_id,
-                                idx: idx,
-                            }.into(),
+                            stack: Dictionary { word_lower, para_id, idx }.into(),
                             affix: Some(Affix {
                                 part: fixed_suffix.to_string(),
                                 kind: AffixKind::KnownSuffix,

@@ -1,10 +1,6 @@
-#![cfg_attr(feature = "old-rustc", feature(conservative_impl_trait))]
-
 #![cfg_attr(feature = "cargo-clippy", allow(items_after_statements))]
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
 #![cfg_attr(feature = "cargo-clippy", allow(module_inception))]
-// FIXME remove closures with `do catch`
-#![cfg_attr(feature = "cargo-clippy", allow(redundant_closure_call))]
 // TODO post a bug report; https://github.com/Manishearth/rust-clippy/wiki#regex_macro
 // false positive, this regex macro implemented in this crate and is not available in the upstream anymore
 #![cfg_attr(feature = "cargo-clippy", allow(regex_macro))]

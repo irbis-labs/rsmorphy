@@ -15,8 +15,8 @@ pub struct Completer<'a> {
 impl <'a> Completer<'a> {
     pub fn new(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: &[u8]) -> Self {
         Completer {
-            dict: dict,
-            guide: guide,
+            dict,
+            guide,
             // unimplemented is unimplemented in the origin
             last_index: if guide.units.is_empty() { unimplemented!() } else { dict.root },
             key: prefix.to_owned(),

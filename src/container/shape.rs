@@ -83,6 +83,13 @@ impl Source for Shaped {
 
 
 impl Shaped {
+    pub fn new<W: Into<String>>(word: W, kind: ShapeKind) -> Self {
+        Shaped {
+            word: word.into(),
+            kind,
+        }
+    }
+
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
         (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
     }

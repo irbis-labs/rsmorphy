@@ -157,13 +157,7 @@ impl MorphySerde for Dictionary {
             .map(|s| take_str_while_char(s, is_hex_digit).and_then(parse_hex_int))
             .unwrap_or_else(|| Ok((s, 0)))?;
 
-        Ok( (s, Dictionary {
-            word_lower: Word {
-                word: word.to_string(),
-                is_known: is_known,
-            },
-            para_id: para_id,
-            idx: idx
-        }) )
+        let word_lower = Word::new(word, is_known);
+        Ok( (s, Dictionary { word_lower, para_id, idx }) )
     }
 }

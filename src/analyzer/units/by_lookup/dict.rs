@@ -22,16 +22,9 @@ impl Analyzer for DictionaryAnalyzer {
 
         // `fixed_word` is a word with proper substitute (e.g. ё) letters
         for (fixed_word, parses) in para_data {
-
             for HH(para_id, idx) in parses {
-                let container = Dictionary {
-                    word_lower: Word {
-                        word: fixed_word.clone(),
-                        is_known: true,
-                    },
-                    para_id: para_id,
-                    idx: idx,
-                };
+                let word_lower = Word::new(fixed_word.clone(), false);
+                let container = Dictionary { word_lower, para_id, idx };
                 result.push(Parsed {
                     lex: Lex::from_stack(morph, StackSource::from(container)),
                     score: Score::Real(1.0),

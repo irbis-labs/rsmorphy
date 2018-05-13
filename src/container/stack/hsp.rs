@@ -120,12 +120,10 @@ impl MorphySerde for StackParticle {
 
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let (s, stack) = StackHyphenated::decode(s)?;
-        let mut result = (s, StackParticle {
-            stack: stack,
-            particle: None,
-        });
+        let particle = None;
+        let mut result = (s, StackParticle { stack, particle });
         if !s.is_empty() {
-            match (|s| {
+            let parse = |s| {
                 let s = follow_str(s, ";")?;
                 let s = follow_str(s, "hp").map_err(|e| match e {
                     DecodeError::DoesntMatch => DecodeError::UnknownPartType,
@@ -135,7 +133,8 @@ impl MorphySerde for StackParticle {
                 Ok((s, HyphenSeparatedParticle {
                     particle: word.to_string(),
                 }))
-            })(s) {
+            };
+            match parse(s) {
                 Err(DecodeError::UnknownPartType) => (),
                 Err(e) => Err(e)?,
                 Ok((s, particle)) => {

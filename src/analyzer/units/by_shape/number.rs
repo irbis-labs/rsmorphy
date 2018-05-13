@@ -51,10 +51,7 @@ impl Analyzer for NumberAnalyzer {
             return;
         };
 
-        let container = Shaped {
-            word: word_lower.to_string(),
-            kind: kind,
-        };
+        let container = Shaped::new(word_lower, kind);
         result.push(Parsed {
             lex: Lex::from_stack(morph, StackSource::from(container)),
             score: Score::Fake(self.score),

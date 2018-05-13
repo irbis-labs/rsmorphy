@@ -23,7 +23,7 @@ pub struct StackAffix {
 
 
 impl From<StackSource> for StackAffix {
-    fn from(stack: StackSource) -> Self { StackAffix { stack: stack, affix: None } }
+    fn from(stack: StackSource) -> Self { StackAffix { stack, affix: None } }
 }
 
 
@@ -200,7 +200,7 @@ impl MorphySerde for StackAffix {
             affix: None,
         });
         if !s.is_empty() {
-            match (|s| {
+            let parse = |s| {
                 let s = follow_str(s, ";")?;
                 let (s, kind) = follow_str(s, "ks").map(|s| (s, AffixKind::KnownSuffix))
                     .or_else(|_| follow_str(s, "kp").map(|s| (s, AffixKind::KnownPrefix)))
@@ -210,11 +210,10 @@ impl MorphySerde for StackAffix {
                         _ => e,
                     })?;
                 let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ';')?;
-                Ok((s, Affix {
-                    kind: kind,
-                    part: word.to_string(),
-                }))
-            })(s) {
+                let part = word.to_string();
+                Ok((s, Affix { kind, part }))
+            };
+            match parse(s) {
                 Err(DecodeError::UnknownPartType) => (),
                 Err(e) => Err(e)?,
                 Ok((s, affix)) => {
