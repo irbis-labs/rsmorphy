@@ -121,6 +121,6 @@ impl MorphySerde for Lex {
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let s = follow_str(s, "ru").map_err(|_| DecodeError::UnknownPartType)?;
         let (s, stack) = StackParticle::decode(follow_str(s, ":")?)?;
-        Ok( (s, Lex { stack: stack }))
+        Ok( (s, Lex { stack }))
     }
 }

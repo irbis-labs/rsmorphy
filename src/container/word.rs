@@ -4,4 +4,11 @@ pub struct Word {
     pub word: String,
 }
 
-
+impl Word {
+    pub fn new<W: Into<String>>(word: W, is_known: bool) -> Self {
+        Word {
+            word: word.into(),
+            is_known,
+        }
+    }
+}

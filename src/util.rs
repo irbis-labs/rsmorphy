@@ -5,16 +5,12 @@ use analyzer::{MorphAnalyzer};
 use container::{Parsed, ParseResult, SeenSet};
 
 
-// FIXME remove this `allow` with https://github.com/rust-lang-nursery/rust-clippy/pull/2418
-#[cfg_attr(feature="cargo-clippy", allow(misaligned_transmute))]
 pub fn u16_from_slice(s: &[u8]) -> u16 {
     let mut buf = [0u8; 2];
     buf.copy_from_slice(&s[.. 2]);
     unsafe { mem::transmute::<[u8; 2], u16>(buf) }
 }
 
-// FIXME remove this `allow` with https://github.com/rust-lang-nursery/rust-clippy/pull/2418
-#[cfg_attr(feature="cargo-clippy", allow(misaligned_transmute))]
 pub fn u32_from_slice(s: &[u8]) -> u32 {
     let mut buf = [0u8; 4];
     buf.copy_from_slice(&s[.. 4]);

@@ -21,7 +21,6 @@ default         = ["simd-accel", "miniz-oxide"]
 miniz-sys       = ["flate2/miniz-sys"]
 miniz-oxide     = ["flate2/rust_backend"]
 quiet           = []
-old-rustc       = []
 
 simd-accel      = ["regex/simd-accel"]
 

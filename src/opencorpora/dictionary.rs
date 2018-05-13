@@ -82,11 +82,7 @@ impl Dictionary {
             for (index, grammeme) in grammemes.keys().enumerate() {
                 grammeme_metas
                     .entry(grammeme.clone())
-                    .or_insert_with(|| GrammemeMeta {
-                        index: index,
-                        children: Default::default(),
-                        incompatible: Default::default(),
-                    });
+                    .or_insert_with(|| GrammemeMeta { index, ..Default::default() });
             }
             for (grammeme, gram_reg) in &grammemes {
                 if let Some(ref parent) = gram_reg.parent {
@@ -116,9 +112,9 @@ impl Dictionary {
 
 
         Dictionary {
-            meta: meta,
-            grammemes: grammemes,
-            grammeme_metas: grammeme_metas,
+            meta,
+            grammemes,
+            grammeme_metas,
             gramtab: OpencorporaTagReg::vec_from_json(load_json(
                 &p.join("gramtab-opencorpora-int.json.gz") // TODO opencorpora-ext
             )),
