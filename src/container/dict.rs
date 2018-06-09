@@ -35,7 +35,7 @@ impl Source for Dictionary {
     }
 
     fn get_word(&self) -> Cow<str> {
-        Cow::from(self.word_lower.word.as_ref())
+        Cow::from(self.word_lower.word.as_str())
     }
 
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {

@@ -40,11 +40,11 @@ impl Source for Initials {
     }
 
     fn get_word(&self) -> Cow<str> {
-        Cow::from(self.letter.as_ref())
+        Cow::from(self.letter.as_str())
     }
 
     fn get_normal_form(&self, _morph: &MorphAnalyzer) -> Cow<str> {
-        Cow::from(self.letter.as_ref())
+        Cow::from(self.letter.as_str())
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
