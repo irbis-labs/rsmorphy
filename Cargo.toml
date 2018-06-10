@@ -17,31 +17,21 @@ travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 
 [features]
-default         = ["simd-accel", "miniz-oxide"]
-miniz-sys       = ["flate2/miniz-sys"]
-miniz-oxide     = ["flate2/rust_backend"]
+default         = []
 quiet           = []
-
-simd-accel      = ["regex/simd-accel"]
 
 
 [dependencies]
 base64              = "0.9"
+flate2              = { version = "1.0.1", default-features = false, features = ["rust_backend"] }
 lazy_static         = "1.0"
 log                 = "0.4"
 maplit              = "1.0"
 num                 = "0.1"
-regex               = "0.2"
+regex               = "1.0"
 roman               = "0.1"
 serde_json          = "1.0"
 string_cache        = "0.7"
 unicode_categories  = "0.1"
 
-[dependencies.flate2]
-version = "1.0"
-default-features = false
-
-
-[dependencies.rsmorphy-dict-ru]
-version     = "0.1"
-path        = "./dict/ru"
+rsmorphy-dict-ru    = { version = "0.1", path = "./dict/ru" }
