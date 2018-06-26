@@ -1,7 +1,7 @@
 /**
     Ожидаемые варианты стека без учёта сдвоенных слов:
-    * Dictinary[, KnownPrefix|UnknownPrefix][, HyphenSeparatedParticle]
-    * FakeDictinary[, KnownSuffix][, HyphenSeparatedParticle]
+    * Dictionary[, KnownPrefix|UnknownPrefix][, HyphenSeparatedParticle]
+    * FakeDictionary[, KnownSuffix][, HyphenSeparatedParticle]
     * Shaped[, HyphenSeparatedParticle]
     * Unknown[, HyphenSeparatedParticle]
     * Initials

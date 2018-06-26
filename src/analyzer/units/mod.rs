@@ -8,7 +8,7 @@ pub mod by_shape;
 
 pub mod unknown;
 
-pub use self::abc::Analyzer;
+pub use self::abc::AnalyzerUnit;
 
 pub use self::abbr::initials::InitialsAnalyzer;
 

@@ -18,7 +18,7 @@ pub fn u32_from_slice(s: &[u8]) -> u32 {
 }
 
 
-pub fn add_parse_if_not_seen(
+pub fn add_parsed_if_not_seen(
     morph: &MorphAnalyzer,
     result: &mut ParseResult,
     seen_parses: &mut SeenSet,
@@ -30,12 +30,12 @@ pub fn add_parse_if_not_seen(
 }
 
 
-/// Return all splits of a `word` (taking in account `min_reminder` and `max_prefix_length`).
-pub fn word_splits<'w: 'i, 'i, MIN, MAX>(word: &'w str, min_reminder: MIN, max_prefix_length: MAX)
-                                     -> impl Iterator<Item = (&'w str, &'w str)> + 'i
+/// Returns all splits of a `word` (taking into account `min_reminder` and `max_prefix_length`).
+pub fn word_splits<'w: 'i, 'i, Rem, Pref>(word: &'w str, min_reminder: Rem, max_prefix_length: Pref)
+                                          -> impl Iterator<Item = (&'w str, &'w str)> + 'i
     where
-        MIN: Into<Option<usize>>,
-        MAX: Into<Option<usize>>,
+        Rem: Into<Option<usize>>,
+        Pref: Into<Option<usize>>,
 {
     let min_reminder = min_reminder.into().unwrap_or(3);
     let max_prefix_length = max_prefix_length.into().unwrap_or(5);

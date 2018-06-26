@@ -12,8 +12,36 @@ pub struct Affix {
     pub kind: AffixKind,
 }
 
-
 impl Affix {
+    pub fn new<S>(part: S, kind: AffixKind) -> Self
+    where
+        S: Into<String>,
+    {
+        let part = part.into();
+        Affix { part, kind }
+    }
+
+    pub fn known_suffix<S>(part: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Affix::new(part, AffixKind::KnownSuffix)
+    }
+
+    pub fn known_prefix<S>(part: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Affix::new(part, AffixKind::KnownPrefix)
+    }
+
+    pub fn unknown_prefix<S>(part: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Affix::new(part, AffixKind::UnknownPrefix)
+    }
+
     pub fn is_known(&self) -> bool {
         match self.kind {
             AffixKind::KnownSuffix |

@@ -2,16 +2,13 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
+use container::{Lex, Score};
 use container::abc::*;
-use container::Dictionary;
-use container::Lex;
-use container::Score;
-use container::affix::Affix;
-use container::affix::AffixKind;
+use container::affix::{Affix, AffixKind};
+use container::decode::*;
+use container::paradigm::ParadigmId;
 use container::stack::StackSource;
 use opencorpora::OpencorporaTagReg;
-
-use container::decode::*;
 
 
 
@@ -19,6 +16,18 @@ use container::decode::*;
 pub struct StackAffix {
     pub stack: StackSource,
     pub affix: Option<Affix>,
+}
+
+impl StackAffix {
+    pub fn new<S, A>(stack: S, affix: A) -> Self
+    where
+        S: Into<StackSource>,
+        A: Into<Option<Affix>>,
+    {
+        let stack = stack.into();
+        let affix = affix.into();
+        StackAffix { stack, affix }
+    }
 }
 
 
@@ -30,7 +39,7 @@ impl From<StackSource> for StackAffix {
 impl Source for StackAffix {
     fn score(&self) -> Score {
         match self.affix {
-            None            => self.stack.score(),
+            None => self.stack.score(),
             Some(ref _affix) => {
                 self.stack.score();
                 unimplemented!()
@@ -40,26 +49,21 @@ impl Source for StackAffix {
 
     fn is_lemma(&self) -> bool {
         match self.affix {
-            None            => self.stack.is_lemma(),
-            Some(ref _affix) => {
-                self.stack.is_lemma();
-                unimplemented!()
-            },
+            None => self.stack.is_lemma(),
+            Some(ref _affix) => self.stack.is_lemma(),
         }
     }
 
     fn is_known(&self) -> bool {
         match self.affix {
-            None            => self.stack.is_known(),
-            Some(ref affix) => {
-                affix.is_known() && self.stack.is_known()
-            },
+            None => self.stack.is_known(),
+            Some(ref affix) => affix.is_known() && self.stack.is_known(),
         }
     }
 
     fn get_word(&self) -> Cow<str> {
         match self.affix {
-            None            => self.stack.get_word(),
+            None => self.stack.get_word(),
             Some(ref affix) =>
                 match affix.kind {
                     AffixKind::KnownSuffix => self.stack.get_word(),
@@ -70,13 +74,12 @@ impl Source for StackAffix {
 
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
         match self.affix {
-            None            => self.stack.get_normal_form(morph),
+            None => self.stack.get_normal_form(morph),
             Some(ref affix) =>
                 match affix.kind {
                     AffixKind::KnownSuffix => self.stack.get_normal_form(morph),
                     _ => format!("{}{}", affix.part, self.stack.get_normal_form(morph)).into(),
                 },
-
         }
     }
 
@@ -84,7 +87,7 @@ impl Source for StackAffix {
         self.stack.get_tag(morph)
     }
 
-    fn try_get_para_id(&self) -> Option<u16> {
+    fn try_get_para_id(&self) -> Option<ParadigmId> {
         self.stack.try_get_para_id()
     }
 
@@ -117,61 +120,25 @@ impl Source for StackAffix {
     }
 }
 
-
 impl StackAffix {
-    // FIXME temporary workaround for ICE https://github.com/rust-lang/rust/issues/41297
-    #[inline]
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        let has_known_suffix = match self.affix {
-            Some(ref affix) => affix.is_known_suffix(),
-            _ => false,
-        };
-        let make_affix = move |new_source: &StackSource| {
-            if has_known_suffix {
-                Some(Affix {
-                    kind: AffixKind::KnownSuffix,
-                    part: match *new_source {
-                        StackSource::Dictionary(Dictionary { para_id, idx, ref word_lower }) => {
-                            let stem = morph.dict.build_stem(para_id, idx, &word_lower.word);
-                            word_lower.word[stem.len()..].to_string()
-                        }
-                        _ => unreachable!(),
-                    },
-                })
+        let is_known_suffix = self.affix.as_ref().map(Affix::is_known_suffix).unwrap_or(false);
+        let make_affix = move |new_source: &StackSource| -> Option<Affix> {
+            if is_known_suffix {
+                let dict = new_source.as_dictionary().expect("Should only be Dictionary");
+                let word = dict.word_lower().word();
+                let stem = morph.dict.get_stem(dict.para_id(), dict.idx(), word);
+                Some(Affix::known_suffix(&word[stem.len()..]))
             } else {
                 self.affix.clone()
             }
         };
 
         self.stack.iter_lexeme(morph).map(move |lex: Lex| {
-            Lex {
-                stack: StackAffix {
-                    affix: make_affix(&lex.stack.stack.left.stack),
-                    stack: lex.stack.stack.left.stack,
-                }.into()
-            }
+            let stack = lex.stack.stack.left.stack;
+            let affix = make_affix(&stack);
+            Lex::from_stack(morph, StackAffix::new(stack, affix))
         })
-
-//        self.stack.iter_lexeme(morph).map(move |lex: Lex| {
-//            let source_stack = match lex.stack {
-//                Stack::Source(stack) => stack,
-//                _ => unreachable!()
-//            };
-//            Lex {
-//                stack: StackAffix {
-//                    stack: source_stack,
-//                    affix: match self.affix.kind {
-//                        AffixKind::KnownSuffix => {
-//                            Affix {
-//                                kind: AffixKind::KnownSuffix,
-//                                part: self.affix.part
-//                            }
-//                        },
-//                        _ => self.affix.clone()
-//                    },
-//                }.into()
-//            }
-//        })
     }
 }
 
@@ -183,9 +150,9 @@ impl MorphySerde for StackAffix {
             write!(
                 f, ";{}:{}",
                 match affix.kind {
-                    AffixKind::KnownPrefix      => "kp",
-                    AffixKind::UnknownPrefix    => "up",
-                    AffixKind::KnownSuffix      => "ks",
+                    AffixKind::KnownPrefix => "kp",
+                    AffixKind::UnknownPrefix => "up",
+                    AffixKind::KnownSuffix => "ks",
                 },
                 affix.part
             )?;
@@ -195,10 +162,7 @@ impl MorphySerde for StackAffix {
 
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let (s, source) = StackSource::decode(s)?;
-        let mut result = (s, StackAffix {
-            stack: source,
-            affix: None,
-        });
+        let mut result = (s, StackAffix::new(source, None));
         if !s.is_empty() {
             let parse = |s| {
                 let s = follow_str(s, ";")?;
@@ -207,11 +171,10 @@ impl MorphySerde for StackAffix {
                     .or_else(|_| follow_str(s, "up").map(|s| (s, AffixKind::UnknownPrefix)))
                     .map_err(|e| match e {
                         DecodeError::DoesntMatch => DecodeError::UnknownPartType,
-                        _ => e,
+                        e => e,
                     })?;
                 let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ';')?;
-                let part = word.to_string();
-                Ok((s, Affix { kind, part }))
+                Ok((s, Affix::new(word, kind)))
             };
             match parse(s) {
                 Err(DecodeError::UnknownPartType) => (),

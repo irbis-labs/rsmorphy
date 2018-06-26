@@ -8,4 +8,11 @@ pub struct Parsed {
     pub score: Score,
 }
 
+impl Parsed {
+    pub fn new(lex: Lex, score: Score) -> Self {
+        Parsed { lex, score }
+    }
+}
+
+
 pub type ParseResult = Vec<Parsed>;

@@ -1,8 +1,9 @@
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
 
 use analyzer::MorphAnalyzer;
-use analyzer::units::abc::Analyzer;
+use analyzer::units::abc::AnalyzerUnit;
 use container::{Initials, InitialsKind};
 use container::{Parsed, ParseResult, SeenSet};
 use container::{Lex, Score};
@@ -17,9 +18,11 @@ lazy_static! {
     };
 }
 
+const SCORE: Score = Score::Fake(0.1);
+
 #[derive(Debug, Clone)]
 pub struct InitialsAnalyzer {
-    pub tags: Vec<OpencorporaTagReg>,
+    pub tags: Vec<(OpencorporaTagReg, InitialsKind)>,
 }
 
 
@@ -28,15 +31,19 @@ impl Default for InitialsAnalyzer {
         InitialsAnalyzer {
             tags: {
                 let mut result: Vec<_> = Vec::new();
-                for kind in &["Name", "Patr"] {
-                    for gender in &["masc", "femn"] {
-                        for case in &["nomn", "gent", "datv", "accs", "ablt", "loct"] {
-                            result.push(
-                                OpencorporaTagReg::new(
-                                    format!("NOUN,anim,{gender},Sgtm,{kind},Fixd,Abbr,Init sing,{case}",
-                                            kind = kind, gender = gender, case = case)
-                                        .as_str()
-                                ))
+                for &kind in &["Name", "Patr"] {
+                    for &gender in &["masc", "femn"] {
+                        for &case in &["nomn", "gent", "datv", "accs", "ablt", "loct"] {
+                            let tag = OpencorporaTagReg::new(
+                                format!("NOUN,anim,{gender},Sgtm,{kind},Fixd,Abbr,Init sing,{case}",
+                                        kind = kind, gender = gender, case = case)
+                            );
+                            let kind = match kind {
+                                "Name" => InitialsKind::FirstName,
+                                "Patr" => InitialsKind::Patronym,
+                                _ => unreachable!(),
+                            };
+                            result.push((tag, kind));
                         }
                     }
                 }
@@ -46,26 +53,20 @@ impl Default for InitialsAnalyzer {
     }
 }
 
-
-impl Analyzer for InitialsAnalyzer {
+impl AnalyzerUnit for InitialsAnalyzer {
     fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
         trace!("AbbreviatedFirstNameAnalyzer::parse()");
         trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
         trace!(r#" LETTERS: "{:?}" "#, LETTERS.iter().cloned().collect::<Vec<&str>>().join(", "));
         trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
 
-        if LETTERS.contains(word) {
-            for tag_idx in 0..self.tags.len() {
-                let container = Initials {
-                    letter: word.to_owned(),
-                    kind: if tag_idx < self.tags.len() / 2
-                        { InitialsKind::FirstName } else { InitialsKind::Patronym },
-                    tag_idx: tag_idx as u8,
-                };
-                result.push(Parsed {
-                    lex: Lex::from_stack(morph, StackSource::from(container)),
-                    score: Score::Fake(0.1),
-                });
+        if let Some(&letter) = LETTERS.get(word) {
+            for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {
+                let tag_idx = tag_idx as u8;
+                let letter = Cow::from(letter);
+                let container = Initials { letter, kind, tag_idx };
+                let lex = Lex::from_stack(morph, StackSource::from(container));
+                result.push(Parsed::new(lex, SCORE));
             }
         }
     }

@@ -10,9 +10,12 @@
 
 extern crate base64;
 extern crate flate2;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate log;
-#[macro_use] extern crate maplit;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate log;
+#[macro_use]
+extern crate maplit;
 extern crate num;
 extern crate regex;
 extern crate roman;
@@ -22,7 +25,8 @@ extern crate unicode_categories as uc;
 
 pub extern crate rsmorphy_dict_ru;
 
-#[macro_use] pub mod macros;
+#[macro_use]
+pub mod macros;
 
 pub mod analyzer;
 pub mod container;
@@ -36,7 +40,7 @@ pub mod util;
 pub mod prelude;
 
 
-pub use analyzer::units::abc::Analyzer;
+pub use analyzer::units::abc::AnalyzerUnit;
 pub use container::abc::Source;
 pub use container::abc::MorphySerde;
 

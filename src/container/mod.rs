@@ -2,6 +2,7 @@ pub mod abc;
 
 pub mod word;
 
+pub mod paradigm;
 pub mod dict;
 
 pub mod affix;
@@ -20,7 +21,7 @@ pub mod stack;
 pub mod decode;
 
 
-pub use self::word::Word;
+pub use self::word::WordStruct;
 
 pub use self::dict::Dictionary;
 

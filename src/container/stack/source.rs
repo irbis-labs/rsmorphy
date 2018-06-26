@@ -1,16 +1,17 @@
-use std::borrow::Cow;
-use std::fmt;
+use {
+    std::{
+        borrow::Cow,
+        fmt,
+    },
 
-use ::analyzer::MorphAnalyzer;
-use ::container::abc::*;
-use ::container::Dictionary;
-use ::container::Lex;
-use ::container::HyphenAdverb;
-use ::container::Initials;
-use ::container::Shaped;
-use ::container::Score;
-use ::container::Unknown;
-use ::opencorpora::OpencorporaTagReg;
+    analyzer::MorphAnalyzer,
+    container::{
+        Dictionary, Lex, HyphenAdverb, Initials, Shaped, Score, Unknown,
+        abc::*,
+        paradigm::ParadigmId,
+    },
+    opencorpora::OpencorporaTagReg,
+};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -22,6 +23,60 @@ pub enum StackSource {
     Unknown(Unknown),
 }
 
+impl StackSource {
+    pub fn new<T>(source: T) -> Self
+    where
+        T: Into<StackSource>
+    {
+        source.into()
+    }
+
+    pub fn as_dictionary(&self) -> Option<&Dictionary> {
+        match self {
+            StackSource::Dictionary(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn as_hyphen_adverb(&self) -> Option<&HyphenAdverb> {
+        match self {
+            StackSource::HyphenAdverb(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn as_initials(&self) -> Option<&Initials> {
+        match self {
+            StackSource::Initials(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn as_shaped(&self) -> Option<&Shaped> {
+        match self {
+            StackSource::Shaped(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn as_unknown(&self) -> Option<&Unknown> {
+        match self {
+            StackSource::Unknown(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+        let i: Box<Iterator<Item = Lex> + 'i> = match self {
+            StackSource::Dictionary(source)     => Box::new(source.iter_lexeme(morph)),
+            StackSource::HyphenAdverb(source)   => Box::new(source.iter_lexeme(morph)),
+            StackSource::Initials(source)       => Box::new(source.iter_lexeme(morph)),
+            StackSource::Shaped(source)         => Box::new(source.iter_lexeme(morph)),
+            StackSource::Unknown(source)        => Box::new(source.iter_lexeme(morph)),
+        };
+        i
+    }
+}
 
 impl From<Dictionary> for StackSource {
     fn from(source: Dictionary) -> Self { StackSource::Dictionary(source) }
@@ -42,7 +97,6 @@ impl From<Shaped> for StackSource {
 impl From<Unknown> for StackSource {
     fn from(source: Unknown) -> Self { StackSource::Unknown(source) }
 }
-
 
 impl Source for StackSource {
     fn score(&self) -> Score {
@@ -105,7 +159,7 @@ impl Source for StackSource {
         }
     }
 
-    fn try_get_para_id(&self) -> Option<u16> {
+    fn try_get_para_id(&self) -> Option<ParadigmId> {
         match *self {
             StackSource::Dictionary(ref source)     => source.try_get_para_id(),
             StackSource::HyphenAdverb(ref source)   => source.try_get_para_id(),
@@ -156,21 +210,6 @@ impl Source for StackSource {
     }
 }
 
-
-impl StackSource {
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        let i: Box<Iterator<Item = Lex> + 'i> = match *self {
-            StackSource::Dictionary(ref source)     => Box::new(source.iter_lexeme(morph)),
-            StackSource::HyphenAdverb(ref source)   => Box::new(source.iter_lexeme(morph)),
-            StackSource::Initials(ref source)       => Box::new(source.iter_lexeme(morph)),
-            StackSource::Shaped(ref source)         => Box::new(source.iter_lexeme(morph)),
-            StackSource::Unknown(ref source)        => Box::new(source.iter_lexeme(morph)),
-        };
-        i.into_iter()
-    }
-}
-
-
 impl MorphySerde for StackSource {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match *self {
@@ -183,15 +222,15 @@ impl MorphySerde for StackSource {
     }
 
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
-        Ok(match try_type::<Dictionary>(s)? {
+        Ok(match try_decode::<Dictionary>(s)? {
             Some(v) => v,
-            None => match try_type::<HyphenAdverb>(s)? {
+            None => match try_decode::<HyphenAdverb>(s)? {
                 Some(v) => v,
-                None => match try_type::<Initials>(s)? {
+                None => match try_decode::<Initials>(s)? {
                     Some(v) => v,
-                    None => match try_type::<Shaped>(s)? {
+                    None => match try_decode::<Shaped>(s)? {
                         Some(v) => v,
-                        None => match try_type::<Unknown>(s)? {
+                        None => match try_decode::<Unknown>(s)? {
                             Some(v) => v,
                             None => Err(DecodeError::UnknownPartType)?,
                         },
@@ -202,49 +241,10 @@ impl MorphySerde for StackSource {
     }
 }
 
-
-fn try_type<T: MorphySerde + Into<StackSource>>(s: &str) -> Result<Option<(&str, StackSource)>, DecodeError> {
+fn try_decode<T: MorphySerde + Into<StackSource>>(s: &str) -> Result<Option<(&str, StackSource)>, DecodeError> {
     Ok(match T::decode(s) {
         Err(DecodeError::UnknownPartType) => None,
         Err(e) => Err(e)?,
         Ok((s, v)) => Some((s, v.into())),
     })
-}
-
-
-impl StackSource {
-    pub fn try_as_dictionary(&self) -> Option<&Dictionary> {
-        match *self {
-            StackSource::Dictionary(ref source) => Some(source),
-            _ => None
-        }
-    }
-
-    pub fn try_as_hyphen_adverb(&self) -> Option<&HyphenAdverb> {
-        match *self {
-            StackSource::HyphenAdverb(ref source) => Some(source),
-            _ => None
-        }
-    }
-
-    pub fn try_as_initials(&self) -> Option<&Initials> {
-        match *self {
-            StackSource::Initials(ref source) => Some(source),
-            _ => None
-        }
-    }
-
-    pub fn try_as_shaped(&self) -> Option<&Shaped> {
-        match *self {
-            StackSource::Shaped(ref source) => Some(source),
-            _ => None
-        }
-    }
-
-    pub fn try_as_unknown(&self) -> Option<&Unknown> {
-        match *self {
-            StackSource::Unknown(ref source) => Some(source),
-            _ => None
-        }
-    }
 }

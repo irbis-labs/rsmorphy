@@ -2,14 +2,12 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::Score;
-use container::Seen;
-use container::stack::StackParticle;
+use container::{Score, Seen};
 use container::abc::*;
-use opencorpora::OpencorporaTagReg;
-use opencorpora::GrammemeSet;
-
 use container::decode::*;
+use container::paradigm::ParadigmId;
+use container::stack::StackParticle;
+use opencorpora::{GrammemeSet, OpencorporaTagReg};
 
 pub type Lexeme = Vec<Lex>;
 
@@ -21,15 +19,23 @@ pub struct Lex {
 
 
 impl Lex {
-    pub fn from_id<'id, S: 'id>(_morph: &MorphAnalyzer, id: S) -> Result<Self, DecodeError> where S: Into<&'id str> {
-        Self::decode(id.into()).map(|(_, lex)| Ok(lex))?
+    pub fn from_id<S>(_morph: &MorphAnalyzer, id: S) -> Result<Self, DecodeError>
+    where
+        S: AsRef<str>,
+    {
+        Ok(Self::decode(id.as_ref()).map(|(_, lex)| lex)?)
     }
 
-    pub fn from_stack<S>(_morph: &MorphAnalyzer, stack: S) -> Self where S: Into<StackParticle> {
+    pub fn from_stack<S>(_morph: &MorphAnalyzer, stack: S) -> Self
+    where
+        S: Into<StackParticle>,
+    {
         Lex { stack: stack.into() }
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer)
+        -> impl Iterator<Item = Lex> + 'i
+    {
         self.stack.iter_lexeme(morph)
     }
 
@@ -57,7 +63,6 @@ impl Lex {
     }
 }
 
-
 impl Source for Lex {
     fn score(&self) -> Score {
         self.stack.score()
@@ -83,7 +88,7 @@ impl Source for Lex {
         self.stack.get_tag(morph)
     }
 
-    fn try_get_para_id(&self) -> Option<u16> {
+    fn try_get_para_id(&self) -> Option<ParadigmId> {
         self.stack.try_get_para_id()
     }
 

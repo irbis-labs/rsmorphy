@@ -1,14 +1,17 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use container::Lex;
-use container::Score;
-use container::abc::*;
-use container::stack::StackSource;
 use analyzer::MorphAnalyzer;
+use container::{Lex, Score};
+use container::abc::*;
+use container::decode::*;
+use container::paradigm::ParadigmId;
+use container::stack::StackSource;
 use opencorpora::OpencorporaTagReg;
 
-use container::decode::*;
+
+const NUMBER_SCORE: Score = Score::Real(1.0);
+const DECAYED_SCORE: Score = Score::Fake(0.9);
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -22,14 +25,58 @@ pub enum ShapeKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shaped {
-    pub word: String,
-    pub kind: ShapeKind,
+    word: String,
+    kind: ShapeKind,
 }
 
+impl Shaped {
+    pub fn new<S>(word: S, kind: ShapeKind) -> Self
+    where
+        S: Into<String>,
+    {
+        let word = word.into();
+        Shaped { word, kind }
+    }
+
+    pub fn number<S>(word: S, is_float: bool) -> Self
+    where
+        S: Into<String>,
+    {
+        Shaped::new(word, ShapeKind::Number { is_float })
+    }
+
+    pub fn roman_number<S>(word: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Shaped::new(word, ShapeKind::RomanNumber)
+    }
+
+    pub fn latin<S>(word: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Shaped::new(word, ShapeKind::Latin)
+    }
+
+    pub fn punctuation<S>(word: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Shaped::new(word, ShapeKind::Punctuation)
+    }
+
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
+    }
+}
 
 impl Source for Shaped {
     fn score(&self) -> Score {
-        Score::Fake(0.9)
+        match self.kind {
+            ShapeKind::Number {..} => NUMBER_SCORE,
+            _ => DECAYED_SCORE,
+        }
     }
 
     fn is_lemma(&self) -> bool {
@@ -49,18 +96,20 @@ impl Source for Shaped {
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
+        use self::ShapeKind::*;
+
         match self.kind {
-            ShapeKind::Latin => &morph.units.latin.tag,
-            ShapeKind::RomanNumber => &morph.units.roman.tag,
-            ShapeKind::Punctuation => &morph.units.punct.tag,
-            ShapeKind::Number { is_float } => match is_float {
+            Latin => &morph.units.latin.tag,
+            RomanNumber => &morph.units.roman.tag,
+            Punctuation => &morph.units.punct.tag,
+            Number { is_float } => match is_float {
                 true => &morph.units.number.tag_real,
                 false => &morph.units.number.tag_int,
             }
         }
     }
 
-    fn try_get_para_id(&self) -> Option<u16> {
+    fn try_get_para_id(&self) -> Option<ParadigmId> {
         None
     }
 
@@ -82,29 +131,17 @@ impl Source for Shaped {
 }
 
 
-impl Shaped {
-    pub fn new<W: Into<String>>(word: W, kind: ShapeKind) -> Self {
-        Shaped {
-            word: word.into(),
-            kind,
-        }
-    }
-
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
-    }
-}
-
-
 impl MorphySerde for Shaped {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
+        use self::ShapeKind::*;
+
         write!(
             f, "s:{},",
             match self.kind {
-                ShapeKind::Latin => "l",
-                ShapeKind::Number { is_float } => if is_float { "f" } else { "i" },
-                ShapeKind::Punctuation => "p",
-                ShapeKind::RomanNumber => "r",
+                Latin => "l",
+                Number { is_float } => if is_float { "f" } else { "i" },
+                Punctuation => "p",
+                RomanNumber => "r",
             },
         )?;
         for ch in escape(&self.word) {
@@ -114,6 +151,8 @@ impl MorphySerde for Shaped {
     }
 
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
+        use self::ShapeKind::*;
+
         let s = follow_str(s, "s").map_err(|_| DecodeError::UnknownPartType)?;
         let s = follow_str(s, ":")?;
         let (s, kind) = take_1_char(s)?;
@@ -121,12 +160,12 @@ impl MorphySerde for Shaped {
         let (s, word) = take_str_until_char_is(follow_str(s, ",")?, ';')?;
         Ok( (s, Shaped {
             kind: match kind {
-                'l' => ShapeKind::Latin,
-                'f' => ShapeKind::Number{ is_float: true },
-                'i' => ShapeKind::Number{ is_float: false },
-                'p' => ShapeKind::Punctuation,
-                'r' => ShapeKind::RomanNumber,
-                _ => unreachable!(),
+                'l' => Latin,
+                'f' => Number{ is_float: true },
+                'i' => Number{ is_float: false },
+                'p' => Punctuation,
+                'r' => RomanNumber,
+                _ => Err(DecodeError::UnknownPartType)?,
             },
             word: unescape(word).collect(),
         }) )

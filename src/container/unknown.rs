@@ -9,7 +9,7 @@ use ::container::abc::*;
 use ::opencorpora::tag::OpencorporaTagReg;
 
 use container::decode::*;
-
+use container::paradigm::ParadigmId;
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -18,9 +18,24 @@ pub struct Unknown {
 }
 
 
+impl Unknown {
+    pub fn new<W>(word_lower: W) -> Self
+    where
+        W: Into<String>
+    {
+        let word_lower = word_lower.into();
+        Unknown { word_lower }
+    }
+
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
+    }
+}
+
+
 impl Source for Unknown {
     fn score(&self) -> Score {
-        Score::Real(1.0)
+        Score::Fake(1.0)
     }
 
     fn is_lemma(&self) -> bool {
@@ -45,7 +60,7 @@ impl Source for Unknown {
         &morph.units.unknown.tag
     }
 
-    fn try_get_para_id(&self) -> Option<u16> {
+    fn try_get_para_id(&self) -> Option<ParadigmId> {
         None
     }
 
@@ -63,13 +78,6 @@ impl Source for Unknown {
 
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex {
         self.iter_lexeme(morph).next().unwrap()
-    }
-}
-
-
-impl Unknown {
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
     }
 }
 

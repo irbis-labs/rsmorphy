@@ -19,7 +19,7 @@ use container::{/*Parsed, */ParseResult, SeenSet};
 pub struct HyphenatedWordsAnalyzer {}
 
 
-impl Analyzer for HyphenatedWordsAnalyzer {
+impl AnalyzerUnit for HyphenatedWordsAnalyzer {
     fn parse(&self, _morph: &MorphAnalyzer, _result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
         trace!("HyphenatedWordsAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);

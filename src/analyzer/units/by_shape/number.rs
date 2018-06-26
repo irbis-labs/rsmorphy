@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
 use analyzer::MorphAnalyzer;
-use analyzer::units::abc::Analyzer;
+use analyzer::units::abc::AnalyzerUnit;
 use container::{Parsed, ParseResult, SeenSet};
-use container::{Lex, Score};
+use container::Lex;
+use container::abc::*;
 use container::Shaped;
-use container::ShapeKind;
 use container::stack::StackSource;
 use opencorpora::OpencorporaTagReg;
 
@@ -20,7 +20,6 @@ use opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone)]
 pub struct NumberAnalyzer {
-    pub score: f64,
     pub tag_int: OpencorporaTagReg,
     pub tag_real: OpencorporaTagReg,
 }
@@ -29,7 +28,6 @@ pub struct NumberAnalyzer {
 impl Default for NumberAnalyzer {
     fn default() -> Self {
         NumberAnalyzer {
-            score: 0.9,
             tag_int: OpencorporaTagReg::new("NUMB,intg"),
             tag_real: OpencorporaTagReg::new("NUMB,real"),
         }
@@ -37,24 +35,21 @@ impl Default for NumberAnalyzer {
 }
 
 
-impl Analyzer for NumberAnalyzer {
+impl AnalyzerUnit for NumberAnalyzer {
     fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
         trace!("NumberAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
-        // TODO "," => "."
-        let kind = if u64::from_str(word_lower).is_ok() {
-            ShapeKind::Number { is_float: false }
+        // TODO Improve number parser [#12]
+        let shaped = if i128::from_str(word_lower).is_ok() {
+            Shaped::number(word_lower, false)
         } else if f64::from_str(word_lower).is_ok() {
-            ShapeKind::Number { is_float: true }
+            Shaped::number(word_lower, true)
         } else {
             return;
         };
-
-        let container = Shaped::new(word_lower, kind);
-        result.push(Parsed {
-            lex: Lex::from_stack(morph, StackSource::from(container)),
-            score: Score::Fake(self.score),
-        });
+        let score = shaped.score();
+        let lex = Lex::from_stack(morph, StackSource::from(shaped));
+        result.push(Parsed::new(lex, score));
     }
 }

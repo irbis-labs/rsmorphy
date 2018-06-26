@@ -28,68 +28,73 @@ pub struct Units {
 #[derive(Debug, Clone)]
 pub struct MorphAnalyzer {
     pub dict: Dictionary,
-    pub prob_estimator: SingleTagProbabilityEstimator,
+    pub estimator: SingleTagProbabilityEstimator,
     pub units: Units,
 }
 
 
 impl MorphAnalyzer {
-    pub fn from_file<P>(p: P) -> Self where P: AsRef<Path> {
-
-        let dictionary = Dictionary::from_file(p);
-        // char_substitutes = dictionary.words.compile_replaces(char_substitutes or {})
-
-        MorphAnalyzer {
-            dict: dictionary,
-            prob_estimator: SingleTagProbabilityEstimator {},
-            units: Units::default()
-        }
+    /// Creates `MorphAnalyzer` with preloaded dict
+    pub fn new(dict: Dictionary) -> Self {
+        let estimator = SingleTagProbabilityEstimator {};
+        let units = Units::default();
+        MorphAnalyzer { dict, estimator, units }
     }
 
-    /// Analyze the word and return a list of :class:`pymorphy2.analyzer.Parse`
-    /// namedtuples:
-    ///
-    /// Parse(word, tag, normal_form, para_id, idx, _score)
-    ///
-    /// (or plain tuples if ``result_type=None`` was used in constructor).
-    ///
+    /// Loads `Dictionary` from disk and creates `MorphAnalyzer`
+    pub fn from_file<P>(p: P) -> Self where P: AsRef<Path> {
+        let dict = Dictionary::from_file(p);
+        // TODO consider move into dict?
+        // char_substitutes = dictionary.words.compile_replaces(char_substitutes or {})
+        MorphAnalyzer::new(dict)
+    }
+
+    /// Analyze the word and return a list of `Parsed`:
     pub fn parse(&self, word: &str) -> ParseResult {
         let word_lower = word.to_lowercase();
-        let mut result: ParseResult = ParseResult::new();
-        let mut seen: SeenSet = SeenSet::default();
 
-        'analyze: loop {
-            macro_rules! analyze (
-                ($t: ident, $is_terminal: expr) => {{
+        let look_over = || -> ParseResult {
+            let mut result = ParseResult::new();
+            let mut seen = SeenSet::default();
+
+            macro_rules! look_in (
+                ($t: ident) => {{
                     self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
-                    if $is_terminal && !result.is_empty() { break 'analyze };
+                }};
+                ($t: ident, return) => {{
+                    self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
+                    if !result.is_empty() { return result };
                 }}
             );
 
-            {
-                analyze!(dictionary, false);
-                analyze!(initials, true);
-            }
-            analyze!(number, true);
-            analyze!(punct, true);
-            {
-                analyze!(roman, false);
-                analyze!(latin, true);
-            }
-            analyze!(hsp, true);
-            analyze!(ha, true);
-            analyze!(hword, true);
-            analyze!(kp, true);
-            {
-                analyze!(up, false);
-                analyze!(ks, true);
-            }
-            analyze!(unknown, true);
+            look_in!(dictionary);
+            look_in!(initials, return);
+
+            look_in!(number, return);
+
+            look_in!(punct, return);
+
+            look_in!(roman);
+            look_in!(latin, return);
+
+            look_in!(hsp, return);
+
+            look_in!(ha, return);
+
+            look_in!(hword, return);
+
+            look_in!(kp, return);
+
+            look_in!(up);
+            look_in!(ks, return);
+
+            look_in!(unknown, return);
 
             unreachable!();
-        }
+        };
 
-        self.prob_estimator.apply_to_parses(self, word, &word_lower, &mut result);
+        let mut result = look_over();
+        self.estimator.apply_to_parses(self, word, &word_lower, &mut result);
         result
     }
 }

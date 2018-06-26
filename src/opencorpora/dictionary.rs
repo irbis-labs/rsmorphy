@@ -1,27 +1,23 @@
 use std::borrow::Cow;
-use std::collections::BTreeMap;
-use std::collections::hash_map::HashMap;
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
-//use std::io::Write;
 use std::iter::FromIterator;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use flate2::read::GzDecoder;
 use serde_json;
 use serde_json::Value;
 
-use ::dawg::CompletionDawg;
-use ::dawg::Dawg;
-pub use ::dawg::HH;
-pub use ::dawg::HHH;
-use ::opencorpora::tag::OpencorporaTagReg;
-use ::opencorpora::grammeme::Grammeme;
-use ::opencorpora::grammeme::GrammemeReg;
-use ::opencorpora::paradigm::ParadigmEntry;
-use ::util::u16_from_slice;
+use container::paradigm::{ParadigmId, ParadigmIndex};
+use dawg::{CompletionDawg, Dawg};
+pub use dawg::HH;
+pub use dawg::HHH;
+use opencorpora::tag::OpencorporaTagReg;
+use opencorpora::grammeme::{Grammeme, GrammemeReg};
+use opencorpora::paradigm::ParadigmEntry;
+use util::u16_from_slice;
 
 
 pub type WordsDawg = CompletionDawg<HH>;
@@ -56,11 +52,39 @@ pub struct Dictionary {
     pub char_substitutes: BTreeMap<String, String>,
 }
 
+struct JsonLoader {
+    dict_path: PathBuf,
+}
+
+impl JsonLoader {
+    fn new<P>(p: P) -> Self
+    where
+        P: AsRef<Path>,
+    {
+        let dict_path = p.as_ref().into();
+        JsonLoader { dict_path }
+    }
+
+    fn path<S>(&self, name: S) -> PathBuf
+    where
+        S: AsRef<Path>
+    {
+        self.dict_path.join(name)
+    }
+
+    fn load<S>(&self, name: S) -> Value
+    where
+        S: AsRef<Path>
+    {
+        load_json(&self.path(name))
+    }
+}
+
 
 impl Dictionary {
     pub fn from_file<P>(p: P) -> Self where P: AsRef<Path> {
-        let p = p.as_ref();
-        let meta = meta_from_json(load_json(&p.join("meta.json.gz")));
+        let loader = JsonLoader::new(p);
+        let meta = meta_from_json(loader.load("meta.json.gz"));
         let paradigm_prefixes: Vec<String> = {
             meta["compile_options"]
                 .as_object().unwrap().get("paradigm_prefixes").unwrap()
@@ -76,7 +100,7 @@ impl Dictionary {
         };
 
         // TODO join `grammemes` and `grammeme_metas` into one set
-        let grammemes = GrammemeReg::map_from_json(load_json(&p.join("grammemes.json.gz")));
+        let grammemes = GrammemeReg::map_from_json(loader.load("grammemes.json.gz"));
         let grammeme_metas = {
             let mut grammeme_metas: HashMap<Grammeme, GrammemeMeta> = Default::default();
             for (index, grammeme) in grammemes.keys().enumerate() {
@@ -110,22 +134,24 @@ impl Dictionary {
             grammeme_metas
         };
 
-
         Dictionary {
             meta,
             grammemes,
             grammeme_metas,
-            gramtab: OpencorporaTagReg::vec_from_json(load_json(
-                &p.join("gramtab-opencorpora-int.json.gz") // TODO opencorpora-ext
-            )),
-            suffixes: suffixes_from_json(load_json(&p.join("suffixes.json.gz"))),
-            paradigms: load_paradigms(&p.join("paradigms.array.gz")),
-            words: CompletionDawg::from_file(&p.join("words.dawg.gz")),
-            p_t_given_w: CompletionDawg::from_file(&p.join("p_t_given_w.intdawg.gz")),
-            prediction_prefixes: Dawg::from_file(&p.join("prediction-prefixes.dawg.gz")),
+            gramtab: OpencorporaTagReg::vec_from_json(
+                // TODO opencorpora-ext
+                loader.load("gramtab-opencorpora-int.json.gz")
+            ),
+            suffixes: suffixes_from_json(loader.load("suffixes.json.gz")),
+            paradigms: load_paradigms(loader.path("paradigms.array.gz")),
+            words: CompletionDawg::from_file(loader.path("words.dawg.gz")),
+            p_t_given_w: CompletionDawg::from_file(loader.path("p_t_given_w.intdawg.gz")),
+            prediction_prefixes: Dawg::from_file(loader.path("prediction-prefixes.dawg.gz")),
             prediction_suffixes_dawgs: Vec::from_iter(
                 (0..paradigm_prefixes.len()).into_iter().map(
-                    |i| CompletionDawg::from_file(&p.join(format!("prediction-suffixes-{}.dawg.gz", i)))
+                    |i| CompletionDawg::from_file(
+                        loader.path(format!("prediction-suffixes-{}.dawg.gz", i))
+                    )
                 )
             ),
             paradigm_prefixes: paradigm_prefixes.clone(),
@@ -134,27 +160,42 @@ impl Dictionary {
             prediction_splits: (1 .. 1 + max_suffix_length).rev().collect(),
             // TODO load char_substitutes
             char_substitutes: btreemap!{"е".into() => "ё".into()}
-            // "\u{0435}" => "\u{0451}"
-            // vec![0xd0, 0xb5] => vec![0xd1, 0x91]
         }
     }
 
+    pub fn get_paradigm<Id>(&self, id: Id) -> &[ParadigmEntry]
+    where
+        Id: Into<ParadigmId>,
+    {
+        let id = id.into();
+        &self.paradigms[id.value() as usize]
+    }
+
+    pub fn get_paradigm_entry<Id, Idx>(&self, id: Id, idx: Idx) -> ParadigmEntry
+    where
+        Id: Into<ParadigmId>,
+        Idx: Into<ParadigmIndex>,
+    {
+        let idx = idx.into();
+        self.get_paradigm(id)[idx.value() as usize]
+    }
+
     /// Return tag as a string
-    pub fn build_tag_info(&self, para_id: u16, idx: u16) -> &OpencorporaTagReg {
-        &self.gramtab[self.paradigms[para_id as usize][idx as usize].tag_id as usize]
+    pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &OpencorporaTagReg {
+        &self.gramtab[self.get_paradigm_entry(id, idx).tag_id as usize]
     }
 
     /// Return a list of
     ///     (prefix, tag, suffix)
     /// tuples representing the paradigm.
-    pub fn build_paradigm_info(&self, para_id: u16) -> Vec<(&str, &OpencorporaTagReg, &str)> {
-        Vec::from_iter(self.iter_paradigm_info(para_id))
+    pub fn build_paradigm_info(&self, id: ParadigmId) -> Vec<(&str, &OpencorporaTagReg, &str)> {
+        Vec::from_iter(self.iter_paradigm_info(id))
     }
 
-    pub fn iter_paradigm_info<'a: 'i, 'i>(&'a self, para_id: u16)
+    pub fn iter_paradigm_info<'a: 'i, 'i>(&'a self, id: ParadigmId)
         -> impl Iterator<Item = (&'a str, &'a OpencorporaTagReg, &'a str)> + 'i
     {
-        self.paradigms[para_id as usize].iter().map(
+        self.paradigms[id.value() as usize].iter().map(
             move |entry: &'a ParadigmEntry| { self.paradigm_entry_info(*entry) }
         )
     }
@@ -164,33 +205,36 @@ impl Dictionary {
     /// tuples representing the paradigm entry.
     pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &OpencorporaTagReg, &str) {
         (
-            self.paradigm_prefixes[entry.prefix_id as usize].as_str(),
+            &self.paradigm_prefixes[entry.prefix_id as usize],
             &self.gramtab[entry.tag_id as usize],
-            self.suffixes[entry.suffix_id as usize].as_str()
+            &self.suffixes[entry.suffix_id as usize],
         )
     }
 
     /// Return word stem (given a word, paradigm and the word index).
-    pub fn build_stem<'a>(&self, para_id: u16, idx: u16, fixed_word: &'a str) -> &'a str {
-        let (prefix, _, suffix) = self.paradigm_entry_info(self.paradigms[para_id as usize][idx as usize]);
+    pub fn get_stem<'a>(&self, id: ParadigmId, idx: ParadigmIndex, fixed_word: &'a str) -> &'a str {
+        let (prefix, _, suffix) = self.paradigm_entry_info(self.get_paradigm_entry(id, idx));
         &fixed_word[prefix.len() .. fixed_word.len() - suffix.len()]
     }
 
     /// Build a normal form.
-    pub fn build_normal_form<'a>(&self, para_id: u16, idx: u16, fixed_word: &'a str) -> Cow<'a, str> {
-        if idx == 0 { return Cow::Borrowed(fixed_word); }
-        let stem = self.build_stem(para_id, idx, fixed_word);
-        let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(self.paradigms[para_id as usize][0]);
-        Cow::Owned(format!("{}{}{}", normal_prefix, stem, normal_suffix))
+    pub fn build_normal_form<'a>(&self, id: ParadigmId, idx: ParadigmIndex, fixed_word: &'a str) -> Cow<'a, str> {
+        if idx.is_first() {
+            fixed_word.into()
+        } else {
+            let stem = self.get_stem(id, idx, fixed_word);
+            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(self.get_paradigm(id)[0]);
+            format!("{}{}{}", normal_prefix, stem, normal_suffix).into()
+        }
     }
 
     /// Write a normal form.
-    pub fn write_normal_form<'a, W: fmt::Write>(&self, f: &mut W, para_id: u16, idx: u16, fixed_word: &'a str) -> fmt::Result {
-        if idx == 0 {
+    pub fn write_normal_form<'a, W: fmt::Write>(&self, f: &mut W, id: ParadigmId, idx: ParadigmIndex, fixed_word: &'a str) -> fmt::Result {
+        if idx.is_first() {
             write!(f, "{}", fixed_word)
         } else {
-            let stem = self.build_stem(para_id, idx, fixed_word);
-            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(self.paradigms[para_id as usize][0]);
+            let stem = self.get_stem(id, idx, fixed_word);
+            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(self.get_paradigm(id)[0]);
             write!(f, "{}{}{}", normal_prefix, stem, normal_suffix)
         }
     }
@@ -229,7 +273,10 @@ fn suffixes_from_json(data: Value) -> Vec<String> {
 }
 
 
-fn load_paradigms(p: &Path) -> Vec<Vec<ParadigmEntry>> {
+fn load_paradigms<P>(p: P) -> Vec<Vec<ParadigmEntry>>
+where
+    P: AsRef<Path>,
+{
     let f = &mut GzDecoder::new(File::open(p).unwrap());
     let mut buf16 = [0u8; 2];
 

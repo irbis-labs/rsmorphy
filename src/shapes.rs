@@ -3,7 +3,7 @@ use roman;
 
 
 #[inline]
-pub fn is_alpha(&ch: &u8) -> bool {
+pub fn is_ascii_alpha(ch: u8) -> bool {
     let ch = ch | 0x20;
     ch >= b'a' && ch <= b'z'
 }
@@ -24,7 +24,7 @@ pub fn is_alpha(&ch: &u8) -> bool {
     ```
 */
 pub fn is_latin(token: &str) -> bool {
-    token.is_ascii() && token.as_bytes().iter().any(is_alpha)
+    token.is_ascii() && token.as_bytes().iter().cloned().any(is_ascii_alpha)
 }
 
 

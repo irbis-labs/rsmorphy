@@ -23,7 +23,10 @@ pub struct Dawg {
 
 
 impl Dawg {
-    pub fn from_file(p: &Path) -> Self {
+    pub fn from_file<P>(p: P) -> Self
+    where
+        P: AsRef<Path>,
+    {
         Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
@@ -50,6 +53,12 @@ impl Dawg {
         }
         result
     }
+
+    pub fn sorted_prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {
+        let mut result = self.prefixes(key);
+        result.sort_by_key(|v| -(v.len() as isize));
+        result
+    }
 }
 
 
@@ -62,7 +71,10 @@ pub struct CompletionDawg<V> where V: DawgValue {
 
 
 impl <V> CompletionDawg<V> where V: DawgValue {
-    pub fn from_file(p: &Path) -> Self {
+    pub fn from_file<P>(p: P) -> Self
+    where
+        P: AsRef<Path>,
+    {
         Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
@@ -75,11 +87,11 @@ impl <V> CompletionDawg<V> where V: DawgValue {
         }
     }
 
-    /// Returns a list of (key, value) tuples for all variants of ``key``
-    /// in this DAWG according to ``replaces``.
+    /// Returns a list of (key, value) tuples for all variants of `key`
+    /// in this DAWG according to `replaces`.
     ///
-    /// ``replaces`` is an object obtained from
-    /// ``DAWG.compile_replaces(mapping)`` where mapping is a dict
+    /// `replaces` is an object obtained from
+    /// `DAWG.compile_replaces(mapping)` where mapping is a dict
     /// that maps single-char unicode sitrings to another single-char
     /// unicode strings.
     pub fn similar_items(&self, key: &str, replaces: &BTreeMap<String, String>)
@@ -90,12 +102,13 @@ impl <V> CompletionDawg<V> where V: DawgValue {
         result
     }
 
-    fn similar_items_(&self,
-                      result: &mut Vec<(String, Vec<V>)>,
-                      current_prefix: &str,
-                      key: &str,
-                      index: u32,
-                      replace_chars: &BTreeMap<String, String>
+    fn similar_items_(
+        &self,
+        result: &mut Vec<(String, Vec<V>)>,
+        current_prefix: &str,
+        key: &str,
+        mut index: u32,
+        replace_chars: &BTreeMap<String, String>
     ) {
         trace!(r#"DAWG::similar_items_()"#);
         trace!(r#" index: {}"#, index);
@@ -104,7 +117,6 @@ impl <V> CompletionDawg<V> where V: DawgValue {
         let subkey = &key[start_pos .. ];
 
         let mut word_pos = start_pos;
-        let mut index = index;
 
         for b_step in subkey.split("").filter(|v| !v.is_empty()) {
             trace!(r#" b_step: {}"#, b_step);

@@ -1,14 +1,30 @@
+use std::sync::Arc;
+
 #[derive(Debug, Clone, PartialEq)]
-pub struct Word {
-    pub is_known: bool,
-    pub word: String,
+pub struct WordStruct {
+    is_known: bool,
+    word: Arc<String>,
 }
 
-impl Word {
+impl WordStruct {
     pub fn new<W: Into<String>>(word: W, is_known: bool) -> Self {
-        Word {
-            word: word.into(),
-            is_known,
-        }
+        let word = Arc::new(word.into());
+        WordStruct { word, is_known }
+    }
+
+    pub fn known<W: Into<String>>(word: W) -> Self {
+        WordStruct::new(word, true)
+    }
+
+    pub fn unknown<W: Into<String>>(word: W) -> Self {
+        WordStruct::new(word, false)
+    }
+
+    pub fn is_known(&self) -> bool {
+        self.is_known
+    }
+
+    pub fn word(&self) -> &str {
+        &self.word
     }
 }

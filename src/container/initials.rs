@@ -1,14 +1,13 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use ::analyzer::MorphAnalyzer;
-use ::container::Lex;
-use ::container::Score;
-use ::container::stack::StackSource;
-use ::container::abc::*;
-use ::opencorpora::tag::OpencorporaTagReg;
-
+use analyzer::MorphAnalyzer;
+use container::{Lex, Score};
+use container::abc::*;
 use container::decode::*;
+use container::paradigm::ParadigmId;
+use container::stack::StackSource;
+use opencorpora::tag::OpencorporaTagReg;
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -20,11 +19,26 @@ pub enum InitialsKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Initials {
-    pub letter: String,
+    pub letter: Cow<'static, str>,
     pub kind: InitialsKind,
     pub tag_idx: u8,
 }
 
+impl Initials {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+        let base: u8 = match self.kind {
+            InitialsKind::FirstName => 0,
+            InitialsKind::Patronym => 12,
+        };
+        (0 .. morph.units.initials.tags.len() / 2).map(move |tag_idx| {
+            let container = Initials {
+                tag_idx: base + tag_idx as u8,
+                .. self.clone()
+            };
+            Lex::from_stack(morph, StackSource::from(container))
+        })
+    }
+}
 
 impl Source for Initials {
     fn score(&self) -> Score {
@@ -40,18 +54,18 @@ impl Source for Initials {
     }
 
     fn get_word(&self) -> Cow<str> {
-        Cow::from(self.letter.as_str())
+        self.letter.clone()
     }
 
     fn get_normal_form(&self, _morph: &MorphAnalyzer) -> Cow<str> {
-        Cow::from(self.letter.as_str())
+        self.letter.clone()
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
-        &morph.units.initials.tags[self.tag_idx as usize]
+        &morph.units.initials.tags[self.tag_idx as usize].0
     }
 
-    fn try_get_para_id(&self) -> Option<u16> {
+    fn try_get_para_id(&self) -> Option<ParadigmId> {
         None
     }
 
@@ -71,23 +85,6 @@ impl Source for Initials {
         self.iter_lexeme(morph).next().unwrap()
     }
 }
-
-impl Initials {
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        let base: u8 = match self.kind {
-            InitialsKind::FirstName => 0,
-            InitialsKind::Patronym => 12,
-        };
-        (0 .. morph.units.initials.tags.len() / 2).map(move |tag_idx| {
-            let container = Initials {
-                tag_idx: base + tag_idx as u8,
-                .. self.clone()
-            };
-            Lex::from_stack(morph, StackSource::from(container))
-        })
-    }
-}
-
 
 impl MorphySerde for Initials {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
@@ -114,33 +111,33 @@ impl MorphySerde for Initials {
         let (s, gender) = take_1_char(s)?;
         let (s, case) = take_1_char(s)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ",")?, ';')?;
-        Ok( (s, Initials {
-            kind: match kind {
-                'n' => InitialsKind::FirstName,
-                'p' => InitialsKind::Patronym,
-                _ => unreachable!(),
-            },
-            tag_idx: decode_tag_idx(kind, gender, case),
-            letter: word.to_string(),
-        }) )
+        let letter = Cow::from(word.to_string());
+        let tag_idx = decode_tag_idx(kind, gender, case)?;
+        let kind = match kind {
+            'n' => InitialsKind::FirstName,
+            'p' => InitialsKind::Patronym,
+            // FIXME is it proper error?
+            _ => Err(DecodeError::UnknownPartType)?,
+        };
+        Ok( (s, Initials { kind, tag_idx, letter }) )
     }
 }
 
 
-fn decode_tag_idx(kind: char, gender: char, case: char) -> u8 {
+fn decode_tag_idx(kind: char, gender: char, case: char) -> Result<u8, DecodeError> {
     let kind = match kind {
         'n' => 0,
-        'p' => 12,
-        _ => unreachable!(),
+        'p' => 1,
+        _ => Err(DecodeError::UnknownPartType)?,
     };
     let gender = match gender {
         'm' => 0,
-        'f' => 6,
-        _ => unreachable!(),
+        'f' => 1,
+        _ => Err(DecodeError::UnknownPartType)?,
     };
     let case = match case {
-        '0' | '1' | '2' | '3' | '4' | '5' => case as u8 - b'0',
-        _ => unreachable!(),
+        '0' ..= '5' => case as u8 - b'0',
+        _ => Err(DecodeError::UnknownPartType)?,
     };
-    kind + gender + case
+    Ok(kind * 12 + gender * 6 + case)
 }

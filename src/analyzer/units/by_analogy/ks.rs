@@ -1,15 +1,10 @@
 use std::borrow::Cow;
 
 use analyzer::MorphAnalyzer;
-use analyzer::units::abc::Analyzer;
-use container::{Dictionary, Word};
-use container::{Parsed, ParseResult, SeenSet, Seen};
-use container::{Lex, Score};
+use analyzer::units::abc::AnalyzerUnit;
+use container::{Affix, Dictionary, Lex, Parsed, ParseResult, Score, SeenSet, Seen, WordStruct};
 use container::stack::StackAffix;
-use container::Affix;
-use container::AffixKind;
-use opencorpora::dictionary::PredictionSuffixesDawg;
-use opencorpora::dictionary::HHH;
+use opencorpora::dictionary::{HHH, PredictionSuffixesDawg};
 
 
 /// Parse the word by checking how the words with similar suffixes
@@ -34,7 +29,7 @@ impl Default for KnownSuffixAnalyzer {
 }
 
 
-impl Analyzer for KnownSuffixAnalyzer {
+impl AnalyzerUnit for KnownSuffixAnalyzer {
     fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, seen_parses: &mut SeenSet) {
         trace!("KnownSuffixAnalyzer::parse()");
         trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
@@ -47,15 +42,14 @@ impl Analyzer for KnownSuffixAnalyzer {
 
         let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
 
-        // TODO BTreeMap
-        let mut total_counts: Vec<u16> = Vec::with_capacity(morph.dict.paradigm_prefixes.len());
-        total_counts.resize(morph.dict.paradigm_prefixes.len(), 1);
+        // TODO BTreeMap?
+        let mut total_counts: Vec<u16> = vec![1; morph.dict.paradigm_prefixes.len()];
 
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
             trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
             'iter_splits: for &i in &morph.dict.prediction_splits {
-                if i > char_len - 1 {
+                if i >= char_len {
                     continue
                 }
 
@@ -76,7 +70,7 @@ impl Analyzer for KnownSuffixAnalyzer {
                     };
 
                     'iter_parses: for HHH(cnt, para_id, idx) in parses {
-                        let tag = morph.dict.build_tag_info(para_id, idx);
+                        let tag = morph.dict.get_tag(para_id.into(), idx.into());
 
                         if !tag.is_productive() {
                             continue 'iter_parses
@@ -84,24 +78,16 @@ impl Analyzer for KnownSuffixAnalyzer {
 
                         total_counts[prefix_id as usize] += cnt;
 
-                        let seen = Seen {
-                            word: fixed_word.clone(),
-                            tag,
-                            para_id: Some(para_id)
-                        };
+                        let seen = Seen::new(fixed_word.clone(), tag, para_id);
 
                         if !seen_parses.insert(&seen) {
                             continue 'iter_parses;
                         }
 
-                        let word_lower = Word::new(seen.word, false);
-                        let container = StackAffix {
-                            stack: Dictionary { word_lower, para_id, idx }.into(),
-                            affix: Some(Affix {
-                                part: fixed_suffix.to_string(),
-                                kind: AffixKind::KnownSuffix,
-                            })
-                        };
+                        let word_lower = WordStruct::new(seen.word, false);
+                        let source = Dictionary::new(word_lower, para_id, idx);
+                        let affix = Affix::known_suffix(fixed_suffix.clone());
+                        let container = StackAffix::new(source, affix);
 
                         subresult.push((cnt, prefix_id, Lex::from_stack(morph, container)));
                     }
@@ -120,12 +106,8 @@ impl Analyzer for KnownSuffixAnalyzer {
             })
             .collect();
 
-        // sort_by(|a, b| a.partial_cmp(b).unwrap())
-        // |b, a| ==> .rev()
-        subresult.sort_by(|z, a| a.score.value().partial_cmp(&z.score.value()).unwrap());
-        for parsed in subresult {
-            result.push(parsed);
-        }
+        subresult.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap().reverse());
+        result.extend(subresult.into_iter());
     }
 }
 
@@ -134,7 +116,7 @@ impl KnownSuffixAnalyzer {
         -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i
     {
         morph.dict.paradigm_prefixes_rev.iter()
-            .filter(move |&&(_prefix_idx, ref prefix)| word.starts_with(prefix.as_str()))
+            .filter(move |&&(_, ref prefix)| word.starts_with(prefix.as_str()))
             .map(move |&(prefix_idx, ref prefix)| (
                 prefix_idx,
                 prefix.as_str(),

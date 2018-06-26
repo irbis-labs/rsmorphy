@@ -1,13 +1,14 @@
 use analyzer::MorphAnalyzer;
 use analyzer::units::abc::*;
-use container::{Parsed, ParseResult, SeenSet};
-use container::{Lex, Score};
+use container::{HyphenAdverb, Lex, Parsed, ParseResult, Score, SeenSet, WordStruct};
 use container::abc::*;
 use container::stack::StackSource;
-use container::HyphenAdverb;
 use opencorpora::kind::{Case, Number, PartOfSpeach};
 use opencorpora::OpencorporaTagReg;
 
+
+const HA_PREFIX: &str = "по-";
+const HA_SCORE: Score = Score::Fake(0.7);
 
 /// Detect adverbs that starts with "по-".
 ///
@@ -27,39 +28,27 @@ impl Default for HyphenAdverbAnalyzer {
     }
 }
 
-
-
-impl HyphenAdverbAnalyzer {
-    pub fn should_parse(morph: &MorphAnalyzer, word: &str) -> bool {
-        if word.chars().count() < 5 || !word.starts_with("по-") {
-            return false;
-        }
-        morph.parse(&word["по-".len() ..]).into_iter().any(|parsed: Parsed| {
-            let tag = parsed.lex.get_tag(morph);
-            match (tag.pos, tag.number, tag.case) {
-                (Some(PartOfSpeach::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
-                _ => false
-            }
-        })
-    }
-}
-
-
-impl Analyzer for HyphenAdverbAnalyzer {
+impl AnalyzerUnit for HyphenAdverbAnalyzer {
     fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
         trace!("HyphenAdverbAnalyzer::parse()");
         trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
-        if !Self::should_parse(morph, word_lower) {
+        if word.chars().count() < 5 || !word.starts_with(HA_PREFIX) {
             return;
         }
 
-        let container = StackSource::HyphenAdverb(HyphenAdverb {
-            word_lower: word_lower.to_string(),
-        });
-        result.push(Parsed {
-            lex: Lex::from_stack(morph, container),
-            score: Score::Fake(0.7),
-        });
+        morph.parse(&word[HA_PREFIX.len() ..]).into_iter()
+            .filter(|parsed| {
+                let tag = parsed.lex.get_tag(morph);
+                match (tag.pos, tag.number, tag.case) {
+                    (Some(PartOfSpeach::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
+                    _ => false
+                }
+            })
+            .for_each(|parsed: Parsed| {
+                let word = WordStruct::new(word_lower, parsed.lex.is_known());
+                let lex = Lex::from_stack(morph, StackSource::new(HyphenAdverb::new(word)));
+                result.push(Parsed::new(lex, HA_SCORE));
+            });
     }
 }

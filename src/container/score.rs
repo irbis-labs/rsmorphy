@@ -1,11 +1,13 @@
+use std::cmp::Ordering;
 use std::ops::Mul;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Score {
+    /// Evaluated from the dictionary or other source.
     Real(f64),
+    /// Evaluated out of thin air.
     Fake(f64),
 }
-
 
 impl Score {
     pub fn value(&self) -> f64 {
@@ -21,6 +23,11 @@ impl Score {
     }
 }
 
+impl PartialOrd for Score {
+    fn partial_cmp(&self, other: &Score) -> Option<Ordering> {
+        self.value().partial_cmp(&other.value())
+    }
+}
 
 impl Mul for Score {
     type Output = Self;
@@ -31,7 +38,6 @@ impl Mul for Score {
         }
     }
 }
-
 
 impl Mul<f64> for Score {
     type Output = Self;

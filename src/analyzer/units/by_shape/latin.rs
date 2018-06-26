@@ -1,9 +1,9 @@
 use analyzer::MorphAnalyzer;
-use analyzer::units::abc::Analyzer;
+use analyzer::units::abc::AnalyzerUnit;
 use container::{Parsed, ParseResult, SeenSet};
-use container::{Lex, Score};
+use container::Lex;
+use container::abc::*;
 use container::Shaped;
-use container::ShapeKind;
 use container::stack::StackSource;
 use opencorpora::OpencorporaTagReg;
 use shapes::is_latin;
@@ -15,37 +15,27 @@ use shapes::is_latin;
 
 #[derive(Debug, Clone)]
 pub struct LatinAnalyzer {
-    pub score: f64,
     pub tag: OpencorporaTagReg,
 }
-
 
 impl Default for LatinAnalyzer {
     fn default() -> Self {
         LatinAnalyzer {
-            score: 0.9,
             tag: OpencorporaTagReg::new("LATN")
         }
     }
 }
 
-
-impl Analyzer for LatinAnalyzer {
+impl AnalyzerUnit for LatinAnalyzer {
     fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
         trace!("LatinAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
-
         if !is_latin(word_lower) {
             return;
         }
-
-        let container = Shaped {
-            word: word_lower.to_string(),
-            kind: ShapeKind::Latin,
-        };
-        result.push(Parsed {
-            lex: Lex::from_stack(morph, StackSource::from(container)),
-            score: Score::Fake(self.score),
-        });
+        let shaped = Shaped::latin(word_lower);
+        let score = shaped.score();
+        let lex = Lex::from_stack(morph, StackSource::from(shaped));
+        result.push(Parsed::new(lex, score));
     }
 }

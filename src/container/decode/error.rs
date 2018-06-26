@@ -4,10 +4,15 @@ use std::num::ParseFloatError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DecodeError {
+    /// A decoder expects more
     UnexpectedEnd,
+    /// An unexpected type code reached
     UnknownPartType,
+    /// An input doesnt match the current pattern
     DoesntMatch,
+    /// The number decoder failed to parse an integer
     ParseIntError(ParseIntError),
+    /// The number decoder failed to parse a float
     ParseFloatError(ParseFloatError)
 }
 

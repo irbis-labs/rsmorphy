@@ -5,14 +5,16 @@ use ::container::{Lex, Score};
 use ::container::stack::StackSource;
 use ::opencorpora::OpencorporaTagReg;
 
-use super::abc::Analyzer;
+use super::abc::AnalyzerUnit;
+
+
+const SCORE: Score = Score::Fake(1.0);
 
 
 #[derive(Debug, Clone)]
 pub struct UnknownAnalyzer {
     pub tag: OpencorporaTagReg,
 }
-
 
 impl Default for UnknownAnalyzer {
     fn default() -> Self {
@@ -22,21 +24,14 @@ impl Default for UnknownAnalyzer {
     }
 }
 
-
-impl Analyzer for UnknownAnalyzer {
+impl AnalyzerUnit for UnknownAnalyzer {
     fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, seen_parses: &mut SeenSet) {
         trace!("UnknownAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         if seen_parses.is_empty() {
-            let container = StackSource::from(Unknown {
-                word_lower: word_lower.to_owned(),
-            });
-            result.push(Parsed {
-                score: Score::Real(1.0),
-                lex: Lex::from_stack(morph, container),
-            });
+            let lex = Lex::from_stack(morph, StackSource::from(Unknown::new(word_lower)));
+            result.push(Parsed::new(lex, SCORE));
         }
     }
 }
-
