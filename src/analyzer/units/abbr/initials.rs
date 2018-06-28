@@ -12,6 +12,7 @@ use opencorpora::OpencorporaTagReg;
 
 
 lazy_static! {
+    #[derive(Debug)]
     pub static ref LETTERS: BTreeSet<&'static str> = {
         let set = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ".split("").filter(|v| !v.is_empty());
         BTreeSet::from_iter(set)
