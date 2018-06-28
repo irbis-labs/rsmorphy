@@ -36,14 +36,14 @@ cache:
 
 env:
   global:
-  - CLIPPY_VERS=0.0.199
+  - CLIPPY_VERS=0.0.210
   - DEADLINKS_VERS=0.3.0
   - RUSTFLAGS="-C link-dead-code"
-  - RUSTFMT_VERS=0.9.0
   - RUST_LOG=off
-  - TARPAULIN_VERS=0.5.6
+  - TARPAULIN_VERS=0.6.2
 
 install:
+- rustup component add rustfmt-preview
 - |
   if [[ "$FEATURE" == "clippy" ]]; then
     cargo clippy --version | grep $CLIPPY_VERS || cargo install clippy --force --vers $CLIPPY_VERS
@@ -54,11 +54,12 @@ install:
   fi
 - |
   if [[ "$FEATURE" == "fmt" ]]; then
-    rustfmt -V | grep $RUSTFMT_VERS || cargo install rustfmt --vers $RUSTFMT_VERS --force
+    # rustfmt fails if can't find generated files.
+    touch src/release.rs
   fi
 - |
   if [[ "$FEATURE" == "cov" ]]; then
-    cargo tarpaulin -V | grep $TARPAULIN_VERS || cargo install cargo-tarpaulin --vers $TARPAULIN_VERS --force
+    cargo tarpaulin -V | grep $TARPAULIN_VERS || RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin --vers $TARPAULIN_VERS --force
   fi
 - cargo install --list
 - cd $TRAVIS_BUILD_DIR
@@ -69,26 +70,7 @@ script: skip
 jobs:
   include:
   - stage: test
-    env:
-    - FEATURE=non-fatal-checks
-    script:
-    - cargo doc --no-deps && cargo deadlinks --dir target/doc || true
-
-#  - stage: test
-#    env:
-#    - FEATURE=fmt
-#    script:
-#    - cargo fmt -- --write-mode=diff
-
-  - stage: test
-    rust: nightly-2018-05-13
-    env:
-    - FEATURE=clippy
-    script:
-    - cargo clippy -- -D warnings
-
-  - stage: test
-    rust: 1.26.0
+    rust: 1.27.0
     script:
     - cargo test --verbose --all
 
@@ -103,7 +85,7 @@ jobs:
     - cargo test --verbose --all
 
   - stage: test
-    rust: nightly-2018-05-13
+    rust: nightly-2018-06-27
     script:
     - cargo test --verbose --all
 
@@ -112,13 +94,31 @@ jobs:
     script:
     - cargo test --verbose --all
 
-#  - stage: cov
-##    rust: stable
-#    rust: beta
-#    env:
-#    - FEATURE=cov
-#    script:
-#    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+  - stage: quality
+    env:
+    - FEATURE=non-fatal-checks
+    script:
+    - cargo doc --no-deps && cargo deadlinks --dir target/doc || true
+
+  - stage: quality
+    env:
+    - FEATURE=fmt
+    script:
+    - cargo fmt -- --write-mode=diff
+
+  - stage: quality
+    rust: nightly-2018-06-25
+    env:
+    - FEATURE=clippy
+    script:
+    - cargo clippy -- -D warnings
+
+  - stage: quality
+    rust: stable
+    env:
+    - FEATURE=cov
+    script:
+    - travis_wait 30 cargo tarpaulin -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
 notifications:
   webhooks:
