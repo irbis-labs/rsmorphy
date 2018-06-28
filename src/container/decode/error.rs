@@ -1,6 +1,5 @@
-use std::num::ParseIntError;
 use std::num::ParseFloatError;
-
+use std::num::ParseIntError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DecodeError {
@@ -13,9 +12,8 @@ pub enum DecodeError {
     /// The number decoder failed to parse an integer
     ParseIntError(ParseIntError),
     /// The number decoder failed to parse a float
-    ParseFloatError(ParseFloatError)
+    ParseFloatError(ParseFloatError),
 }
-
 
 impl From<ParseIntError> for DecodeError {
     fn from(e: ParseIntError) -> Self {

@@ -1,3 +1,3 @@
+pub mod ha;
 pub mod hsp;
 pub mod hword;
-pub mod ha;

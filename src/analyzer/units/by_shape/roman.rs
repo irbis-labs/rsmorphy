@@ -1,13 +1,12 @@
-use analyzer::MorphAnalyzer;
 use analyzer::units::abc::AnalyzerUnit;
-use container::{Parsed, ParseResult, SeenSet};
-use container::Lex;
+use analyzer::MorphAnalyzer;
 use container::abc::*;
-use container::Shaped;
 use container::stack::StackSource;
+use container::Lex;
+use container::Shaped;
+use container::{ParseResult, Parsed, SeenSet};
 use opencorpora::OpencorporaTagReg;
 use shapes::is_roman_number;
-
 
 #[derive(Debug, Clone)]
 pub struct RomanAnalyzer {
@@ -17,13 +16,20 @@ pub struct RomanAnalyzer {
 impl Default for RomanAnalyzer {
     fn default() -> Self {
         RomanAnalyzer {
-            tag: OpencorporaTagReg::new("ROMN")
+            tag: OpencorporaTagReg::new("ROMN"),
         }
     }
 }
 
 impl AnalyzerUnit for RomanAnalyzer {
-    fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
+    fn parse(
+        &self,
+        morph: &MorphAnalyzer,
+        result: &mut ParseResult,
+        word: &str,
+        word_lower: &str,
+        _seen_parses: &mut SeenSet,
+    ) {
         trace!("RomanAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         if !is_roman_number(word_lower) {

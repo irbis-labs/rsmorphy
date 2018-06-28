@@ -1,14 +1,13 @@
 use std::str::FromStr;
 
-use analyzer::MorphAnalyzer;
 use analyzer::units::abc::AnalyzerUnit;
-use container::{Parsed, ParseResult, SeenSet};
-use container::Lex;
+use analyzer::MorphAnalyzer;
 use container::abc::*;
-use container::Shaped;
 use container::stack::StackSource;
+use container::Lex;
+use container::Shaped;
+use container::{ParseResult, Parsed, SeenSet};
 use opencorpora::OpencorporaTagReg;
-
 
 /// This analyzer marks integer numbers with "NUMB,int" or "NUMB,real" tags.
 ///
@@ -24,7 +23,6 @@ pub struct NumberAnalyzer {
     pub tag_real: OpencorporaTagReg,
 }
 
-
 impl Default for NumberAnalyzer {
     fn default() -> Self {
         NumberAnalyzer {
@@ -34,9 +32,15 @@ impl Default for NumberAnalyzer {
     }
 }
 
-
 impl AnalyzerUnit for NumberAnalyzer {
-    fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, _seen_parses: &mut SeenSet) {
+    fn parse(
+        &self,
+        morph: &MorphAnalyzer,
+        result: &mut ParseResult,
+        word: &str,
+        word_lower: &str,
+        _seen_parses: &mut SeenSet,
+    ) {
         trace!("NumberAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 

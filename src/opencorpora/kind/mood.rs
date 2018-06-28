@@ -6,22 +6,26 @@ pub enum Mood {
     Impr,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          indc
         |impr
     )
-");
-
+"
+);
 
 impl Mood {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "indc"  => Some(Mood::Indc),
-                "impr"  => Some(Mood::Impr),
-                _       => None,
+                "indc" => Some(Mood::Indc),
+                "impr" => Some(Mood::Impr),
+                _ => None,
             },
             None => None,
         }

@@ -2,17 +2,15 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::{Lex, Score};
 use container::abc::*;
 use container::decode::*;
 use container::paradigm::ParadigmId;
 use container::stack::StackSource;
+use container::{Lex, Score};
 use opencorpora::OpencorporaTagReg;
-
 
 const NUMBER_SCORE: Score = Score::Real(1.0);
 const DECAYED_SCORE: Score = Score::Fake(0.9);
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ShapeKind {
@@ -21,7 +19,6 @@ pub enum ShapeKind {
     Latin,
     Punctuation,
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shaped {
@@ -66,15 +63,18 @@ impl Shaped {
         Shaped::new(word, ShapeKind::Punctuation)
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
+        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())))
     }
 }
 
 impl Source for Shaped {
     fn score(&self) -> Score {
         match self.kind {
-            ShapeKind::Number {..} => NUMBER_SCORE,
+            ShapeKind::Number { .. } => NUMBER_SCORE,
             _ => DECAYED_SCORE,
         }
     }
@@ -105,7 +105,7 @@ impl Source for Shaped {
             Number { is_float } => match is_float {
                 true => &morph.units.number.tag_real,
                 false => &morph.units.number.tag_int,
-            }
+            },
         }
     }
 
@@ -130,16 +130,20 @@ impl Source for Shaped {
     }
 }
 
-
 impl MorphySerde for Shaped {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         use self::ShapeKind::*;
 
         write!(
-            f, "s:{},",
+            f,
+            "s:{},",
             match self.kind {
                 Latin => "l",
-                Number { is_float } => if is_float { "f" } else { "i" },
+                Number { is_float } => if is_float {
+                    "f"
+                } else {
+                    "i"
+                },
                 Punctuation => "p",
                 RomanNumber => "r",
             },
@@ -158,16 +162,19 @@ impl MorphySerde for Shaped {
         let (s, kind) = take_1_char(s)?;
         // FIXME skip escaped ";"
         let (s, word) = take_str_until_char_is(follow_str(s, ",")?, ';')?;
-        Ok( (s, Shaped {
-            kind: match kind {
-                'l' => Latin,
-                'f' => Number{ is_float: true },
-                'i' => Number{ is_float: false },
-                'p' => Punctuation,
-                'r' => RomanNumber,
-                _ => Err(DecodeError::UnknownPartType)?,
+        Ok((
+            s,
+            Shaped {
+                kind: match kind {
+                    'l' => Latin,
+                    'f' => Number { is_float: true },
+                    'i' => Number { is_float: false },
+                    'p' => Punctuation,
+                    'r' => RomanNumber,
+                    _ => Err(DecodeError::UnknownPartType)?,
+                },
+                word: unescape(word).collect(),
             },
-            word: unescape(word).collect(),
-        }) )
+        ))
     }
 }

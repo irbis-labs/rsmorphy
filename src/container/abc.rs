@@ -2,13 +2,12 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
+use container::paradigm::ParadigmId;
 use container::Lex;
 use container::Score;
-use container::paradigm::ParadigmId;
 use opencorpora::tag::OpencorporaTagReg;
 
 pub use container::decode::error::DecodeError;
-
 
 pub trait Source {
     // TODO move out `score` from a word container
@@ -24,7 +23,6 @@ pub trait Source {
     fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex>;
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex;
 }
-
 
 pub trait MorphySerde: Sized {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result;

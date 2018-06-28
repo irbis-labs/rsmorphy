@@ -8,24 +8,28 @@ pub enum Tense {
     Futr,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          pres
         |past
         |futr
     )
-");
-
+"
+);
 
 impl Tense {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "pres"  => Some(Tense::Pres),
-                "past"  => Some(Tense::Past),
-                "futr"  => Some(Tense::Futr),
-                _       => None,
+                "pres" => Some(Tense::Pres),
+                "past" => Some(Tense::Past),
+                "futr" => Some(Tense::Futr),
+                _ => None,
             },
             None => None,
         }

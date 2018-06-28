@@ -62,7 +62,6 @@ impl From<usize> for ParadigmId {
     }
 }
 
-
 impl ParadigmIndex {
     pub fn new<I>(index: I) -> Self
     where

@@ -4,10 +4,9 @@ use std::path::Path;
 
 use flate2::read::GzDecoder;
 
-use ::util::{u32_from_slice};
+use util::u32_from_slice;
 
 use super::units;
-
 
 /// Dictionary class for retrieval and binary I/O.
 #[derive(Debug, Clone)]
@@ -17,7 +16,6 @@ pub struct Dictionary {
     pub units: Vec<u32>,
 }
 
-
 impl Dictionary {
     /// Reads a dictionary from a file.
     pub fn from_file(p: &Path) -> Self {
@@ -25,8 +23,10 @@ impl Dictionary {
     }
 
     /// Reads a dictionary from an input stream.
-    pub fn from_stream<T>(reader: &mut T) -> Self where T: Read {
-
+    pub fn from_stream<T>(reader: &mut T) -> Self
+    where
+        T: Read,
+    {
         let mut buf = [0u8; 4];
         reader.read_exact(&mut buf).unwrap();
 
@@ -40,9 +40,7 @@ impl Dictionary {
         assert_eq!(buf_size, buf.capacity());
 
         let mut units: Vec<u32> = Vec::with_capacity(base_size);
-        units.extend(buf.chunks(4).map(|ch| {
-            u32::from_le(u32_from_slice(ch))
-        }));
+        units.extend(buf.chunks(4).map(|ch| u32::from_le(u32_from_slice(ch))));
         assert_eq!(base_size, units.len());
         assert_eq!(base_size, units.capacity());
 
@@ -68,7 +66,7 @@ impl Dictionary {
         let index = self.follow_bytes(key, self.root);
         match index {
             Some(index) => self.has_value(index),
-            None => false
+            None => false,
         }
     }
 
@@ -80,7 +78,7 @@ impl Dictionary {
                 true => Some(self.value(index)),
                 false => None,
             },
-            None => None
+            None => None,
         }
     }
 
@@ -93,9 +91,12 @@ impl Dictionary {
         let offset = units::offset(ttt);
         trace!(r#" offset: {} "#, offset);
         let next_index = (index ^ offset ^ u32::from(label)) & units::PRECISION_MASK;
-        trace!(r#" units::label(): {} "#, units::label(self.units[next_index as usize], None));
+        trace!(
+            r#" units::label(): {} "#,
+            units::label(self.units[next_index as usize], None)
+        );
         if units::label(self.units[next_index as usize], None) == u32::from(label) {
-            return Some(next_index)
+            return Some(next_index);
         }
         None
     }

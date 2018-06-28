@@ -4,7 +4,6 @@ use serde_json::Value;
 
 use opencorpora::Grammeme;
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GrammemeReg {
     pub name: Grammeme,
@@ -19,9 +18,13 @@ impl GrammemeReg {
             Value::Array(array) => {
                 let get_str = move |i: usize| {
                     let v: &Value = &array[i];
-                    if v.is_null() { return None }
+                    if v.is_null() {
+                        return None;
+                    }
                     let v: &str = v.as_str().unwrap();
-                    if v.is_empty() { return None }
+                    if v.is_empty() {
+                        return None;
+                    }
                     Some(v.into())
                 };
                 GrammemeReg {
@@ -30,14 +33,15 @@ impl GrammemeReg {
                     alias: get_str(2).expect("Expected string"),
                     description: get_str(3).expect("Expected string"),
                 }
-            },
+            }
             wrong_value => panic!("Expected array, found: {:?}", wrong_value),
         }
     }
 
     pub fn map_from_json(data: Value) -> HashMap<Grammeme, Self> {
         match data {
-            Value::Array(array) => array.into_iter()
+            Value::Array(array) => array
+                .into_iter()
                 .map(|v| {
                     let grammeme = GrammemeReg::from_json(v);
                     (grammeme.name.clone(), grammeme)

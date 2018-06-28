@@ -2,14 +2,14 @@ pub mod abc;
 
 pub mod word;
 
-pub mod paradigm;
 pub mod dict;
+pub mod paradigm;
 
 pub mod affix;
-pub mod initials;
-pub mod shape;
 pub mod ha;
 pub mod hyphen;
+pub mod initials;
+pub mod shape;
 pub mod unknown;
 
 pub mod lex;
@@ -19,7 +19,6 @@ pub mod seen;
 pub mod stack;
 
 pub mod decode;
-
 
 pub use self::word::WordStruct;
 
@@ -34,14 +33,14 @@ pub use self::hyphen::HyphenSeparatedParticle;
 pub use self::affix::Affix;
 pub use self::affix::AffixKind;
 
-pub use self::shape::Shaped;
 pub use self::shape::ShapeKind;
+pub use self::shape::Shaped;
 
 pub use self::unknown::Unknown;
 
 pub use self::lex::Lex;
-pub use self::score::Score;
-pub use self::parsed::Parsed;
 pub use self::parsed::ParseResult;
+pub use self::parsed::Parsed;
+pub use self::score::Score;
 pub use self::seen::Seen;
 pub use self::seen::SeenSet;

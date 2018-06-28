@@ -9,24 +9,28 @@ pub enum Gender {
     Neut,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          masc
         |femn
         |neut
     )
-");
-
+"
+);
 
 impl Gender {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "masc"  => Some(Gender::Masc),
-                "femn"  => Some(Gender::Femn),
-                "neut"  => Some(Gender::Neut),
-                _       => None,
+                "masc" => Some(Gender::Masc),
+                "femn" => Some(Gender::Femn),
+                "neut" => Some(Gender::Neut),
+                _ => None,
             },
             None => None,
         }

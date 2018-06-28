@@ -1,26 +1,32 @@
 use super::dictionary::Dictionary;
 use super::guide::Guide;
 
-
 #[derive(Debug, Clone)]
 pub struct Completer<'a> {
     pub dict: &'a Dictionary,
     pub guide: &'a Guide,
     pub last_index: u32,
     pub key: Vec<u8>,
-    pub index_stack: Vec<u32>
+    pub index_stack: Vec<u32>,
 }
 
-
-impl <'a> Completer<'a> {
+impl<'a> Completer<'a> {
     pub fn new(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: &[u8]) -> Self {
         Completer {
             dict,
             guide,
             // unimplemented is unimplemented in the origin
-            last_index: if guide.units.is_empty() { unimplemented!() } else { dict.root },
+            last_index: if guide.units.is_empty() {
+                unimplemented!()
+            } else {
+                dict.root
+            },
             key: prefix.to_owned(),
-            index_stack: if guide.units.is_empty() { vec![] } else { vec![index] },
+            index_stack: if guide.units.is_empty() {
+                vec![]
+            } else {
+                vec![index]
+            },
         }
     }
 
@@ -86,10 +92,11 @@ impl <'a> Completer<'a> {
             self.key.push(label);
             self.index_stack.push(index);
             trace!(r#"Completer::find_terminal() "#);
-            trace!(r#" key: {}, stack = {:?} "#,
-                     String::from_utf8(self.key.clone()).unwrap(),
-                     self.index_stack);
-
+            trace!(
+                r#" key: {}, stack = {:?} "#,
+                String::from_utf8(self.key.clone()).unwrap(),
+                self.index_stack
+            );
         }
         self.last_index = index;
         true

@@ -36,8 +36,9 @@ pub enum PartOfSpeach {
     Intj,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          NOUN
         |ADJF
@@ -57,31 +58,34 @@ regex!(TAG_RE, r"(?x)
         |PRCL
         |INTJ
     )
-");
-
+"
+);
 
 impl PartOfSpeach {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "NOUN"  => Some(PartOfSpeach::Noun),
-                "ADJF"  => Some(PartOfSpeach::Adjf),
-                "ADJS"  => Some(PartOfSpeach::Adjs),
-                "COMP"  => Some(PartOfSpeach::Comp),
-                "VERB"  => Some(PartOfSpeach::Verb),
-                "INFN"  => Some(PartOfSpeach::Infn),
-                "PRTF"  => Some(PartOfSpeach::Prtf),
-                "PRTS"  => Some(PartOfSpeach::Prts),
-                "GRND"  => Some(PartOfSpeach::Grnd),
-                "NUMR"  => Some(PartOfSpeach::Numr),
-                "ADVB"  => Some(PartOfSpeach::Advb),
-                "NPRO"  => Some(PartOfSpeach::Npro),
-                "PRED"  => Some(PartOfSpeach::Pred),
-                "PREP"  => Some(PartOfSpeach::Prep),
-                "CONJ"  => Some(PartOfSpeach::Conj),
-                "PRCL"  => Some(PartOfSpeach::Prcl),
-                "INTJ"  => Some(PartOfSpeach::Intj),
-                _       => None,
+                "NOUN" => Some(PartOfSpeach::Noun),
+                "ADJF" => Some(PartOfSpeach::Adjf),
+                "ADJS" => Some(PartOfSpeach::Adjs),
+                "COMP" => Some(PartOfSpeach::Comp),
+                "VERB" => Some(PartOfSpeach::Verb),
+                "INFN" => Some(PartOfSpeach::Infn),
+                "PRTF" => Some(PartOfSpeach::Prtf),
+                "PRTS" => Some(PartOfSpeach::Prts),
+                "GRND" => Some(PartOfSpeach::Grnd),
+                "NUMR" => Some(PartOfSpeach::Numr),
+                "ADVB" => Some(PartOfSpeach::Advb),
+                "NPRO" => Some(PartOfSpeach::Npro),
+                "PRED" => Some(PartOfSpeach::Pred),
+                "PREP" => Some(PartOfSpeach::Prep),
+                "CONJ" => Some(PartOfSpeach::Conj),
+                "PRCL" => Some(PartOfSpeach::Prcl),
+                "INTJ" => Some(PartOfSpeach::Intj),
+                _ => None,
             },
             None => None,
         }
@@ -89,19 +93,17 @@ impl PartOfSpeach {
 
     pub fn is_productive(self) -> bool {
         match self {
-            PartOfSpeach::Numr |
-            PartOfSpeach::Npro |
-            PartOfSpeach::Pred |
-            PartOfSpeach::Prep |
-            PartOfSpeach::Conj |
-            PartOfSpeach::Prcl |
-            PartOfSpeach::Intj => false,
-            _ => true
+            PartOfSpeach::Numr
+            | PartOfSpeach::Npro
+            | PartOfSpeach::Pred
+            | PartOfSpeach::Prep
+            | PartOfSpeach::Conj
+            | PartOfSpeach::Prcl
+            | PartOfSpeach::Intj => false,
+            _ => true,
         }
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -110,7 +112,10 @@ mod tests {
     #[test]
     fn try_from_str() {
         assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_str("NOUN"));
-        assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn"));
+        assert_eq!(
+            Some(PartOfSpeach::Noun),
+            PartOfSpeach::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn")
+        );
         assert_eq!(None, PartOfSpeach::try_from_str("UNKN"));
     }
 }

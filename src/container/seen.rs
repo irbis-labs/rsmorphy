@@ -1,17 +1,15 @@
 use std::borrow::Cow;
-use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
-
+use std::hash::{Hash, Hasher};
 
 use container::paradigm::ParadigmId;
 use opencorpora::tag::OpencorporaTagReg;
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {
     pub word: Cow<'a, str>,
     pub tag: &'a OpencorporaTagReg,
-    pub para_id: Option<ParadigmId>
+    pub para_id: Option<ParadigmId>,
 }
 
 impl<'a> Seen<'a> {
@@ -19,7 +17,7 @@ impl<'a> Seen<'a> {
     where
         W: Into<Cow<'a, str>>,
         P: Into<Option<PID>>,
-        PID: Into<ParadigmId>
+        PID: Into<ParadigmId>,
     {
         let word = word.into();
         let para_id = para_id.into().map(Into::into);
@@ -29,7 +27,7 @@ impl<'a> Seen<'a> {
 
 /// A thin hash set
 #[derive(Default, Debug, Clone)]
-pub struct SeenSet{
+pub struct SeenSet {
     vec: Vec<u64>,
 }
 
