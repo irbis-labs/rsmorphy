@@ -3,8 +3,8 @@
 
 [![Build Status](https://travis-ci.org/irbis-labs/rsmorphy.svg)](https://travis-ci.org/irbis-labs/rsmorphy)
 [![Coverage Status](https://coveralls.io/repos/github/irbis-labs/rsmorphy/badge.svg?branch=master)](https://coveralls.io/github/irbis-labs/rsmorphy?branch=master)
-![Minimal rust version 1.26](https://img.shields.io/badge/rustc-1.26+-green.svg)
-![Nightly rust version from May 13, 2018](https://img.shields.io/badge/rustc-nightly_2018--05--13-yellow.svg)
+![Minimal rust version 1.26](https://img.shields.io/badge/rustc-1.27+-green.svg)
+![Nightly rust version from May 13, 2018](https://img.shields.io/badge/rustc-nightly_2018--06--27-yellow.svg)
 
 [![Join the chat at https://gitter.im/rsmorphy/Lobby](https://badges.gitter.im/rsmorphy/Lobby.svg)](https://gitter.im/rsmorphy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/irbis-labs/rsmorphy.svg?columns=inbox,backlog,in%20progress,done)](https://waffle.io/irbis-labs/rsmorphy)
