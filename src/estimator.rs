@@ -1,8 +1,7 @@
 use std::cmp::Ordering;
 
-use prelude::*;
 use opencorpora::OpencorporaTagReg;
-
+use prelude::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct SingleTagProbabilityEstimator {}
@@ -13,10 +12,19 @@ impl SingleTagProbabilityEstimator {
         f64::from(morph.dict.p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1_000_000.0
     }
 
-    pub fn apply_to_parses(self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, parses: &mut Vec<Parsed>) {
-        if parses.is_empty() { return; }
+    pub fn apply_to_parses(
+        self,
+        morph: &MorphAnalyzer,
+        _word: &str,
+        word_lower: &str,
+        parses: &mut Vec<Parsed>,
+    ) {
+        if parses.is_empty() {
+            return;
+        }
 
-        let probs: Vec<f64> = parses.iter()
+        let probs: Vec<f64> = parses
+            .iter()
             .map(|p: &Parsed| self.prob(morph, word_lower, p.lex.get_tag(morph)))
             .collect();
 
@@ -33,15 +41,24 @@ impl SingleTagProbabilityEstimator {
                 p.score = Score::Real(prob);
             }
             parses.sort_by(|p1: &Parsed, p2: &Parsed| {
-                p2.score.value()
+                p2.score
+                    .value()
                     .partial_cmp(&p1.score.value())
                     .unwrap_or(Ordering::Equal)
             });
         }
     }
 
-    pub fn apply_to_tags(self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, tags: &mut Vec<OpencorporaTagReg>) {
-        if tags.is_empty() { return; }
+    pub fn apply_to_tags(
+        self,
+        morph: &MorphAnalyzer,
+        _word: &str,
+        word_lower: &str,
+        tags: &mut Vec<OpencorporaTagReg>,
+    ) {
+        if tags.is_empty() {
+            return;
+        }
 
         tags.sort_by(|t1: &OpencorporaTagReg, t2: &OpencorporaTagReg| {
             self.prob(morph, word_lower, t2)

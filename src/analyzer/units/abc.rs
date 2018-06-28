@@ -1,6 +1,6 @@
-use ::analyzer::MorphAnalyzer;
-use ::container::ParseResult;
-use ::container::SeenSet;
+use analyzer::MorphAnalyzer;
+use container::ParseResult;
+use container::SeenSet;
 
 pub trait AnalyzerUnit {
     fn parse(
@@ -9,6 +9,6 @@ pub trait AnalyzerUnit {
         result: &mut ParseResult,
         word: &str,
         word_lower: &str,
-        seen_parses: &mut SeenSet
+        seen_parses: &mut SeenSet,
     );
 }

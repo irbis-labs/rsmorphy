@@ -12,15 +12,12 @@ use dawg::dictionary::Dictionary;
 use dawg::guide::Guide;
 use dawg::value::DawgValue;
 
-
 const PAYLOAD_SEPARATOR: &str = "\x01";
-
 
 #[derive(Debug, Clone)]
 pub struct Dawg {
     dict: Dictionary,
 }
-
 
 impl Dawg {
     pub fn from_file<P>(p: P) -> Self
@@ -30,7 +27,10 @@ impl Dawg {
         Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
-    pub fn from_stream<T>(fp: &mut T) -> Self where T: Read {
+    pub fn from_stream<T>(fp: &mut T) -> Self
+    where
+        T: Read,
+    {
         Dawg {
             dict: Dictionary::from_stream(fp),
         }
@@ -47,7 +47,7 @@ impl Dawg {
                 None => break,
             };
             if self.dict.has_value(index) {
-                result.push(&key[.. pos])
+                result.push(&key[..pos])
             };
             pos += 1;
         }
@@ -61,16 +61,20 @@ impl Dawg {
     }
 }
 
-
 #[derive(Debug, Clone)]
-pub struct CompletionDawg<V> where V: DawgValue {
+pub struct CompletionDawg<V>
+where
+    V: DawgValue,
+{
     dawg: Dawg,
     guide: Guide,
     _phantom: PhantomData<V>,
 }
 
-
-impl <V> CompletionDawg<V> where V: DawgValue {
+impl<V> CompletionDawg<V>
+where
+    V: DawgValue,
+{
     pub fn from_file<P>(p: P) -> Self
     where
         P: AsRef<Path>,
@@ -78,12 +82,14 @@ impl <V> CompletionDawg<V> where V: DawgValue {
         Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
-
-    pub fn from_stream<T>(fp: &mut T) -> Self where T: Read {
+    pub fn from_stream<T>(fp: &mut T) -> Self
+    where
+        T: Read,
+    {
         CompletionDawg {
             dawg: Dawg::from_stream(fp),
             guide: Guide::from_stream(fp),
-            _phantom: PhantomData
+            _phantom: PhantomData,
         }
     }
 
@@ -94,9 +100,11 @@ impl <V> CompletionDawg<V> where V: DawgValue {
     /// `DAWG.compile_replaces(mapping)` where mapping is a dict
     /// that maps single-char unicode sitrings to another single-char
     /// unicode strings.
-    pub fn similar_items(&self, key: &str, replaces: &BTreeMap<String, String>)
-        -> Vec<(String, Vec<V>)>
-    {
+    pub fn similar_items(
+        &self,
+        key: &str,
+        replaces: &BTreeMap<String, String>,
+    ) -> Vec<(String, Vec<V>)> {
         let mut result: Vec<(String, Vec<V>)> = Vec::new();
         self.similar_items_(&mut result, "", key, self.dawg.dict.root, replaces);
         result
@@ -108,13 +116,13 @@ impl <V> CompletionDawg<V> where V: DawgValue {
         current_prefix: &str,
         key: &str,
         mut index: u32,
-        replace_chars: &BTreeMap<String, String>
+        replace_chars: &BTreeMap<String, String>,
     ) {
         trace!(r#"DAWG::similar_items_()"#);
         trace!(r#" index: {}"#, index);
 
         let start_pos = current_prefix.len();
-        let subkey = &key[start_pos .. ];
+        let subkey = &key[start_pos..];
 
         let mut word_pos = start_pos;
 
@@ -122,11 +130,20 @@ impl <V> CompletionDawg<V> where V: DawgValue {
             trace!(r#" b_step: {}"#, b_step);
 
             if let Some(replace_char) = replace_chars.get(b_step) {
-                trace!(r#" b_step in replace_chars ({} => {})"#, b_step, replace_char);
+                trace!(
+                    r#" b_step in replace_chars ({} => {})"#,
+                    b_step,
+                    replace_char
+                );
 
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
                     trace!(r#" next_index: {}"#, next_index);
-                    let prefix = format!("{}{}{}", current_prefix, &key[start_pos .. word_pos], replace_char);
+                    let prefix = format!(
+                        "{}{}{}",
+                        current_prefix,
+                        &key[start_pos..word_pos],
+                        replace_char
+                    );
                     self.similar_items_(result, prefix.as_str(), key, next_index, replace_chars);
                 };
             }
@@ -155,7 +172,9 @@ impl <V> CompletionDawg<V> where V: DawgValue {
         while completer.prepare_next() {
             trace!(r#"DAWG::value_for_index_() "#);
             // FIXME .trim_right() for &[u8]
-            let key = String::from_utf8_lossy(&completer.key).trim_right().to_string();
+            let key = String::from_utf8_lossy(&completer.key)
+                .trim_right()
+                .to_string();
             trace!(r#" key: "{:?}" "#, completer.key);
             trace!(r#" key: "{}" "#, key);
             let value = base64::decode(&key).unwrap();

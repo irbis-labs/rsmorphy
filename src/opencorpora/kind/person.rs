@@ -9,24 +9,28 @@ pub enum Person {
     Per3,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          1per
         |2per
         |3per
     )
-");
-
+"
+);
 
 impl Person {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "1per"  => Some(Person::Per1),
-                "2per"  => Some(Person::Per2),
-                "3per"  => Some(Person::Per3),
-                _       => None,
+                "1per" => Some(Person::Per1),
+                "2per" => Some(Person::Per2),
+                "3per" => Some(Person::Per3),
+                _ => None,
             },
             None => None,
         }

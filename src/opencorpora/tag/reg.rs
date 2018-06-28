@@ -8,28 +8,26 @@ use analyzer::MorphAnalyzer;
 use opencorpora::grammeme::GrammemeSet;
 use opencorpora::kind::*;
 
-
 #[derive(Debug, Clone, Eq)]
 pub struct OpencorporaTagReg {
-    pub string:         String,
-    pub grammemes:      GrammemeSet,
+    pub string: String,
+    pub grammemes: GrammemeSet,
 
-    pub pos:            Option<PartOfSpeach>,
-    pub animacy:        Option<Animacy>,
-    pub aspect:         Option<Aspect>,
-    pub case:           Option<Case>,
-    pub gender:         Option<Gender>,
-    pub involvement:    Option<Involvement>,
-    pub mood:           Option<Mood>,
-    pub number:         Option<Number>,
-    pub person:         Option<Person>,
-    pub tense:          Option<Tense>,
-    pub transitivity:   Option<Transitivity>,
-    pub voice:          Option<Voice>,
+    pub pos: Option<PartOfSpeach>,
+    pub animacy: Option<Animacy>,
+    pub aspect: Option<Aspect>,
+    pub case: Option<Case>,
+    pub gender: Option<Gender>,
+    pub involvement: Option<Involvement>,
+    pub mood: Option<Mood>,
+    pub number: Option<Number>,
+    pub person: Option<Person>,
+    pub tense: Option<Tense>,
+    pub transitivity: Option<Transitivity>,
+    pub voice: Option<Voice>,
 
-    pub has_apro:       bool,
+    pub has_apro: bool,
 }
-
 
 impl Hash for OpencorporaTagReg {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -43,9 +41,11 @@ impl PartialEq for OpencorporaTagReg {
     }
 }
 
-
 impl OpencorporaTagReg {
-    pub fn new<S>(s: S) -> Self where S: Into<String> {
+    pub fn new<S>(s: S) -> Self
+    where
+        S: Into<String>,
+    {
         let string = s.into();
 
         let grammemes = GrammemeSet::new(&string);
@@ -66,19 +66,29 @@ impl OpencorporaTagReg {
         let has_apro = string.contains("Apro");
 
         OpencorporaTagReg {
-            string, grammemes, has_apro,
-            pos, animacy, aspect, case, gender, involvement, mood,
-            number, person, tense, transitivity, voice,
+            string,
+            grammemes,
+            has_apro,
+            pos,
+            animacy,
+            aspect,
+            case,
+            gender,
+            involvement,
+            mood,
+            number,
+            person,
+            tense,
+            transitivity,
+            voice,
         }
     }
 
     pub fn vec_from_json(json: Value) -> Vec<Self> {
         match json {
-            Value::Array(array) => Vec::from_iter(array.into_iter().map(|v| {
-                match v {
-                    Value::String(tag) => OpencorporaTagReg::new(tag),
-                    wrong_value => panic!("Expected string, found: {:?}", wrong_value),
-                }
+            Value::Array(array) => Vec::from_iter(array.into_iter().map(|v| match v {
+                Value::String(tag) => OpencorporaTagReg::new(tag),
+                wrong_value => panic!("Expected string, found: {:?}", wrong_value),
             })),
             wrong_value => panic!("Expected array, found: {:?}", wrong_value),
         }
@@ -87,7 +97,7 @@ impl OpencorporaTagReg {
     pub fn is_productive(&self) -> bool {
         self.pos
             .map(|pos| pos.is_productive())
-            .unwrap_or_else(|| !self.has_apro )
+            .unwrap_or_else(|| !self.has_apro)
     }
 
     pub fn prepare_required(&self, morph: &MorphAnalyzer, required: &GrammemeSet) -> GrammemeSet {
@@ -108,46 +118,47 @@ impl OpencorporaTagReg {
         };
 
         let x = match self.pos {
-            Some(PartOfSpeach::Noun) |
-            Some(PartOfSpeach::Adjf) |
-            Some(PartOfSpeach::Prtf) => match self.pos {
+            Some(PartOfSpeach::Noun) | Some(PartOfSpeach::Adjf) | Some(PartOfSpeach::Prtf) => {
+                match self.pos {
+                    Some(PartOfSpeach::Noun)
+                        if self.case != Some(Case::Nomn) && self.case != Some(Case::Accs) =>
+                    {
+                        match self.case {
+                            _ if index == 0 => Some((Number::Sing, self.case)),
+                            _ => Some((Number::Plur, self.case)),
+                        }
+                    }
 
-                Some(PartOfSpeach::Noun)
-                    if self.case != Some(Case::Nomn) && self.case != Some(Case::Accs)
-                                => match self.case {
+                    _ if index == 0 => match self.case {
+                        Some(Case::Nomn) => Some((Number::Sing, Some(Case::Nomn))),
+                        _ => Some((Number::Sing, Some(Case::Accs))),
+                    },
 
-                    _ if index == 0 => Some((Number::Sing, self.case)),
-                    _               => Some((Number::Plur, self.case)),
-                },
+                    Some(PartOfSpeach::Noun) if index == 1 => {
+                        Some((Number::Sing, Some(Case::Gent)))
+                    }
 
-                _ if index == 0 => match self.case {
+                    Some(PartOfSpeach::Adjf) | Some(PartOfSpeach::Prtf)
+                        if index == 1 && self.gender == Some(Gender::Femn) =>
+                    {
+                        Some((Number::Plur, Some(Case::Nomn)))
+                    }
 
-                    Some(Case::Nomn) => Some((Number::Sing, Some(Case::Nomn))),
-                    _                => Some((Number::Sing, Some(Case::Accs)))
-                },
-
-                Some(PartOfSpeach::Noun) if index == 1
-                                => Some((Number::Sing, Some(Case::Gent))),
-
-                Some(PartOfSpeach::Adjf) | Some(PartOfSpeach::Prtf)
-                    if index == 1 && self.gender == Some(Gender::Femn)
-                                => Some((Number::Plur, Some(Case::Nomn))),
-
-                _               => Some((Number::Plur, Some(Case::Gent))),
-            },
-            _ => None
+                    _ => Some((Number::Plur, Some(Case::Gent))),
+                }
+            }
+            _ => None,
         };
 
         GrammemeSet {
             set: match x {
-                None                        => HashSet::default(),
-                Some((number, None))        => hashset!{ number.to_grammeme() },
-                Some((number, Some(case)))  => hashset!{ number.to_grammeme(), case.to_grammeme() },
+                None => HashSet::default(),
+                Some((number, None)) => hashset!{ number.to_grammeme() },
+                Some((number, Some(case))) => hashset!{ number.to_grammeme(), case.to_grammeme() },
             },
         }
     }
 }
-
 
 //#[cfg(test)]
 //mod tests {

@@ -1,11 +1,10 @@
 use std::borrow::Cow;
 
-use analyzer::MorphAnalyzer;
 use analyzer::units::abc::AnalyzerUnit;
-use container::{Affix, Dictionary, Lex, Parsed, ParseResult, Score, SeenSet, Seen, WordStruct};
+use analyzer::MorphAnalyzer;
 use container::stack::StackAffix;
-use opencorpora::dictionary::{HHH, PredictionSuffixesDawg};
-
+use container::{Affix, Dictionary, Lex, ParseResult, Parsed, Score, Seen, SeenSet, WordStruct};
+use opencorpora::dictionary::{PredictionSuffixesDawg, HHH};
 
 /// Parse the word by checking how the words with similar suffixes
 /// are parsed.
@@ -18,7 +17,6 @@ pub struct KnownSuffixAnalyzer {
     pub estimate_decay: f64,
 }
 
-
 impl Default for KnownSuffixAnalyzer {
     fn default() -> Self {
         KnownSuffixAnalyzer {
@@ -28,16 +26,22 @@ impl Default for KnownSuffixAnalyzer {
     }
 }
 
-
 impl AnalyzerUnit for KnownSuffixAnalyzer {
-    fn parse(&self, morph: &MorphAnalyzer, result: &mut ParseResult, word: &str, word_lower: &str, seen_parses: &mut SeenSet) {
+    fn parse(
+        &self,
+        morph: &MorphAnalyzer,
+        result: &mut ParseResult,
+        word: &str,
+        word_lower: &str,
+        seen_parses: &mut SeenSet,
+    ) {
         trace!("KnownSuffixAnalyzer::parse()");
         trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
         let char_len: usize = word_lower.chars().count();
 
         if char_len < self.min_word_length {
-            return
+            return;
         }
 
         let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
@@ -50,13 +54,17 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
             'iter_splits: for &i in &morph.dict.prediction_splits {
                 if i >= char_len {
-                    continue
+                    continue;
                 }
 
-                let pos = word_lower.chars().take(char_len - i).map(char::len_utf8).sum();
+                let pos = word_lower
+                    .chars()
+                    .take(char_len - i)
+                    .map(char::len_utf8)
+                    .sum();
                 trace!("i: {}, pos: {}", i, pos);
 
-                let (word_start, word_end) = (&word_lower[.. pos], &word_lower[pos ..]);
+                let (word_start, word_end) = (&word_lower[..pos], &word_lower[pos..]);
                 trace!("word_start: {}, word_end: {}", word_start, word_end);
 
                 let para_data = suffixes_dawg.similar_items(word_end, &morph.dict.char_substitutes);
@@ -73,7 +81,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                         let tag = morph.dict.get_tag(para_id.into(), idx.into());
 
                         if !tag.is_productive() {
-                            continue 'iter_parses
+                            continue 'iter_parses;
                         }
 
                         total_counts[prefix_id as usize] += cnt;
@@ -98,10 +106,13 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
             }
         }
 
-        let mut subresult: ParseResult = subresult.into_iter()
+        let mut subresult: ParseResult = subresult
+            .into_iter()
             .map(|(cnt, prefix_id, lex)| {
-                let score = Score::Fake(self.estimate_decay * f64::from(cnt)
-                    / f64::from(total_counts[prefix_id as usize]));
+                let score = Score::Fake(
+                    self.estimate_decay * f64::from(cnt)
+                        / f64::from(total_counts[prefix_id as usize]),
+                );
                 Parsed { lex, score }
             })
             .collect();
@@ -112,15 +123,22 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 }
 
 impl KnownSuffixAnalyzer {
-    pub fn possible_prefixes<'m: 'i, 's: 'i, 'i>(&self, morph: &'m MorphAnalyzer, word: &'s str)
-        -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i
-    {
-        morph.dict.paradigm_prefixes_rev.iter()
+    pub fn possible_prefixes<'m: 'i, 's: 'i, 'i>(
+        &self,
+        morph: &'m MorphAnalyzer,
+        word: &'s str,
+    ) -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i {
+        morph
+            .dict
+            .paradigm_prefixes_rev
+            .iter()
             .filter(move |&&(_, ref prefix)| word.starts_with(prefix.as_str()))
-            .map(move |&(prefix_idx, ref prefix)| (
-                prefix_idx,
-                prefix.as_str(),
-                &morph.dict.prediction_suffixes_dawgs[prefix_idx as usize]
-            ) )
+            .map(move |&(prefix_idx, ref prefix)| {
+                (
+                    prefix_idx,
+                    prefix.as_str(),
+                    &morph.dict.prediction_suffixes_dawgs[prefix_idx as usize],
+                )
+            })
     }
 }

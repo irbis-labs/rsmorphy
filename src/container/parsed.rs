@@ -1,7 +1,6 @@
 use super::Lex;
 use super::Score;
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Parsed {
     pub lex: Lex,
@@ -13,6 +12,5 @@ impl Parsed {
         Parsed { lex, score }
     }
 }
-
 
 pub type ParseResult = Vec<Parsed>;

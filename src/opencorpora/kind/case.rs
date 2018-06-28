@@ -1,6 +1,5 @@
 use opencorpora::Grammeme;
 
-
 /// Падеж
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Case {
@@ -30,8 +29,9 @@ pub enum Case {
     Loc2,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          nomn
         |gent
@@ -46,26 +46,29 @@ regex!(TAG_RE, r"(?x)
         |loc1
         |loc2
     )
-");
-
+"
+);
 
 impl Case {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "nomn"  => Some(Case::Nomn),
-                "gent"  => Some(Case::Gent),
-                "datv"  => Some(Case::Datv),
-                "accs"  => Some(Case::Accs),
-                "ablt"  => Some(Case::Ablt),
-                "loct"  => Some(Case::Loct),
-                "voct"  => Some(Case::Voct),
-                "gen1"  => Some(Case::Gen1),
-                "gen2"  => Some(Case::Gen2),
-                "acc2"  => Some(Case::Acc2),
-                "loc1"  => Some(Case::Loc1),
-                "loc2"  => Some(Case::Loc2),
-                _       => None,
+                "nomn" => Some(Case::Nomn),
+                "gent" => Some(Case::Gent),
+                "datv" => Some(Case::Datv),
+                "accs" => Some(Case::Accs),
+                "ablt" => Some(Case::Ablt),
+                "loct" => Some(Case::Loct),
+                "voct" => Some(Case::Voct),
+                "gen1" => Some(Case::Gen1),
+                "gen2" => Some(Case::Gen2),
+                "acc2" => Some(Case::Acc2),
+                "loc1" => Some(Case::Loc1),
+                "loc2" => Some(Case::Loc2),
+                _ => None,
             },
             None => None,
         }

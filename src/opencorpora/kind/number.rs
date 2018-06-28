@@ -1,6 +1,5 @@
 use opencorpora::Grammeme;
 
-
 /// Число
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Number {
@@ -10,22 +9,26 @@ pub enum Number {
     Plur,
 }
 
-
-regex!(TAG_RE, r"(?x)
+regex!(
+    TAG_RE,
+    r"(?x)
     (
          sing
         |plur
     )
-");
-
+"
+);
 
 impl Number {
-    pub fn try_from_str<S>(s: S) -> Option<Self> where S: AsRef<str> {
+    pub fn try_from_str<S>(s: S) -> Option<Self>
+    where
+        S: AsRef<str>,
+    {
         match TAG_RE.captures_iter(s.as_ref()).next() {
             Some(ref cap) => match &cap[1] {
-                "sing"  => Some(Number::Sing),
-                "plur"  => Some(Number::Plur),
-                _       => None,
+                "sing" => Some(Number::Sing),
+                "plur" => Some(Number::Plur),
+                _ => None,
             },
             None => None,
         }

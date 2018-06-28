@@ -2,15 +2,13 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::{Lex, Score};
 use container::abc::*;
 use container::affix::{Affix, AffixKind};
 use container::decode::*;
 use container::paradigm::ParadigmId;
 use container::stack::StackSource;
+use container::{Lex, Score};
 use opencorpora::OpencorporaTagReg;
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackAffix {
@@ -30,11 +28,11 @@ impl StackAffix {
     }
 }
 
-
 impl From<StackSource> for StackAffix {
-    fn from(stack: StackSource) -> Self { StackAffix { stack, affix: None } }
+    fn from(stack: StackSource) -> Self {
+        StackAffix { stack, affix: None }
+    }
 }
-
 
 impl Source for StackAffix {
     fn score(&self) -> Score {
@@ -43,7 +41,7 @@ impl Source for StackAffix {
             Some(ref _affix) => {
                 // self.stack.score();
                 unimplemented!()
-            },
+            }
         }
     }
 
@@ -64,22 +62,20 @@ impl Source for StackAffix {
     fn get_word(&self) -> Cow<str> {
         match self.affix {
             None => self.stack.get_word(),
-            Some(ref affix) =>
-                match affix.kind {
-                    AffixKind::KnownSuffix => self.stack.get_word(),
-                    _ => format!("{}{}", affix.part, self.stack.get_word()).into(),
-                },
+            Some(ref affix) => match affix.kind {
+                AffixKind::KnownSuffix => self.stack.get_word(),
+                _ => format!("{}{}", affix.part, self.stack.get_word()).into(),
+            },
         }
     }
 
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
         match self.affix {
             None => self.stack.get_normal_form(morph),
-            Some(ref affix) =>
-                match affix.kind {
-                    AffixKind::KnownSuffix => self.stack.get_normal_form(morph),
-                    _ => format!("{}{}", affix.part, self.stack.get_normal_form(morph)).into(),
-                },
+            Some(ref affix) => match affix.kind {
+                AffixKind::KnownSuffix => self.stack.get_normal_form(morph),
+                _ => format!("{}{}", affix.part, self.stack.get_normal_form(morph)).into(),
+            },
         }
     }
 
@@ -121,11 +117,19 @@ impl Source for StackAffix {
 }
 
 impl StackAffix {
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        let is_known_suffix = self.affix.as_ref().map(Affix::is_known_suffix).unwrap_or(false);
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
+        let is_known_suffix = self.affix
+            .as_ref()
+            .map(Affix::is_known_suffix)
+            .unwrap_or(false);
         let make_affix = move |new_source: &StackSource| -> Option<Affix> {
             if is_known_suffix {
-                let dict = new_source.as_dictionary().expect("Should only be Dictionary");
+                let dict = new_source
+                    .as_dictionary()
+                    .expect("Should only be Dictionary");
                 let word = dict.word_lower().word();
                 let stem = morph.dict.get_stem(dict.para_id(), dict.idx(), word);
                 Some(Affix::known_suffix(&word[stem.len()..]))
@@ -142,13 +146,13 @@ impl StackAffix {
     }
 }
 
-
 impl MorphySerde for StackAffix {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         self.stack.encode(f)?;
         if let Some(ref affix) = self.affix {
             write!(
-                f, ";{}:{}",
+                f,
+                ";{}:{}",
                 match affix.kind {
                     AffixKind::KnownPrefix => "kp",
                     AffixKind::UnknownPrefix => "up",
@@ -166,7 +170,8 @@ impl MorphySerde for StackAffix {
         if !s.is_empty() {
             let parse = |s| {
                 let s = follow_str(s, ";")?;
-                let (s, kind) = follow_str(s, "ks").map(|s| (s, AffixKind::KnownSuffix))
+                let (s, kind) = follow_str(s, "ks")
+                    .map(|s| (s, AffixKind::KnownSuffix))
                     .or_else(|_| follow_str(s, "kp").map(|s| (s, AffixKind::KnownPrefix)))
                     .or_else(|_| follow_str(s, "up").map(|s| (s, AffixKind::UnknownPrefix)))
                     .map_err(|e| match e {
@@ -182,7 +187,7 @@ impl MorphySerde for StackAffix {
                 Ok((s, affix)) => {
                     result.0 = s;
                     result.1.affix = Some(affix);
-                },
+                }
             };
         }
         Ok(result)

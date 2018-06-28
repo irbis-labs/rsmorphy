@@ -2,13 +2,12 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::{Lex, Score, WordStruct};
 use container::abc::*;
 use container::decode::*;
 use container::paradigm::ParadigmId;
 use container::stack::StackSource;
+use container::{Lex, Score, WordStruct};
 use opencorpora::tag::OpencorporaTagReg;
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HyphenAdverb {
@@ -20,7 +19,6 @@ impl HyphenAdverb {
         HyphenAdverb { word_lower }
     }
 }
-
 
 impl Source for HyphenAdverb {
     fn score(&self) -> Score {
@@ -68,13 +66,14 @@ impl Source for HyphenAdverb {
     }
 }
 
-
 impl HyphenAdverb {
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
+        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())))
     }
 }
-
 
 impl MorphySerde for HyphenAdverb {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
@@ -86,9 +85,10 @@ impl MorphySerde for HyphenAdverb {
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let s = follow_str(s, "ha").map_err(|_| DecodeError::UnknownPartType)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ',')?;
-        let (s, is_known) = follow_str(s, "d").map(|s| (s, true))
+        let (s, is_known) = follow_str(s, "d")
+            .map(|s| (s, true))
             .or_else(|_| follow_str(s, "f").map(|s| (s, false)))
             .map_err(|_| DecodeError::UnknownPartType)?;
-        Ok( (s, HyphenAdverb::new(WordStruct::new(word, is_known))) )
+        Ok((s, HyphenAdverb::new(WordStruct::new(word, is_known))))
     }
 }

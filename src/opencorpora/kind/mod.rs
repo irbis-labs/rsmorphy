@@ -11,7 +11,6 @@ pub mod tense;
 pub mod transitivity;
 pub mod voice;
 
-
 pub use self::animacy::Animacy;
 pub use self::aspect::Aspect;
 pub use self::case::Case;

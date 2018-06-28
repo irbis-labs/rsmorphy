@@ -5,7 +5,6 @@ pub enum AffixKind {
     UnknownPrefix,
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Affix {
     pub part: String,
@@ -44,9 +43,8 @@ impl Affix {
 
     pub fn is_known(&self) -> bool {
         match self.kind {
-            AffixKind::KnownSuffix |
-            AffixKind::KnownPrefix      => true,
-            AffixKind::UnknownPrefix    => false,
+            AffixKind::KnownSuffix | AffixKind::KnownPrefix => true,
+            AffixKind::UnknownPrefix => false,
         }
     }
 

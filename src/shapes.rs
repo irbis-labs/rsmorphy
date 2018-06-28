@@ -1,6 +1,5 @@
-use uc::UnicodeCategories;
 use roman;
-
+use uc::UnicodeCategories;
 
 #[inline]
 pub fn is_ascii_alpha(ch: u8) -> bool {
@@ -27,7 +26,6 @@ pub fn is_latin(token: &str) -> bool {
     token.is_ascii() && token.as_bytes().iter().cloned().any(is_ascii_alpha)
 }
 
-
 /**
     Return True if a word contains only spaces and punctuation marks
     and there is at least one punctuation mark:
@@ -44,11 +42,11 @@ pub fn is_latin(token: &str) -> bool {
     ```
 */
 pub fn is_punctuation(token: &str) -> bool {
-    !token.is_empty() &&
-        token.chars().any(|ch| ch.is_punctuation()) &&
-        token.chars().all(|ch| ch.is_punctuation() || ch.is_whitespace())
+    !token.is_empty() && token.chars().any(|ch| ch.is_punctuation())
+        && token
+            .chars()
+            .all(|ch| ch.is_punctuation() || ch.is_whitespace())
 }
-
 
 /**
     Return True if token looks like a Roman number:

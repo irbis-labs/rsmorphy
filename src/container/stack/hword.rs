@@ -2,12 +2,11 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::{Lex, Score};
 use container::abc::*;
 use container::paradigm::ParadigmId;
 use container::stack::{StackAffix, StackSource};
+use container::{Lex, Score};
 use opencorpora::OpencorporaTagReg;
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackHyphenated {
@@ -18,27 +17,36 @@ pub struct StackHyphenated {
 impl StackHyphenated {
     pub fn new<R>(left: StackAffix, right: R) -> Self
     where
-        R: Into<Option<StackAffix>>
+        R: Into<Option<StackAffix>>,
     {
         let right = right.into();
         StackHyphenated { left, right }
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
         self.left.iter_lexeme(morph).map(move |lex: Lex| {
             Lex::from_stack(morph, StackHyphenated::new(lex.stack.stack.left, None))
-        } )
+        })
     }
 }
 
 impl From<StackAffix> for StackHyphenated {
-    fn from(stack: StackAffix) -> Self { StackHyphenated { left: stack, right: None } }
+    fn from(stack: StackAffix) -> Self {
+        StackHyphenated {
+            left: stack,
+            right: None,
+        }
+    }
 }
 
 impl From<StackSource> for StackHyphenated {
-    fn from(stack: StackSource) -> Self { StackAffix::from(stack).into() }
+    fn from(stack: StackSource) -> Self {
+        StackAffix::from(stack).into()
+    }
 }
-
 
 impl Source for StackHyphenated {
     fn score(&self) -> Score {
@@ -48,23 +56,21 @@ impl Source for StackHyphenated {
     fn is_lemma(&self) -> bool {
         match self.right {
             None => self.left.is_lemma(),
-            Some(ref right) => self.left.is_lemma() && right.is_lemma()
+            Some(ref right) => self.left.is_lemma() && right.is_lemma(),
         }
     }
 
     fn is_known(&self) -> bool {
         match self.right {
             None => self.left.is_known(),
-            Some(ref right) => self.left.is_known() && right.is_known()
+            Some(ref right) => self.left.is_known() && right.is_known(),
         }
     }
 
     fn get_word(&self) -> Cow<str> {
         match self.right {
             None => self.left.get_word(),
-            Some(ref right) => {
-                Cow::from(format!("{}-{}", self.left.get_word(), right.get_word()))
-            }
+            Some(ref right) => Cow::from(format!("{}-{}", self.left.get_word(), right.get_word())),
         }
     }
 
@@ -72,25 +78,24 @@ impl Source for StackHyphenated {
         match self.right {
             None => self.left.get_normal_form(morph),
             Some(ref right) => format!(
-                "{}-{}", self.left.get_normal_form(morph), right.get_normal_form(morph)).into(),
+                "{}-{}",
+                self.left.get_normal_form(morph),
+                right.get_normal_form(morph)
+            ).into(),
         }
     }
 
     fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
         match self.right {
             None => self.left.get_tag(morph),
-            Some(_) => {
-                unimplemented!()
-            }
+            Some(_) => unimplemented!(),
         }
     }
 
     fn try_get_para_id(&self) -> Option<ParadigmId> {
         match self.right {
             None => self.left.try_get_para_id(),
-            Some(_) => {
-                unimplemented!()
-            }
+            Some(_) => unimplemented!(),
         }
     }
 
@@ -127,10 +132,8 @@ impl MorphySerde for StackHyphenated {
                 self.left.encode(f)?;
                 write!(f, ";-")?;
                 right.encode(f)
-            },
-            None => {
-                self.left.encode(f)
-            },
+            }
+            None => self.left.encode(f),
         }
     }
 
@@ -138,26 +141,26 @@ impl MorphySerde for StackHyphenated {
         let (s, stack) = StackAffix::decode(s)?;
         let result = (s, StackHyphenated::new(stack, None));
         // TODO
-//        if !s.is_empty() {
-//            match (|s| {
-//                let s = follow_str(s, ";")?;
-//                let s = follow_str(s, "hw").map_err(|e| match e {
-//                    DecodeError::DoesntMatch => DecodeError::UnknownPartType,
-//                    _ => e,
-//                })?;
-//                let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ';')?;
-//                Ok((s, HyphenSeparatedParticle {
-//                    particle: word.to_string(),
-//                }))
-//            })(s) {
-//                Err(DecodeError::UnknownPartType) => (),
-//                Err(e) => Err(e)?,
-//                Ok((s, particle)) => {
-//                    result.0 = s;
-//                    result.1.particle = Some(particle);
-//                },
-//            };
-//        }
+        //        if !s.is_empty() {
+        //            match (|s| {
+        //                let s = follow_str(s, ";")?;
+        //                let s = follow_str(s, "hw").map_err(|e| match e {
+        //                    DecodeError::DoesntMatch => DecodeError::UnknownPartType,
+        //                    _ => e,
+        //                })?;
+        //                let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ';')?;
+        //                Ok((s, HyphenSeparatedParticle {
+        //                    particle: word.to_string(),
+        //                }))
+        //            })(s) {
+        //                Err(DecodeError::UnknownPartType) => (),
+        //                Err(e) => Err(e)?,
+        //                Ok((s, particle)) => {
+        //                    result.0 = s;
+        //                    result.1.particle = Some(particle);
+        //                },
+        //            };
+        //        }
         Ok(result)
     }
 }

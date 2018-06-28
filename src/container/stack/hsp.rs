@@ -2,14 +2,12 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::{Lex, HyphenSeparatedParticle, Score};
 use container::abc::*;
 use container::decode::*;
 use container::paradigm::ParadigmId;
 use container::stack::{StackAffix, StackHyphenated, StackSource};
+use container::{HyphenSeparatedParticle, Lex, Score};
 use opencorpora::OpencorporaTagReg;
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackParticle {
@@ -20,29 +18,44 @@ pub struct StackParticle {
 impl StackParticle {
     pub fn new<P>(stack: StackHyphenated, particle: P) -> StackParticle
     where
-        P: Into<Option<HyphenSeparatedParticle>>
+        P: Into<Option<HyphenSeparatedParticle>>,
     {
         let particle = particle.into();
         StackParticle { stack, particle }
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
         self.stack.iter_lexeme(morph).map(move |lex: Lex| {
-            Lex::from_stack(morph, StackParticle::new(lex.stack.stack, self.particle.clone()))
+            Lex::from_stack(
+                morph,
+                StackParticle::new(lex.stack.stack, self.particle.clone()),
+            )
         })
     }
 }
 
 impl From<StackHyphenated> for StackParticle {
-    fn from(stack: StackHyphenated) -> Self { StackParticle { stack, particle: None } }
+    fn from(stack: StackHyphenated) -> Self {
+        StackParticle {
+            stack,
+            particle: None,
+        }
+    }
 }
 
 impl From<StackAffix> for StackParticle {
-    fn from(stack: StackAffix) -> Self { StackHyphenated::from(stack).into() }
+    fn from(stack: StackAffix) -> Self {
+        StackHyphenated::from(stack).into()
+    }
 }
 
 impl From<StackSource> for StackParticle {
-    fn from(stack: StackSource) -> Self { StackAffix::from(stack).into() }
+    fn from(stack: StackSource) -> Self {
+        StackAffix::from(stack).into()
+    }
 }
 
 impl Source for StackParticle {
@@ -70,8 +83,9 @@ impl Source for StackParticle {
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
         match self.particle {
             None => self.stack.get_normal_form(morph),
-            Some(ref particle) =>
-                format!("{}{}", self.stack.get_normal_form(morph), particle.particle).into(),
+            Some(ref particle) => {
+                format!("{}{}", self.stack.get_normal_form(morph), particle.particle).into()
+            }
         }
     }
 
@@ -137,7 +151,7 @@ impl MorphySerde for StackParticle {
                 Ok((s, particle)) => {
                     result.0 = s;
                     result.1.particle = Some(particle);
-                },
+                }
             };
         }
         Ok(result)

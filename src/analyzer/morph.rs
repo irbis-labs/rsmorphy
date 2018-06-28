@@ -1,11 +1,10 @@
 use std::path::Path;
 
-use container::{/*Parsed, */ParseResult, SeenSet};
+use container::{ParseResult, SeenSet};
 use opencorpora::dictionary::Dictionary;
 
 use analyzer::units::*;
 use estimator::SingleTagProbabilityEstimator;
-
 
 #[derive(Debug, Default, Clone)]
 pub struct Units {
@@ -24,7 +23,6 @@ pub struct Units {
     pub unknown: UnknownAnalyzer,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct MorphAnalyzer {
     pub dict: Dictionary,
@@ -32,17 +30,23 @@ pub struct MorphAnalyzer {
     pub units: Units,
 }
 
-
 impl MorphAnalyzer {
     /// Creates `MorphAnalyzer` with preloaded dict
     pub fn new(dict: Dictionary) -> Self {
         let estimator = SingleTagProbabilityEstimator {};
         let units = Units::default();
-        MorphAnalyzer { dict, estimator, units }
+        MorphAnalyzer {
+            dict,
+            estimator,
+            units,
+        }
     }
 
     /// Loads `Dictionary` from disk and creates `MorphAnalyzer`
-    pub fn from_file<P>(p: P) -> Self where P: AsRef<Path> {
+    pub fn from_file<P>(p: P) -> Self
+    where
+        P: AsRef<Path>,
+    {
         let dict = Dictionary::from_file(p);
         // TODO consider move into dict?
         // char_substitutes = dictionary.words.compile_replaces(char_substitutes or {})
@@ -94,18 +98,17 @@ impl MorphAnalyzer {
         };
 
         let mut result = look_over();
-        self.estimator.apply_to_parses(self, word, &word_lower, &mut result);
+        self.estimator
+            .apply_to_parses(self, word, &word_lower, &mut result);
         result
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use {MorphAnalyzer, rsmorphy_dict_ru};
+    use {rsmorphy_dict_ru, MorphAnalyzer};
 
-
-    lazy_static!{
+    lazy_static! {
         static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
     }
 

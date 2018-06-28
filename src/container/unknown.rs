@@ -1,37 +1,37 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use ::analyzer::MorphAnalyzer;
-use ::container::Lex;
-use ::container::Score;
-use ::container::stack::StackSource;
-use ::container::abc::*;
-use ::opencorpora::tag::OpencorporaTagReg;
+use analyzer::MorphAnalyzer;
+use container::abc::*;
+use container::stack::StackSource;
+use container::Lex;
+use container::Score;
+use opencorpora::tag::OpencorporaTagReg;
 
 use container::decode::*;
 use container::paradigm::ParadigmId;
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Unknown {
     pub word_lower: String,
 }
 
-
 impl Unknown {
     pub fn new<W>(word_lower: W) -> Self
     where
-        W: Into<String>
+        W: Into<String>,
     {
         let word_lower = word_lower.into();
         Unknown { word_lower }
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())) )
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
+        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())))
     }
 }
-
 
 impl Source for Unknown {
     fn score(&self) -> Score {
@@ -81,7 +81,6 @@ impl Source for Unknown {
     }
 }
 
-
 impl MorphySerde for Unknown {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         write!(f, "u:")?;
@@ -94,8 +93,11 @@ impl MorphySerde for Unknown {
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let s = follow_str(s, "u").map_err(|_| DecodeError::UnknownPartType)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ';')?;
-        Ok( (s, Unknown {
-            word_lower: unescape(word).collect(),
-        }) )
+        Ok((
+            s,
+            Unknown {
+                word_lower: unescape(word).collect(),
+            },
+        ))
     }
 }

@@ -2,21 +2,19 @@ use std::borrow::Cow;
 use std::fmt;
 
 use analyzer::MorphAnalyzer;
-use container::{Score, Seen};
 use container::abc::*;
 use container::decode::*;
 use container::paradigm::ParadigmId;
 use container::stack::StackParticle;
+use container::{Score, Seen};
 use opencorpora::{GrammemeSet, OpencorporaTagReg};
 
 pub type Lexeme = Vec<Lex>;
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lex {
     pub stack: StackParticle,
 }
-
 
 impl Lex {
     pub fn from_id<S>(_morph: &MorphAnalyzer, id: S) -> Result<Self, DecodeError>
@@ -30,12 +28,15 @@ impl Lex {
     where
         S: Into<StackParticle>,
     {
-        Lex { stack: stack.into() }
+        Lex {
+            stack: stack.into(),
+        }
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer)
-        -> impl Iterator<Item = Lex> + 'i
-    {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
+        &'s self,
+        morph: &'m MorphAnalyzer,
+    ) -> impl Iterator<Item = Lex> + 'i {
         self.stack.iter_lexeme(morph)
     }
 
@@ -55,7 +56,11 @@ impl Lex {
         let new_grammemes = self.get_tag(morph).prepare_required(morph, required);
         self.iter_lexeme(morph)
             .map(|lex| {
-                let hsl = lex.get_tag(morph).grammemes.set.intersection(&new_grammemes.set).count();
+                let hsl = lex.get_tag(morph)
+                    .grammemes
+                    .set
+                    .intersection(&new_grammemes.set)
+                    .count();
                 (lex, hsl)
             })
             .max_by_key(|&(_, hsl)| hsl)
@@ -109,13 +114,11 @@ impl Source for Lex {
     }
 }
 
-
 impl fmt::Display for Lex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.write_word(f)
     }
 }
-
 
 impl MorphySerde for Lex {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
@@ -126,6 +129,6 @@ impl MorphySerde for Lex {
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let s = follow_str(s, "ru").map_err(|_| DecodeError::UnknownPartType)?;
         let (s, stack) = StackParticle::decode(follow_str(s, ":")?)?;
-        Ok( (s, Lex { stack }))
+        Ok((s, Lex { stack }))
     }
 }
