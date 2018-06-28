@@ -1,8 +1,8 @@
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::iter::FromIterator;
 
 use serde_json::Value;
-
 
 use analyzer::MorphAnalyzer;
 use opencorpora::grammeme::GrammemeSet;
@@ -140,7 +140,7 @@ impl OpencorporaTagReg {
 
         GrammemeSet {
             set: match x {
-                None                        => Default::default(),
+                None                        => HashSet::default(),
                 Some((number, None))        => hashset!{ number.to_grammeme() },
                 Some((number, Some(case)))  => hashset!{ number.to_grammeme(), case.to_grammeme() },
             },

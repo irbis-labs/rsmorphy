@@ -11,7 +11,7 @@ use util::add_parsed_if_not_seen;
 ///
 /// Example: псевдокошка -> (псевдо) + кошка.
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct KnownPrefixAnalyzer {
     min_reminder_length: usize,
     estimate_decay: f64,

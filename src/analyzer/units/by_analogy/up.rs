@@ -16,7 +16,7 @@ use util::word_splits;
 /// (with restrictions on prefix & suffix lengths).
 ///
 /// Example: байткод -> (байт) + код
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct UnknownPrefixAnalyzer {
     estimate_decay: f64,
 }

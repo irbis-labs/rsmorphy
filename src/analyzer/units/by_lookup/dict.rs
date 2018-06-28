@@ -9,7 +9,7 @@ use dawg::HH;
 
 const DICT_SCORE: Score = Score::Real(1.0);
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct DictionaryAnalyzer {}
 
 impl AnalyzerUnit for DictionaryAnalyzer {

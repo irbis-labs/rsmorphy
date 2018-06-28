@@ -31,8 +31,8 @@ impl Number {
         }
     }
 
-    pub fn to_grammeme(&self) -> Grammeme {
-        match *self {
+    pub fn to_grammeme(self) -> Grammeme {
+        match self {
             Number::Sing => Grammeme::new("sing"),
             Number::Plur => Grammeme::new("plur"),
         }

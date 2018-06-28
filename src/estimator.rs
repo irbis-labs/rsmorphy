@@ -8,12 +8,12 @@ use opencorpora::OpencorporaTagReg;
 pub struct SingleTagProbabilityEstimator {}
 
 impl SingleTagProbabilityEstimator {
-    pub fn prob(&self, morph: &MorphAnalyzer, word_lower: &str, tag: &OpencorporaTagReg) -> f64 {
+    pub fn prob(self, morph: &MorphAnalyzer, word_lower: &str, tag: &OpencorporaTagReg) -> f64 {
         let dawg_key = format!("{}:{}", word_lower, tag.string);
         f64::from(morph.dict.p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1_000_000.0
     }
 
-    pub fn apply_to_parses(&self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, parses: &mut Vec<Parsed>) {
+    pub fn apply_to_parses(self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, parses: &mut Vec<Parsed>) {
         if parses.is_empty() { return; }
 
         let probs: Vec<f64> = parses.iter()
@@ -40,7 +40,7 @@ impl SingleTagProbabilityEstimator {
         }
     }
 
-    pub fn apply_to_tags(&self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, tags: &mut Vec<OpencorporaTagReg>) {
+    pub fn apply_to_tags(self, morph: &MorphAnalyzer, _word: &str, word_lower: &str, tags: &mut Vec<OpencorporaTagReg>) {
         if tags.is_empty() { return; }
 
         tags.sort_by(|t1: &OpencorporaTagReg, t2: &OpencorporaTagReg| {

@@ -15,7 +15,7 @@ use container::{/*Parsed, */ParseResult, SeenSet};
 /// * интернет-магазин -> "интернет-" + магазин
 /// * человек-гора -> человек + гора
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct HyphenatedWordsAnalyzer {}
 
 

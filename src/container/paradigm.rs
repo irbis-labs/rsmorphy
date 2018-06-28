@@ -21,7 +21,7 @@ impl ParadigmId {
         Self::new(id as u16)
     }
 
-    pub fn value(&self) -> u16 {
+    pub fn value(self) -> u16 {
         self.0
     }
 }
@@ -80,11 +80,11 @@ impl ParadigmIndex {
         Self::new(id as u16)
     }
 
-    pub fn value(&self) -> u16 {
+    pub fn value(self) -> u16 {
         self.0
     }
 
-    pub fn is_first(&self) -> bool {
+    pub fn is_first(self) -> bool {
         self.0 == 0
     }
 }

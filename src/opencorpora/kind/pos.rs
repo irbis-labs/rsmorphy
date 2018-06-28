@@ -87,8 +87,8 @@ impl PartOfSpeach {
         }
     }
 
-    pub fn is_productive(&self) -> bool {
-        match *self {
+    pub fn is_productive(self) -> bool {
+        match self {
             PartOfSpeach::Numr |
             PartOfSpeach::Npro |
             PartOfSpeach::Pred |

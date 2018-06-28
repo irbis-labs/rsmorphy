@@ -12,7 +12,7 @@ use opencorpora::dictionary::{HHH, PredictionSuffixesDawg};
 ///
 /// Example: бутявкать -> ...вкать
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct KnownSuffixAnalyzer {
     pub min_word_length: usize,
     pub estimate_decay: f64,

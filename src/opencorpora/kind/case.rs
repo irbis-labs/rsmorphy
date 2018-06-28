@@ -71,8 +71,8 @@ impl Case {
         }
     }
 
-    pub fn to_grammeme(&self) -> Grammeme {
-        match *self {
+    pub fn to_grammeme(self) -> Grammeme {
+        match self {
             Case::Nomn => Grammeme::new("nomn"),
             Case::Gent => Grammeme::new("gent"),
             Case::Datv => Grammeme::new("datv"),

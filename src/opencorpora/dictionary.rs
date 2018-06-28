@@ -102,11 +102,11 @@ impl Dictionary {
         // TODO join `grammemes` and `grammeme_metas` into one set
         let grammemes = GrammemeReg::map_from_json(loader.load("grammemes.json.gz"));
         let grammeme_metas = {
-            let mut grammeme_metas: HashMap<Grammeme, GrammemeMeta> = Default::default();
+            let mut grammeme_metas = HashMap::<Grammeme, GrammemeMeta>::default();
             for (index, grammeme) in grammemes.keys().enumerate() {
                 grammeme_metas
                     .entry(grammeme.clone())
-                    .or_insert_with(|| GrammemeMeta { index, ..Default::default() });
+                    .or_insert_with(|| GrammemeMeta { index, ..GrammemeMeta::default() });
             }
             for (grammeme, gram_reg) in &grammemes {
                 if let Some(ref parent) = gram_reg.parent {
