@@ -104,9 +104,12 @@ impl Dictionary {
         let grammeme_metas = {
             let mut grammeme_metas = HashMap::<Grammeme, GrammemeMeta>::default();
             for (index, grammeme) in grammemes.keys().enumerate() {
-                grammeme_metas
-                    .entry(grammeme.clone())
-                    .or_insert_with(|| GrammemeMeta { index, ..GrammemeMeta::default() });
+                if !grammeme_metas.contains_key(grammeme) {
+                    grammeme_metas.insert(
+                        grammeme.clone(),
+                        GrammemeMeta { index, ..GrammemeMeta::default() }
+                    );
+                }
             }
             for (grammeme, gram_reg) in &grammemes {
                 if let Some(ref parent) = gram_reg.parent {

@@ -41,7 +41,7 @@ impl Source for StackAffix {
         match self.affix {
             None => self.stack.score(),
             Some(ref _affix) => {
-                self.stack.score();
+                // self.stack.score();
                 unimplemented!()
             },
         }

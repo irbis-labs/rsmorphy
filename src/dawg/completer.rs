@@ -47,9 +47,7 @@ impl <'a> Completer<'a> {
                 'l: loop {
                     let sibling_label = self.guide.units[index as usize].sibling;
                     // Moves to the previous node.
-                    if !self.key.is_empty() {
-                        self.key.pop();
-                    }
+                    self.key.pop();
                     self.index_stack.pop();
                     if self.index_stack.is_empty() {
                         return false;
