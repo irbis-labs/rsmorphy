@@ -1,3 +1,5 @@
+#![deny(bare_trait_objects)]
+
 #![cfg_attr(feature = "cargo-clippy", allow(items_after_statements))]
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
 #![cfg_attr(feature = "cargo-clippy", allow(module_inception))]

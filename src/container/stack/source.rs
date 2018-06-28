@@ -66,15 +66,14 @@ impl StackSource {
         }
     }
 
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> impl Iterator<Item = Lex> + 'i {
-        let i: Box<Iterator<Item = Lex> + 'i> = match self {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self, morph: &'m MorphAnalyzer) -> Box<dyn Iterator<Item = Lex> + 'i> {
+        match self {
             StackSource::Dictionary(source)     => Box::new(source.iter_lexeme(morph)),
             StackSource::HyphenAdverb(source)   => Box::new(source.iter_lexeme(morph)),
             StackSource::Initials(source)       => Box::new(source.iter_lexeme(morph)),
             StackSource::Shaped(source)         => Box::new(source.iter_lexeme(morph)),
             StackSource::Unknown(source)        => Box::new(source.iter_lexeme(morph)),
-        };
-        i
+        }
     }
 }
 
