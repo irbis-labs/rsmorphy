@@ -5,7 +5,8 @@ branches:
     - trying
 
 dist: trusty
-sudo: false
+# cargo-tarpaulin depends on sudo: true
+sudo: true
 
 addons:
   apt:
