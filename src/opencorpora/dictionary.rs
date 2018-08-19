@@ -164,13 +164,9 @@ impl Dictionary {
             words: CompletionDawg::from_file(loader.path("words.dawg.gz")),
             p_t_given_w: CompletionDawg::from_file(loader.path("p_t_given_w.intdawg.gz")),
             prediction_prefixes: Dawg::from_file(loader.path("prediction-prefixes.dawg.gz")),
-            prediction_suffixes_dawgs: Vec::from_iter(
-                (0..paradigm_prefixes.len()).into_iter().map(|i| {
-                    CompletionDawg::from_file(
-                        loader.path(format!("prediction-suffixes-{}.dawg.gz", i)),
-                    )
-                }),
-            ),
+            prediction_suffixes_dawgs: Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
+                CompletionDawg::from_file(loader.path(format!("prediction-suffixes-{}.dawg.gz", i)))
+            })),
             paradigm_prefixes: paradigm_prefixes.clone(),
             paradigm_prefixes_rev: paradigm_prefixes
                 .into_iter()

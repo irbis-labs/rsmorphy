@@ -121,7 +121,8 @@ impl StackAffix {
         &'s self,
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
-        let is_known_suffix = self.affix
+        let is_known_suffix = self
+            .affix
             .as_ref()
             .map(Affix::is_known_suffix)
             .unwrap_or(false);
