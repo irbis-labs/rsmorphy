@@ -4,7 +4,8 @@ use {
         abc::*, paradigm::ParadigmId, Dictionary, HyphenAdverb, Initials, Lex, Score, Shaped,
         Unknown,
     },
-    opencorpora::OpencorporaTagReg, std::{borrow::Cow, fmt},
+    opencorpora::OpencorporaTagReg,
+    std::{borrow::Cow, fmt},
 };
 
 #[derive(Debug, Clone, PartialEq)]

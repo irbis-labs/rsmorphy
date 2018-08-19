@@ -56,7 +56,8 @@ impl Lex {
         let new_grammemes = self.get_tag(morph).prepare_required(morph, required);
         self.iter_lexeme(morph)
             .map(|lex| {
-                let hsl = lex.get_tag(morph)
+                let hsl = lex
+                    .get_tag(morph)
                     .grammemes
                     .set
                     .intersection(&new_grammemes.set)
