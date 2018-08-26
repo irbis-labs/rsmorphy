@@ -99,8 +99,7 @@ impl Dictionary {
             tm = tm2;
         };
 
-        let meta: Vec<(String, Value)> = load.json("meta.json.gz")
-            .expect("object of `Value`s");
+        let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
         let meta = HashMap::from_iter(meta.into_iter());
         next_time("meta");
 
@@ -137,25 +136,22 @@ impl Dictionary {
             .collect();
         next_time("paradigm_prefixes_rev");
 
-        let suffixes = load.json("suffixes.json.gz")
-            .expect("array of strings");
+        let suffixes = load.json("suffixes.json.gz").expect("array of strings");
         next_time("suffixes");
 
-        let gramtab: Vec<String> = load.json("gramtab-opencorpora-int.json.gz")
+        let gramtab: Vec<String> = load
+            .json("gramtab-opencorpora-int.json.gz")
             .expect("array of strings");
         next_time("gramtab");
         // TODO opencorpora-ext
-        let gramtab = gramtab.into_iter()
-            .map(OpencorporaTagReg::new)
-            .collect();
+        let gramtab = gramtab.into_iter().map(OpencorporaTagReg::new).collect();
         next_time("gramtab'");
 
-
         // TODO join `grammemes` and `grammeme_metas` into one set
-        let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz")
-            .expect("array of `Value`s");
+        let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
         next_time("grammemes");
-        let grammemes = grammemes.into_iter()
+        let grammemes = grammemes
+            .into_iter()
             .map(GrammemeReg::from_json)
             .map(|gr| (gr.name.clone(), gr));
         let grammemes = HashMap::from_iter(grammemes);
@@ -208,10 +204,13 @@ impl Dictionary {
         next_time("words");
         let p_t_given_w = CompletionDawg::from_reader(&mut load.reader("p_t_given_w.intdawg.gz"));
         next_time("p_t_given_w");
-        let prediction_prefixes = Dawg::from_reader(&mut load.reader("prediction-prefixes.dawg.gz"));
+        let prediction_prefixes =
+            Dawg::from_reader(&mut load.reader("prediction-prefixes.dawg.gz"));
         next_time("prediction_prefixes");
         let prediction_suffixes_dawgs = Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
-            CompletionDawg::from_reader(&mut load.reader(format!("prediction-suffixes-{}.dawg.gz", i)))
+            CompletionDawg::from_reader(
+                &mut load.reader(format!("prediction-suffixes-{}.dawg.gz", i)),
+            )
         }));
         next_time("prediction_suffixes_dawgs");
 

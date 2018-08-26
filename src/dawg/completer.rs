@@ -23,7 +23,13 @@ impl<'a> Completer<'a> {
             (vec![index], dict.root)
         };
 
-        Completer { dict, guide, last_index, key, index_stack }
+        Completer {
+            dict,
+            guide,
+            last_index,
+            key,
+            index_stack,
+        }
     }
 
     pub fn value(&self) -> u32 {
@@ -69,7 +75,9 @@ impl<'a> Completer<'a> {
             index = self.follow(child_label, index)?;
             trace!(
                 r#"Completer::find_terminal() index: {:8x?}, key: {:?}, stack = {:x?} "#,
-                index, self.key(), self.index_stack
+                index,
+                self.key(),
+                self.index_stack
             );
         }
         self.last_index = index;

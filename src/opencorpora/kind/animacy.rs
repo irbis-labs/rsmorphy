@@ -21,7 +21,9 @@ impl Animacy {
     where
         S: AsRef<str>,
     {
-        TAG_RE.captures_iter(s.as_ref()).next()
+        TAG_RE
+            .captures_iter(s.as_ref())
+            .next()
             .and_then(|cap| match &cap[1] {
                 "anim" => Some(Animacy::Anim),
                 "inan" => Some(Animacy::Inan),

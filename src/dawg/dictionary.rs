@@ -51,8 +51,7 @@ impl Dictionary {
 
     /// Gets a value from a given index if a given index is related to the end of a key.
     pub fn try_value(&self, index: u32) -> Option<u32> {
-        self.has_value(index)
-            .as_some_from(|| self.value(index))
+        self.has_value(index).as_some_from(|| self.value(index))
     }
 
     /// Exact matching.
@@ -70,7 +69,11 @@ impl Dictionary {
 
     /// Follows a transition
     pub fn follow_char(&self, label: u8, index: u32) -> Option<u32> {
-        trace!(r#"Dictionary::follow_char() label: {:x}, index = {:x} "#, label, index);
+        trace!(
+            r#"Dictionary::follow_char() label: {:x}, index = {:x} "#,
+            label,
+            index
+        );
         let unit = self.units[index as usize];
         trace!(r#"Dictionary::follow_char() unit: {:x} "#, unit);
         let offset = units::offset(unit);

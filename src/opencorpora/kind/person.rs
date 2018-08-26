@@ -25,7 +25,9 @@ impl Person {
     where
         S: AsRef<str>,
     {
-        TAG_RE.captures_iter(s.as_ref()).next()
+        TAG_RE
+            .captures_iter(s.as_ref())
+            .next()
             .and_then(|cap| match &cap[1] {
                 "1per" => Some(Person::Per1),
                 "2per" => Some(Person::Per2),

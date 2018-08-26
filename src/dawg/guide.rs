@@ -31,7 +31,7 @@ impl Guide {
     {
         let base_size = fp.read_u32::<LittleEndian>().unwrap();
         let units: Vec<GuideEntry> = (0..base_size)
-            .map(|_| (fp.read_u8().unwrap(), fp.read_u8().unwrap()) )
+            .map(|_| (fp.read_u8().unwrap(), fp.read_u8().unwrap()))
             .map(|(child, sibling)| GuideEntry { child, sibling })
             .collect();
 

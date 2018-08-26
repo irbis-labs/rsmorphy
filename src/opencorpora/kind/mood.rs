@@ -21,7 +21,9 @@ impl Mood {
     where
         S: AsRef<str>,
     {
-        TAG_RE.captures_iter(s.as_ref()).next()
+        TAG_RE
+            .captures_iter(s.as_ref())
+            .next()
             .and_then(|cap| match &cap[1] {
                 "indc" => Some(Mood::Indc),
                 "impr" => Some(Mood::Impr),

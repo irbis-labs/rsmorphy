@@ -127,13 +127,19 @@ where
             trace!(r#" b_step: {:?}"#, b_step);
 
             if let Some(replace_char) = replace_chars.get(b_step) {
-                trace!(r#" b_step in replace_chars ({:?} => {:?})"#, b_step, replace_char);
+                trace!(
+                    r#" b_step in replace_chars ({:?} => {:?})"#,
+                    b_step,
+                    replace_char
+                );
 
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
                     trace!(r#" next_index: {}"#, next_index);
                     let prefix = format!(
                         "{}{}{}",
-                        current_prefix, &key[start_pos..word_pos], replace_char
+                        current_prefix,
+                        &key[start_pos..word_pos],
+                        replace_char
                     );
                     self.similar_items_(result, &prefix, key, next_index, replace_chars);
                 };

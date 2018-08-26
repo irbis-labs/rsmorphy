@@ -25,7 +25,9 @@ impl Gender {
     where
         S: AsRef<str>,
     {
-        TAG_RE.captures_iter(s.as_ref()).next()
+        TAG_RE
+            .captures_iter(s.as_ref())
+            .next()
             .and_then(|cap| match &cap[1] {
                 "masc" => Some(Gender::Masc),
                 "femn" => Some(Gender::Femn),
