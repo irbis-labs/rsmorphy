@@ -24,14 +24,12 @@ impl Number {
     where
         S: AsRef<str>,
     {
-        match TAG_RE.captures_iter(s.as_ref()).next() {
-            Some(ref cap) => match &cap[1] {
+        TAG_RE.captures_iter(s.as_ref()).next()
+            .and_then(|cap| match &cap[1] {
                 "sing" => Some(Number::Sing),
                 "plur" => Some(Number::Plur),
                 _ => None,
-            },
-            None => None,
-        }
+            })
     }
 
     pub fn to_grammeme(self) -> Grammeme {

@@ -1,10 +1,10 @@
 pub use analyzer::units::abc::*;
 pub use container::abc::*;
 
-pub use super::Grammeme;
-pub use super::GrammemeSet;
-pub use super::Lex;
-pub use super::MorphAnalyzer;
-pub use super::ParseResult;
-pub use super::Parsed;
-pub use super::Score;
+pub use Grammeme;
+pub use GrammemeSet;
+pub use Lex;
+pub use MorphAnalyzer;
+pub use ParseResult;
+pub use Parsed;
+pub use Score;

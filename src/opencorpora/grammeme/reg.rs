@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use boolinator::Boolinator;
 use serde_json::Value;
 
 use opencorpora::Grammeme;
@@ -13,41 +12,20 @@ pub struct GrammemeReg {
 }
 
 impl GrammemeReg {
-    pub fn from_json(json: Value) -> Self {
-        match json {
-            Value::Array(array) => {
-                let get_str = move |i: usize| {
-                    let v: &Value = &array[i];
-                    if v.is_null() {
-                        return None;
-                    }
-                    let v: &str = v.as_str().unwrap();
-                    if v.is_empty() {
-                        return None;
-                    }
-                    Some(v.into())
-                };
-                GrammemeReg {
-                    name: get_str(0).map(Grammeme::new).expect("Expected string"),
-                    parent: get_str(1).map(Grammeme::new),
-                    alias: get_str(2).expect("Expected string"),
-                    description: get_str(3).expect("Expected string"),
-                }
-            }
-            wrong_value => panic!("Expected array, found: {:?}", wrong_value),
-        }
-    }
-
-    pub fn map_from_json(data: Value) -> HashMap<Grammeme, Self> {
-        match data {
-            Value::Array(array) => array
-                .into_iter()
-                .map(|v| {
-                    let grammeme = GrammemeReg::from_json(v);
-                    (grammeme.name.clone(), grammeme)
-                })
-                .collect(),
-            wrong_value => panic!("Expected array, found: {:?}", wrong_value),
+    pub fn from_json(array: Vec<Value>) -> Self {
+        assert_eq!(array.len(), 4, "Expected 4 elements in array");
+        let mut array = array.into_iter()
+            .map(|v| match v {
+                Value::Null => None,
+                Value::String(string) => (!string.is_empty()).as_some(string),
+                wrong_value => panic!("Expected null or non-empty string, found: {:?}", wrong_value),
+            });
+        let mut next = || array.next().unwrap();
+        GrammemeReg {
+            name: next().map(Grammeme::new).expect("string"),
+            parent: next().map(Grammeme::new),
+            alias: next().expect("string"),
+            description: next().expect("string"),
         }
     }
 }

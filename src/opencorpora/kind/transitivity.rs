@@ -21,13 +21,11 @@ impl Transitivity {
     where
         S: AsRef<str>,
     {
-        match TAG_RE.captures_iter(s.as_ref()).next() {
-            Some(ref cap) => match &cap[1] {
+        TAG_RE.captures_iter(s.as_ref()).next()
+            .and_then(|cap| match &cap[1] {
                 "tran" => Some(Transitivity::Tran),
                 "intr" => Some(Transitivity::Intr),
                 _ => None,
-            },
-            None => None,
-        }
+            })
     }
 }

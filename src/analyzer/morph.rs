@@ -106,6 +106,7 @@ impl MorphAnalyzer {
 
 #[cfg(test)]
 mod tests {
+    use env_logger;
     use {rsmorphy_dict_ru, MorphAnalyzer};
 
     lazy_static! {
@@ -114,6 +115,7 @@ mod tests {
 
     #[test]
     fn load_ru() {
+        env_logger::init();
         let _ = RU.dict;
     }
 

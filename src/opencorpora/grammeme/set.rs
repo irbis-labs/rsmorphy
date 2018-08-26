@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use super::Grammeme;
+use opencorpora::grammeme::Grammeme;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct GrammemeSet {

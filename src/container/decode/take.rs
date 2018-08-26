@@ -1,4 +1,4 @@
-use super::error::DecodeError;
+use container::decode::error::DecodeError;
 
 pub fn take_1_char(s: &str) -> Result<(&str, char), DecodeError> {
     let ch = s.chars().next().ok_or(DecodeError::UnexpectedEnd)?;

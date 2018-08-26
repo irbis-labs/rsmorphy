@@ -31,9 +31,7 @@ impl SingleTagProbabilityEstimator {
         if probs.iter().cloned().sum::<f64>() == 0.0 {
             // no P(t|w) information is available; return normalized estimate
             let k = 1.0 / parses.iter().map(|p: &Parsed| p.score.value()).sum::<f64>();
-            // FIXME a bug in clippy; https://github.com/rust-lang-nursery/rust-clippy/issues/1882
-            #[cfg_attr(feature = "cargo-clippy", allow(toplevel_ref_arg))]
-            for ref mut p in parses {
+            for p in parses {
                 p.score = p.score * k;
             }
         } else {

@@ -66,40 +66,36 @@ impl PartOfSpeach {
     where
         S: AsRef<str>,
     {
-        match TAG_RE.captures_iter(s.as_ref()).next() {
-            Some(ref cap) => match &cap[1] {
-                "NOUN" => Some(PartOfSpeach::Noun),
-                "ADJF" => Some(PartOfSpeach::Adjf),
-                "ADJS" => Some(PartOfSpeach::Adjs),
-                "COMP" => Some(PartOfSpeach::Comp),
-                "VERB" => Some(PartOfSpeach::Verb),
-                "INFN" => Some(PartOfSpeach::Infn),
-                "PRTF" => Some(PartOfSpeach::Prtf),
-                "PRTS" => Some(PartOfSpeach::Prts),
-                "GRND" => Some(PartOfSpeach::Grnd),
-                "NUMR" => Some(PartOfSpeach::Numr),
-                "ADVB" => Some(PartOfSpeach::Advb),
-                "NPRO" => Some(PartOfSpeach::Npro),
-                "PRED" => Some(PartOfSpeach::Pred),
-                "PREP" => Some(PartOfSpeach::Prep),
-                "CONJ" => Some(PartOfSpeach::Conj),
-                "PRCL" => Some(PartOfSpeach::Prcl),
-                "INTJ" => Some(PartOfSpeach::Intj),
+        use self::PartOfSpeach::*;
+
+        TAG_RE.captures_iter(s.as_ref()).next()
+            .and_then(|cap| match &cap[1] {
+                "NOUN" => Some(Noun),
+                "ADJF" => Some(Adjf),
+                "ADJS" => Some(Adjs),
+                "COMP" => Some(Comp),
+                "VERB" => Some(Verb),
+                "INFN" => Some(Infn),
+                "PRTF" => Some(Prtf),
+                "PRTS" => Some(Prts),
+                "GRND" => Some(Grnd),
+                "NUMR" => Some(Numr),
+                "ADVB" => Some(Advb),
+                "NPRO" => Some(Npro),
+                "PRED" => Some(Pred),
+                "PREP" => Some(Prep),
+                "CONJ" => Some(Conj),
+                "PRCL" => Some(Prcl),
+                "INTJ" => Some(Intj),
                 _ => None,
-            },
-            None => None,
-        }
+            })
     }
 
     pub fn is_productive(self) -> bool {
+        use self::PartOfSpeach::*;
+
         match self {
-            PartOfSpeach::Numr
-            | PartOfSpeach::Npro
-            | PartOfSpeach::Pred
-            | PartOfSpeach::Prep
-            | PartOfSpeach::Conj
-            | PartOfSpeach::Prcl
-            | PartOfSpeach::Intj => false,
+            Conj | Numr | Npro | Pred | Prep | Prcl | Intj => false,
             _ => true,
         }
     }

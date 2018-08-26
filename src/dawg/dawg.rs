@@ -24,32 +24,30 @@ impl Dawg {
     where
         P: AsRef<Path>,
     {
-        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
+        Self::from_reader(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
-    pub fn from_stream<T>(fp: &mut T) -> Self
+    pub fn from_reader<T>(fp: &mut T) -> Self
     where
         T: Read,
     {
         Dawg {
-            dict: Dictionary::from_stream(fp),
+            dict: Dictionary::from_reader(fp),
         }
     }
 
     /// Returns a list with keys of this DAWG that are prefixes of the `key`.
     pub fn prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {
+        let mut result = Vec::new();
         let mut index = self.dict.root;
-        let mut pos = 1usize;
-        let mut result: Vec<&str> = Vec::new();
-        for &ch in key.as_bytes() {
+        for (i, &ch) in key.as_bytes().iter().enumerate() {
             index = match self.dict.follow_char(ch, index) {
                 Some(v) => v,
                 None => break,
             };
             if self.dict.has_value(index) {
-                result.push(&key[..pos])
+                result.push(&key[..i + 1])
             };
-            pos += 1;
         }
         result
     }
@@ -79,16 +77,16 @@ where
     where
         P: AsRef<Path>,
     {
-        Self::from_stream(&mut GzDecoder::new(File::open(p).unwrap()))
+        Self::from_reader(&mut GzDecoder::new(File::open(p).unwrap()))
     }
 
-    pub fn from_stream<T>(fp: &mut T) -> Self
+    pub fn from_reader<T>(fp: &mut T) -> Self
     where
         T: Read,
     {
         CompletionDawg {
-            dawg: Dawg::from_stream(fp),
-            guide: Guide::from_stream(fp),
+            dawg: Dawg::from_reader(fp),
+            guide: Guide::from_reader(fp),
             _phantom: PhantomData,
         }
     }
@@ -118,8 +116,7 @@ where
         mut index: u32,
         replace_chars: &BTreeMap<String, String>,
     ) {
-        trace!(r#"DAWG::similar_items_()"#);
-        trace!(r#" index: {}"#, index);
+        trace!(r#"DAWG::similar_items_() index: {}"#, index);
 
         let start_pos = current_prefix.len();
         let subkey = &key[start_pos..];
@@ -127,24 +124,18 @@ where
         let mut word_pos = start_pos;
 
         for b_step in subkey.split("").filter(|v| !v.is_empty()) {
-            trace!(r#" b_step: {}"#, b_step);
+            trace!(r#" b_step: {:?}"#, b_step);
 
             if let Some(replace_char) = replace_chars.get(b_step) {
-                trace!(
-                    r#" b_step in replace_chars ({} => {})"#,
-                    b_step,
-                    replace_char
-                );
+                trace!(r#" b_step in replace_chars ({:?} => {:?})"#, b_step, replace_char);
 
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
                     trace!(r#" next_index: {}"#, next_index);
                     let prefix = format!(
                         "{}{}{}",
-                        current_prefix,
-                        &key[start_pos..word_pos],
-                        replace_char
+                        current_prefix, &key[start_pos..word_pos], replace_char
                     );
-                    self.similar_items_(result, prefix.as_str(), key, next_index, replace_chars);
+                    self.similar_items_(result, &prefix, key, next_index, replace_chars);
                 };
             }
             index = match self.dawg.dict.follow_bytes(b_step, index) {
@@ -156,7 +147,6 @@ where
         }
         if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
             trace!(r#" index: {}"#, index);
-            // FIXME Cow<str> ?
             let found_key = format!("{}{}", current_prefix, subkey);
             trace!(r#" found_key: {}"#, found_key);
             let value = self.value_for_index_(index);
@@ -165,21 +155,17 @@ where
     }
 
     fn value_for_index_(&self, index: u32) -> Vec<V> {
-        trace!(r#"DAWG::value_for_index_() "#);
-        trace!(r#" index: {} "#, index);
+        trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
         let mut result: Vec<V> = Vec::new();
-        let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, &[]);
-        while completer.prepare_next() {
-            trace!(r#"DAWG::value_for_index_() "#);
-            // FIXME .trim_right() for &[u8]
-            let key = String::from_utf8_lossy(&completer.key)
-                .trim_right()
-                .to_string();
-            trace!(r#" key: "{:?}" "#, completer.key);
-            trace!(r#" key: "{}" "#, key);
-            let value = base64::decode(&key).unwrap();
-            trace!(r#" bytes: {:?} "#, value);
-            result.push(V::from_bytes(value.as_slice()));
+        let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, "");
+        while let Some(key) = completer.next_key() {
+            trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
+            let value = V::new_in_place(move |buf| {
+                let decoded = base64::decode_config_slice(&key, base64::STANDARD, buf).unwrap();
+                trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
+                assert_eq!(decoded, buf.len());
+            });
+            result.push(value);
         }
         result
     }

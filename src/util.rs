@@ -1,20 +1,7 @@
 use std::cmp::min;
-use std::mem;
 
 use analyzer::MorphAnalyzer;
 use container::{ParseResult, Parsed, SeenSet};
-
-pub fn u16_from_slice(s: &[u8]) -> u16 {
-    let mut buf = [0u8; 2];
-    buf.copy_from_slice(&s[..2]);
-    unsafe { mem::transmute::<[u8; 2], u16>(buf) }
-}
-
-pub fn u32_from_slice(s: &[u8]) -> u32 {
-    let mut buf = [0u8; 4];
-    buf.copy_from_slice(&s[..4]);
-    unsafe { mem::transmute::<[u8; 4], u32>(buf) }
-}
 
 pub fn add_parsed_if_not_seen(
     morph: &MorphAnalyzer,
