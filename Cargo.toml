@@ -10,7 +10,7 @@ readme = "README.md"
 homepage = "https://github.com/irbis-labs/rsmorphy"
 repository = "https://github.com/irbis-labs/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
-publish = false
+publish = true
 
 [badges]
 travis-ci = { repository = "irbis-labs/rsmorphy" }
