@@ -1,7 +1,6 @@
 use std::mem;
 
 pub trait DawgValue {
-    #[inline(always)]
     fn new_in_place<F>(f: F) -> Self
     where
         F: FnOnce(&mut [u8]);

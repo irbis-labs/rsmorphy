@@ -333,8 +333,8 @@ fn load_paradigms<R: Read>(reader: &mut R) -> Vec<Vec<ParadigmEntry>> {
             let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
             (0..paradigm_len)
                 .map(|_| reader.read_u16::<LittleEndian>().unwrap())
-                .collect()
+                .collect::<Vec<u16>>()
         })
-        .map(|paradigm: Vec<u16>| ParadigmEntry::build(paradigm))
+        .map(ParadigmEntry::build)
         .collect()
 }

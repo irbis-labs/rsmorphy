@@ -47,7 +47,7 @@ impl<'a> Completer<'a> {
                 // Follows a transition to the first child.
                 last_index = self.follow(child_label, last_index)?;
             } else {
-                'pop_from_stack: while sibling_label == 0 {
+                while sibling_label == 0 {
                     sibling_label = self.guide.units[last_index as usize].sibling;
                     // Moves to the previous node.
                     self.key.pop();
