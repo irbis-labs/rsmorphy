@@ -92,7 +92,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                             continue 'iter_parses;
                         }
 
-                        let word_lower = WordStruct::new(seen.word, false);
+                        let word_lower = WordStruct::unknown(seen.word);
                         let source = Dictionary::new(word_lower, para_id, idx);
                         let affix = Affix::known_suffix(fixed_suffix.clone());
                         let container = StackAffix::new(source, affix);
