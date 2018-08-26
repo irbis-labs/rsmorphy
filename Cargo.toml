@@ -31,7 +31,7 @@ flate2              = { version = "1.0", default-features = false }
 lazy_static         = "1.0"
 log                 = "0.4"
 maplit              = "1.0"
-num                 = "0.1"
+num                 = "0.2"
 regex               = "1.0"
 roman               = "0.1"
 serde               = "1.0"
