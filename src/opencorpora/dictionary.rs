@@ -18,6 +18,7 @@ use dawg::{CompletionDawg, Dawg};
 use opencorpora::grammeme::{Grammeme, GrammemeReg};
 use opencorpora::paradigm::ParadigmEntry;
 use opencorpora::tag::OpencorporaTagReg;
+use util::DumbProfiler;
 
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
@@ -92,16 +93,11 @@ impl Dictionary {
     {
         let load = PathLoader::new(p);
 
-        let mut tm = ::std::time::Instant::now();
-        let mut next_time = |l| {
-            let tm2 = ::std::time::Instant::now();
-            eprintln!("{} :: {:?}", l, (tm2 - tm));
-            tm = tm2;
-        };
+        let mut profiler = DumbProfiler::start();
 
         let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
         let meta = HashMap::from_iter(meta.into_iter());
-        next_time("meta");
+        profiler.waypoint("meta");
 
         let paradigm_prefixes: Vec<String> = {
             meta["compile_options"]
@@ -126,7 +122,7 @@ impl Dictionary {
                 .unwrap() as usize
         };
         let prediction_splits = (1..=max_suffix_length).rev().collect();
-        next_time("meta'");
+        profiler.waypoint("meta'");
 
         let paradigm_prefixes_rev = paradigm_prefixes
             .iter()
@@ -134,22 +130,22 @@ impl Dictionary {
             .rev()
             .map(|(i, v)| (i as u16, v.clone()))
             .collect();
-        next_time("paradigm_prefixes_rev");
+        profiler.waypoint("paradigm_prefixes_rev");
 
         let suffixes = load.json("suffixes.json.gz").expect("array of strings");
-        next_time("suffixes");
+        profiler.waypoint("suffixes");
 
         let gramtab: Vec<String> = load
             .json("gramtab-opencorpora-int.json.gz")
             .expect("array of strings");
-        next_time("gramtab");
+        profiler.waypoint("gramtab");
         // TODO opencorpora-ext
         let gramtab = gramtab.into_iter().map(OpencorporaTagReg::new).collect();
-        next_time("gramtab'");
+        profiler.waypoint("gramtab'");
 
         // TODO join `grammemes` and `grammeme_metas` into one set
         let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
-        next_time("grammemes");
+        profiler.waypoint("grammemes");
         let grammemes = grammemes
             .into_iter()
             .map(GrammemeReg::from_json)
@@ -196,23 +192,23 @@ impl Dictionary {
             }
             grammeme_metas
         };
-        next_time("grammemes'");
+        profiler.waypoint("grammemes'");
 
         let paradigms = load_paradigms(&mut load.reader("paradigms.array.gz"));
-        next_time("paradigms");
+        profiler.waypoint("paradigms");
         let words = CompletionDawg::from_reader(&mut load.reader("words.dawg.gz"));
-        next_time("words");
+        profiler.waypoint("words");
         let p_t_given_w = CompletionDawg::from_reader(&mut load.reader("p_t_given_w.intdawg.gz"));
-        next_time("p_t_given_w");
+        profiler.waypoint("p_t_given_w");
         let prediction_prefixes =
             Dawg::from_reader(&mut load.reader("prediction-prefixes.dawg.gz"));
-        next_time("prediction_prefixes");
+        profiler.waypoint("prediction_prefixes");
         let prediction_suffixes_dawgs = Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
             CompletionDawg::from_reader(
                 &mut load.reader(format!("prediction-suffixes-{}.dawg.gz", i)),
             )
         }));
-        next_time("prediction_suffixes_dawgs");
+        profiler.waypoint("prediction_suffixes_dawgs");
 
         // TODO load char_substitutes
         let char_substitutes = btreemap!{"е".into() => "ё".into()};

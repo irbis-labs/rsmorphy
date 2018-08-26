@@ -41,3 +41,42 @@ where
         (&word[..pos], &word[pos..])
     })
 }
+
+pub use self::profiler::DumbProfiler;
+
+#[cfg(feature = "profile")]
+mod profiler {
+    use std::time::Instant;
+
+    #[allow(missing_copy_implementations, missing_debug_implementations)]
+    pub struct DumbProfiler {
+        waypoint_start: Instant,
+    }
+
+    impl DumbProfiler {
+        pub fn start() -> Self {
+            let waypoint_start = Instant::now();
+            DumbProfiler { waypoint_start }
+        }
+
+        pub fn waypoint(&mut self, s: &str) {
+            let tm = ::std::time::Instant::now();
+            eprintln!("{} :: {:?}", s, (tm - self.waypoint_start));
+            self.waypoint_start = tm;
+        }
+    }
+}
+
+#[cfg(not(feature = "profile"))]
+mod profiler {
+    #[allow(missing_copy_implementations, missing_debug_implementations)]
+    pub struct DumbProfiler {}
+
+    impl DumbProfiler {
+        pub fn start() -> Self {
+            DumbProfiler {}
+        }
+
+        pub fn waypoint(&mut self, _: &str) {}
+    }
+}

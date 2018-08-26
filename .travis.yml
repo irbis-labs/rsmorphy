@@ -54,27 +54,27 @@ jobs:
   - stage: test
     rust: 1.27.0
     script:
-    - cargo test --verbose --all --no-default-features --features=debug -- --test-threads=1
+    - cargo test --verbose --all -- --test-threads=1
 
   - stage: test
     rust: stable
     script:
-    - cargo test --verbose --all --no-default-features --features=debug -- --test-threads=1
+    - cargo test --verbose --all -- --test-threads=1
 
   - stage: test
     rust: beta
     script:
-    - cargo test --verbose --all --no-default-features --features=debug -- --test-threads=1
+    - cargo test --verbose --all -- --test-threads=1
 
   - stage: test
     rust: nightly-2018-08-18
     script:
-    - cargo test --verbose --all --no-default-features --features=debug -- --test-threads=1
+    - cargo test --verbose --all -- --test-threads=1
 
   - stage: test
     rust: nightly
     script:
-    - cargo test --verbose --all --no-default-features --features=debug -- --test-threads=1
+    - cargo test --verbose --all -- --test-threads=1
 
   - stage: quality
     env:
@@ -110,7 +110,7 @@ jobs:
     install:
     - cargo tarpaulin -V | grep $TARPAULIN_VERS || RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin --vers $TARPAULIN_VERS --force
     script:
-    - travis_wait 30 cargo tarpaulin --all --no-default-features --features=debug -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID -- --test-threads=1
+    - travis_wait 30 cargo tarpaulin --all -v --ciserver travis-ci --coveralls $TRAVIS_JOB_ID -- --test-threads=1
 
 notifications:
   webhooks:

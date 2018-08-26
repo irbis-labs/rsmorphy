@@ -17,9 +17,12 @@ travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 
 [features]
-default         = ["flate2/rust_backend"]
-# Workaround for the significant slowdown in debug mode
-debug           = ["flate2/miniz-sys"]
+default         = ["fast_debug"]
+# TODO Remove when cargo can build dependencies in release mode.
+# Workaround for the significant slowdown with loading dictionaries in tests.
+fast_debug      = ["flate2/miniz-sys"]
+safe_native     = ["flate2/rust_backend"]
+profile         = []
 
 
 [dependencies]
