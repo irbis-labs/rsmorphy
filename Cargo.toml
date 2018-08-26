@@ -27,9 +27,9 @@ profile         = []
 
 [dependencies]
 base64              = "0.9"
-boolinator          = "2.4.0"
+boolinator          = "2.4"
 byteorder           = "1.0"
-env_logger          = "*"
+env_logger          = "0.5"
 flate2              = { version = "1.0", default-features = false }
 lazy_static         = "1.0"
 log                 = "0.4"
@@ -44,3 +44,7 @@ string_cache        = "0.7"
 unicode_categories  = "0.1"
 
 rsmorphy-dict-ru    = { version = "0.1", path = "./dict/ru" }
+
+
+[dev-dependencies]
+rustyline           = "2.0"
