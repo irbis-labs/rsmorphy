@@ -1,20 +1,7 @@
 use std::cmp::min;
-use std::mem;
 
 use analyzer::MorphAnalyzer;
 use container::{ParseResult, Parsed, SeenSet};
-
-pub fn u16_from_slice(s: &[u8]) -> u16 {
-    let mut buf = [0u8; 2];
-    buf.copy_from_slice(&s[..2]);
-    unsafe { mem::transmute::<[u8; 2], u16>(buf) }
-}
-
-pub fn u32_from_slice(s: &[u8]) -> u32 {
-    let mut buf = [0u8; 4];
-    buf.copy_from_slice(&s[..4]);
-    unsafe { mem::transmute::<[u8; 4], u32>(buf) }
-}
 
 pub fn add_parsed_if_not_seen(
     morph: &MorphAnalyzer,
@@ -53,4 +40,43 @@ where
         pos += ch.len_utf8();
         (&word[..pos], &word[pos..])
     })
+}
+
+pub use self::profiler::DumbProfiler;
+
+#[cfg(feature = "profile")]
+mod profiler {
+    use std::time::Instant;
+
+    #[allow(missing_copy_implementations, missing_debug_implementations)]
+    pub struct DumbProfiler {
+        waypoint_start: Instant,
+    }
+
+    impl DumbProfiler {
+        pub fn start() -> Self {
+            let waypoint_start = Instant::now();
+            DumbProfiler { waypoint_start }
+        }
+
+        pub fn waypoint(&mut self, s: &str) {
+            let tm = ::std::time::Instant::now();
+            eprintln!("{} :: {:?}", s, (tm - self.waypoint_start));
+            self.waypoint_start = tm;
+        }
+    }
+}
+
+#[cfg(not(feature = "profile"))]
+mod profiler {
+    #[allow(missing_copy_implementations, missing_debug_implementations)]
+    pub struct DumbProfiler {}
+
+    impl DumbProfiler {
+        pub fn start() -> Self {
+            DumbProfiler {}
+        }
+
+        pub fn waypoint(&mut self, _: &str) {}
+    }
 }

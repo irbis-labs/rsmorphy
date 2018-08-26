@@ -5,7 +5,7 @@ use container::{Lex, Score};
 use container::{ParseResult, Parsed, SeenSet};
 use opencorpora::OpencorporaTagReg;
 
-use super::abc::AnalyzerUnit;
+use analyzer::units::abc::AnalyzerUnit;
 
 const SCORE: Score = Score::Fake(1.0);
 

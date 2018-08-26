@@ -21,13 +21,13 @@ impl Aspect {
     where
         S: AsRef<str>,
     {
-        match TAG_RE.captures_iter(s.as_ref()).next() {
-            Some(ref cap) => match &cap[1] {
+        TAG_RE
+            .captures_iter(s.as_ref())
+            .next()
+            .and_then(|cap| match &cap[1] {
                 "perf" => Some(Aspect::Perf),
                 "impf" => Some(Aspect::Impf),
                 _ => None,
-            },
-            None => None,
-        }
+            })
     }
 }

@@ -10,28 +10,41 @@ readme = "README.md"
 homepage = "https://github.com/irbis-labs/rsmorphy"
 repository = "https://github.com/irbis-labs/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
-publish = false
+publish = true
 
 [badges]
 travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 
 [features]
-default         = []
-quiet           = []
+default         = ["fast_debug"]
+# TODO Remove when cargo can build dependencies in release mode.
+# Workaround for the significant slowdown with loading dictionaries in tests.
+fast_debug      = ["flate2/miniz-sys"]
+safe_native     = ["flate2/rust_backend"]
+profile         = []
 
 
 [dependencies]
 base64              = "0.9"
-flate2              = { version = "1.0.1", default-features = false, features = ["rust_backend"] }
+boolinator          = "2.4"
+byteorder           = "1.0"
+env_logger          = "0.5"
+flate2              = { version = "1.0", default-features = false }
 lazy_static         = "1.0"
 log                 = "0.4"
 maplit              = "1.0"
-num                 = "0.1"
+num                 = "0.2"
 regex               = "1.0"
 roman               = "0.1"
+serde               = "1.0"
+serde_derive        = "1.0"
 serde_json          = "1.0"
 string_cache        = "0.7"
 unicode_categories  = "0.1"
 
 rsmorphy-dict-ru    = { version = "0.1", path = "./dict/ru" }
+
+
+[dev-dependencies]
+rustyline           = "2.0"

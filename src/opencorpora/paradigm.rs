@@ -8,7 +8,8 @@ pub struct ParadigmEntry {
 }
 
 impl ParadigmEntry {
-    pub fn build(paradigm: &[u16]) -> Vec<Self> {
+    pub fn build<P: AsRef<[u16]>>(paradigm: P) -> Vec<Self> {
+        let paradigm = paradigm.as_ref();
         assert_eq!(0, paradigm.len() % 3, "Wrong paradigm length");
         let paradigm_len = paradigm.len() / 3;
         Vec::from_iter((0..paradigm_len).map(|idx| ParadigmEntry {

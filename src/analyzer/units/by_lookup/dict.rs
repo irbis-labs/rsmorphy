@@ -32,7 +32,7 @@ impl AnalyzerUnit for DictionaryAnalyzer {
         // `fixed_word` is a word with proper substitute (e.g. ё) letters
         for (fixed_word, parses) in para_data {
             for HH(para_id, idx) in parses {
-                let word_lower = WordStruct::new(fixed_word.clone(), false);
+                let word_lower = WordStruct::known(fixed_word.clone());
                 let container = Dictionary::new(word_lower, para_id, idx);
                 let lex = Lex::from_stack(morph, StackSource::from(container));
                 result.push(Parsed::new(lex, DICT_SCORE));

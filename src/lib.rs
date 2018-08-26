@@ -10,6 +10,9 @@
 #![cfg_attr(feature = "quiet", allow(warnings))]
 
 extern crate base64;
+extern crate boolinator;
+extern crate byteorder;
+extern crate env_logger;
 extern crate flate2;
 #[macro_use]
 extern crate lazy_static;
@@ -20,6 +23,9 @@ extern crate maplit;
 extern crate num;
 extern crate regex;
 extern crate roman;
+extern crate serde;
+//#[macro_use]
+//extern crate serde_derive;
 extern crate serde_json;
 extern crate string_cache;
 extern crate unicode_categories as uc;

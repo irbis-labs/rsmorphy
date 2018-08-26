@@ -54,8 +54,10 @@ impl Case {
     where
         S: AsRef<str>,
     {
-        match TAG_RE.captures_iter(s.as_ref()).next() {
-            Some(ref cap) => match &cap[1] {
+        TAG_RE
+            .captures_iter(s.as_ref())
+            .next()
+            .and_then(|cap| match &cap[1] {
                 "nomn" => Some(Case::Nomn),
                 "gent" => Some(Case::Gent),
                 "datv" => Some(Case::Datv),
@@ -69,9 +71,7 @@ impl Case {
                 "loc1" => Some(Case::Loc1),
                 "loc2" => Some(Case::Loc2),
                 _ => None,
-            },
-            None => None,
-        }
+            })
     }
 
     pub fn to_grammeme(self) -> Grammeme {

@@ -1,3 +1,7 @@
+extern crate rustyline;
+
+use self::rustyline::error::ReadlineError;
+use self::rustyline::Editor;
 use rsmorphy::prelude::*;
 
 pub fn print_row_parsed(morph: &MorphAnalyzer, n: usize, &Parsed { ref lex, score }: &Parsed) {
@@ -22,4 +26,33 @@ pub fn print_row_lex(morph: &MorphAnalyzer, n: usize, lex: &Lex) {
         tag = lex.get_tag(morph).string.as_str(),
         enc = lex.stack.encoded()
     );
+}
+
+pub fn input_loop<F>(f: F)
+where
+    F: Fn(&str),
+{
+    println!("Press Ctrl-C to exit.");
+    let mut rl = Editor::<()>::new();
+    loop {
+        let readline = rl.readline("Word to parse: ");
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(line.as_ref());
+                f(line.trim());
+            }
+            Err(ReadlineError::Interrupted) => {
+                println!("Ctrl-C");
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                println!("Ctrl-D");
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
+    }
 }

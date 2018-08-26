@@ -1,4 +1,4 @@
-use super::error::DecodeError;
+use container::decode::error::DecodeError;
 
 pub fn follow_str<'s, 'm>(s: &'s str, m: &'m str) -> Result<&'s str, DecodeError> {
     if s.len() < m.len() {

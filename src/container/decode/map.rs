@@ -3,7 +3,7 @@ use std::num::ParseFloatError;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-use super::error::DecodeError;
+use container::decode::error::DecodeError;
 
 pub fn try_parse_int<'s, 'm, T>((s, m): (&'s str, &'m str)) -> Option<(&'s str, T)>
 where

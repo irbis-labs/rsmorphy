@@ -6,6 +6,7 @@ use std::io::Read;
 use std::iter::FromIterator;
 use std::path::{Path, PathBuf};
 
+use byteorder::{LittleEndian, ReadBytesExt};
 use flate2::read::GzDecoder;
 use serde_json;
 use serde_json::Value;
@@ -17,7 +18,7 @@ use dawg::{CompletionDawg, Dawg};
 use opencorpora::grammeme::{Grammeme, GrammemeReg};
 use opencorpora::paradigm::ParadigmEntry;
 use opencorpora::tag::OpencorporaTagReg;
-use util::u16_from_slice;
+use util::DumbProfiler;
 
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
@@ -49,17 +50,17 @@ pub struct Dictionary {
     pub char_substitutes: BTreeMap<String, String>,
 }
 
-struct JsonLoader {
+struct PathLoader {
     dict_path: PathBuf,
 }
 
-impl JsonLoader {
+impl PathLoader {
     fn new<P>(p: P) -> Self
     where
         P: AsRef<Path>,
     {
         let dict_path = p.as_ref().into();
-        JsonLoader { dict_path }
+        PathLoader { dict_path }
     }
 
     fn path<S>(&self, name: S) -> PathBuf
@@ -69,11 +70,19 @@ impl JsonLoader {
         self.dict_path.join(name)
     }
 
-    fn load<S>(&self, name: S) -> Value
+    fn reader<S>(&self, name: S) -> impl Read
     where
         S: AsRef<Path>,
     {
-        load_json(&self.path(name))
+        GzDecoder::new(File::open(&self.path(name)).unwrap())
+    }
+
+    fn json<S, T>(&self, name: S) -> serde_json::Result<T>
+    where
+        S: AsRef<Path>,
+        for<'de> T: ::serde::Deserialize<'de>,
+    {
+        serde_json::from_reader(self.reader(name))
     }
 }
 
@@ -82,8 +91,14 @@ impl Dictionary {
     where
         P: AsRef<Path>,
     {
-        let loader = JsonLoader::new(p);
-        let meta = meta_from_json(loader.load("meta.json.gz"));
+        let load = PathLoader::new(p);
+
+        let mut profiler = DumbProfiler::start();
+
+        let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
+        let meta = HashMap::from_iter(meta.into_iter());
+        profiler.waypoint("meta");
+
         let paradigm_prefixes: Vec<String> = {
             meta["compile_options"]
                 .as_object()
@@ -96,7 +111,7 @@ impl Dictionary {
                 .map(|v| v.as_str().unwrap().to_owned())
                 .collect()
         };
-        let max_suffix_length: usize = {
+        let max_suffix_length = {
             meta.get("prediction_options")
                 .unwrap_or_else(|| &meta["compile_options"])
                 .as_object()
@@ -106,9 +121,36 @@ impl Dictionary {
                 .as_u64()
                 .unwrap() as usize
         };
+        let prediction_splits = (1..=max_suffix_length).rev().collect();
+        profiler.waypoint("meta'");
+
+        let paradigm_prefixes_rev = paradigm_prefixes
+            .iter()
+            .enumerate()
+            .rev()
+            .map(|(i, v)| (i as u16, v.clone()))
+            .collect();
+        profiler.waypoint("paradigm_prefixes_rev");
+
+        let suffixes = load.json("suffixes.json.gz").expect("array of strings");
+        profiler.waypoint("suffixes");
+
+        let gramtab: Vec<String> = load
+            .json("gramtab-opencorpora-int.json.gz")
+            .expect("array of strings");
+        profiler.waypoint("gramtab");
+        // TODO opencorpora-ext
+        let gramtab = gramtab.into_iter().map(OpencorporaTagReg::new).collect();
+        profiler.waypoint("gramtab'");
 
         // TODO join `grammemes` and `grammeme_metas` into one set
-        let grammemes = GrammemeReg::map_from_json(loader.load("grammemes.json.gz"));
+        let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
+        profiler.waypoint("grammemes");
+        let grammemes = grammemes
+            .into_iter()
+            .map(GrammemeReg::from_json)
+            .map(|gr| (gr.name.clone(), gr));
+        let grammemes = HashMap::from_iter(grammemes);
         let grammeme_metas = {
             let mut grammeme_metas = HashMap::<Grammeme, GrammemeMeta>::default();
             for (index, grammeme) in grammemes.keys().enumerate() {
@@ -150,33 +192,42 @@ impl Dictionary {
             }
             grammeme_metas
         };
+        profiler.waypoint("grammemes'");
+
+        let paradigms = load_paradigms(&mut load.reader("paradigms.array.gz"));
+        profiler.waypoint("paradigms");
+        let words = CompletionDawg::from_reader(&mut load.reader("words.dawg.gz"));
+        profiler.waypoint("words");
+        let p_t_given_w = CompletionDawg::from_reader(&mut load.reader("p_t_given_w.intdawg.gz"));
+        profiler.waypoint("p_t_given_w");
+        let prediction_prefixes =
+            Dawg::from_reader(&mut load.reader("prediction-prefixes.dawg.gz"));
+        profiler.waypoint("prediction_prefixes");
+        let prediction_suffixes_dawgs = Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
+            CompletionDawg::from_reader(
+                &mut load.reader(format!("prediction-suffixes-{}.dawg.gz", i)),
+            )
+        }));
+        profiler.waypoint("prediction_suffixes_dawgs");
+
+        // TODO load char_substitutes
+        let char_substitutes = btreemap!{"е".into() => "ё".into()};
 
         Dictionary {
             meta,
             grammemes,
             grammeme_metas,
-            gramtab: OpencorporaTagReg::vec_from_json(
-                // TODO opencorpora-ext
-                loader.load("gramtab-opencorpora-int.json.gz"),
-            ),
-            suffixes: suffixes_from_json(loader.load("suffixes.json.gz")),
-            paradigms: load_paradigms(loader.path("paradigms.array.gz")),
-            words: CompletionDawg::from_file(loader.path("words.dawg.gz")),
-            p_t_given_w: CompletionDawg::from_file(loader.path("p_t_given_w.intdawg.gz")),
-            prediction_prefixes: Dawg::from_file(loader.path("prediction-prefixes.dawg.gz")),
-            prediction_suffixes_dawgs: Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
-                CompletionDawg::from_file(loader.path(format!("prediction-suffixes-{}.dawg.gz", i)))
-            })),
-            paradigm_prefixes: paradigm_prefixes.clone(),
-            paradigm_prefixes_rev: paradigm_prefixes
-                .into_iter()
-                .enumerate()
-                .map(|(i, v)| (i as u16, v))
-                .rev()
-                .collect(),
-            prediction_splits: (1..1 + max_suffix_length).rev().collect(),
-            // TODO load char_substitutes
-            char_substitutes: btreemap!{"е".into() => "ё".into()},
+            gramtab,
+            suffixes,
+            paradigms,
+            words,
+            p_t_given_w,
+            prediction_prefixes,
+            prediction_suffixes_dawgs,
+            paradigm_prefixes,
+            paradigm_prefixes_rev,
+            prediction_splits,
+            char_substitutes,
         }
     }
 
@@ -271,67 +322,15 @@ impl Dictionary {
     }
 }
 
-fn load_json(p: &Path) -> Value {
-    serde_json::from_reader(GzDecoder::new(File::open(p).unwrap())).unwrap()
-}
-
-pub fn meta_from_json(data: Value) -> HashMap<String, Value> {
-    let data = match data {
-        Value::Array(data) => data,
-        _ => unreachable!(),
-    };
-    data.into_iter()
-        .map(|tuple| {
-            //trace!("{:?}", tuple);
-            let tuple = tuple.as_array().unwrap();
-            let name = tuple[0].as_str().unwrap();
-            (name.to_owned(), tuple[1].clone())
+fn load_paradigms<R: Read>(reader: &mut R) -> Vec<Vec<ParadigmEntry>> {
+    let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
+    (0..paradigms_count)
+        .map(|_| {
+            let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
+            (0..paradigm_len)
+                .map(|_| reader.read_u16::<LittleEndian>().unwrap())
+                .collect::<Vec<u16>>()
         })
+        .map(ParadigmEntry::build)
         .collect()
-}
-
-fn suffixes_from_json(data: Value) -> Vec<String> {
-    let data = match data {
-        Value::Array(data) => data,
-        _ => unreachable!(),
-    };
-    data.into_iter()
-        .map(|v| {
-            let v = v.as_str().unwrap();
-            v.to_owned()
-        })
-        .collect()
-}
-
-fn load_paradigms<P>(p: P) -> Vec<Vec<ParadigmEntry>>
-where
-    P: AsRef<Path>,
-{
-    let f = &mut GzDecoder::new(File::open(p).unwrap());
-    let mut buf16 = [0u8; 2];
-
-    f.read_exact(&mut buf16).unwrap();
-    let paradigms_count = u16::from_le(u16_from_slice(&buf16)) as usize;
-
-    let mut paradigms: Vec<Vec<ParadigmEntry>> = Vec::with_capacity(paradigms_count);
-    paradigms.extend((0..paradigms_count).map(|_i| {
-        f.read_exact(&mut buf16).unwrap();
-        let paradigm_len = u16::from_le(u16_from_slice(&buf16)) as usize;
-        let buf_size = paradigm_len * 2;
-
-        let mut buf: Vec<u8> = vec![0; buf_size];
-        f.read_exact(&mut buf[..buf_size]).unwrap();
-        assert_eq!(buf_size, buf.len());
-        assert_eq!(buf_size, buf.capacity());
-
-        let mut paradigm: Vec<u16> = Vec::with_capacity(paradigm_len);
-        paradigm.extend(
-            buf.chunks(2)
-                .map(|buf16| u16::from_le(u16_from_slice(buf16))),
-        );
-        assert_eq!(paradigm_len, paradigm.len());
-        assert_eq!(paradigm_len, paradigm.capacity());
-        ParadigmEntry::build(&paradigm)
-    }));
-    paradigms
 }

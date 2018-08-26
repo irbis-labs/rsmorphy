@@ -1,32 +1,34 @@
-use super::dictionary::Dictionary;
-use super::guide::Guide;
+use dawg::dictionary::Dictionary;
+use dawg::guide::Guide;
 
 #[derive(Debug, Clone)]
 pub struct Completer<'a> {
-    pub dict: &'a Dictionary,
-    pub guide: &'a Guide,
-    pub last_index: u32,
-    pub key: Vec<u8>,
-    pub index_stack: Vec<u32>,
+    dict: &'a Dictionary,
+    guide: &'a Guide,
+    last_index: u32,
+    key: Vec<u8>,
+    index_stack: Vec<u32>,
 }
 
 impl<'a> Completer<'a> {
-    pub fn new(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: &[u8]) -> Self {
+    pub fn new<Prefix>(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: Prefix) -> Self
+    where
+        Prefix: Into<Vec<u8>>,
+    {
+        let key = prefix.into();
+        let (index_stack, last_index) = if guide.units.is_empty() {
+            // FIXME unimplemented in the PyMorphy2; should it be removed?
+            unimplemented!()
+        } else {
+            (vec![index], dict.root)
+        };
+
         Completer {
             dict,
             guide,
-            // unimplemented is unimplemented in the origin
-            last_index: if guide.units.is_empty() {
-                unimplemented!()
-            } else {
-                dict.root
-            },
-            key: prefix.to_owned(),
-            index_stack: if guide.units.is_empty() {
-                vec![]
-            } else {
-                vec![index]
-            },
+            last_index,
+            key,
+            index_stack,
         }
     }
 
@@ -35,70 +37,54 @@ impl<'a> Completer<'a> {
     }
 
     /// Gets the next key
-    pub fn prepare_next(&mut self) -> bool {
-        if self.index_stack.is_empty() {
-            return false;
-        }
-        let mut index = self.index_stack[self.index_stack.len() - 1];
+    pub fn next_key(&mut self) -> Option<&str> {
+        let mut last_index = *self.index_stack.last()?;
 
         if self.last_index != self.dict.root {
-            let child_label = self.guide.units[index as usize].child;
+            let entry = self.guide.units[last_index as usize];
+            let (child_label, mut sibling_label) = (entry.child, entry.sibling);
             if child_label != 0 {
                 // Follows a transition to the first child.
-                index = match self.follow(child_label, index) {
-                    Some(v) => v,
-                    None => return false,
-                };
+                last_index = self.follow(child_label, last_index)?;
             } else {
-                'l: loop {
-                    let sibling_label = self.guide.units[index as usize].sibling;
+                while sibling_label == 0 {
+                    sibling_label = self.guide.units[last_index as usize].sibling;
                     // Moves to the previous node.
                     self.key.pop();
                     self.index_stack.pop();
-                    if self.index_stack.is_empty() {
-                        return false;
-                    }
-                    index = self.index_stack[self.index_stack.len() - 1];
-                    if sibling_label != 0 {
-                        // Follows a transition to the next sibling.
-                        index = match self.follow(sibling_label, index) {
-                            Some(v) => v,
-                            None => return false,
-                        };
-                        break 'l;
-                    }
+                    last_index = *self.index_stack.last()?;
                 }
+                // Follows a transition to the next sibling.
+                last_index = self.follow(sibling_label, last_index)?;
             }
         }
-        self.find_terminal(index)
+        self.find_terminal(last_index)
     }
 
+    /// Looks for a next index and pushes it with the label on the stack.
     fn follow(&mut self, label: u8, index: u32) -> Option<u32> {
-        self.dict.follow_char(label, index).map(|next_index| {
-            self.key.push(label);
-            self.index_stack.push(next_index);
-            next_index
-        })
+        let next_index = self.dict.follow_char(label, index)?;
+        self.key.push(label);
+        self.index_stack.push(next_index);
+        Some(next_index)
     }
 
-    fn find_terminal(&mut self, index: u32) -> bool {
-        let mut index = index;
+    fn find_terminal(&mut self, mut index: u32) -> Option<&str> {
         while !self.dict.has_value(index) {
-            let label = self.guide.units[index as usize].child;
-            index = match self.dict.follow_char(label, index) {
-                Some(v) => v,
-                None => return false,
-            };
-            self.key.push(label);
-            self.index_stack.push(index);
-            trace!(r#"Completer::find_terminal() "#);
+            let child_label = self.guide.units[index as usize].child;
+            index = self.follow(child_label, index)?;
             trace!(
-                r#" key: {}, stack = {:?} "#,
-                String::from_utf8(self.key.clone()).unwrap(),
+                r#"Completer::find_terminal() index: {:8x?}, key: {:?}, stack = {:x?} "#,
+                index,
+                self.key(),
                 self.index_stack
             );
         }
         self.last_index = index;
-        true
+        Some(self.key())
+    }
+
+    pub fn key(&self) -> &str {
+        unsafe { ::std::str::from_utf8_unchecked(&self.key) }.trim_right()
     }
 }

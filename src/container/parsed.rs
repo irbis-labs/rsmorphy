@@ -1,5 +1,5 @@
-use super::Lex;
-use super::Score;
+use container::Lex;
+use container::Score;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Parsed {
