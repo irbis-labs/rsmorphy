@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum PartOfSpeach {
+pub enum PartOfSpeech {
     /// имя существительное
     Noun,
     /// имя прилагательное (полное)
@@ -61,12 +61,12 @@ regex!(
 "
 );
 
-impl PartOfSpeach {
+impl PartOfSpeech {
     pub fn try_from_str<S>(s: S) -> Option<Self>
     where
         S: AsRef<str>,
     {
-        use self::PartOfSpeach::*;
+        use self::PartOfSpeech::*;
 
         TAG_RE
             .captures_iter(s.as_ref())
@@ -94,7 +94,7 @@ impl PartOfSpeach {
     }
 
     pub fn is_productive(self) -> bool {
-        use self::PartOfSpeach::*;
+        use self::PartOfSpeech::*;
 
         match self {
             Conj | Numr | Npro | Pred | Prep | Prcl | Intj => false,
@@ -109,11 +109,11 @@ mod tests {
 
     #[test]
     fn try_from_str() {
-        assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_str("NOUN"));
+        assert_eq!(Some(PartOfSpeech::Noun), PartOfSpeech::try_from_str("NOUN"));
         assert_eq!(
-            Some(PartOfSpeach::Noun),
-            PartOfSpeach::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn")
+            Some(PartOfSpeech::Noun),
+            PartOfSpeech::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn")
         );
-        assert_eq!(None, PartOfSpeach::try_from_str("UNKN"));
+        assert_eq!(None, PartOfSpeech::try_from_str("UNKN"));
     }
 }

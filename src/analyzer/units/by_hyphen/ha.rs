@@ -3,7 +3,7 @@ use analyzer::MorphAnalyzer;
 use container::abc::*;
 use container::stack::StackSource;
 use container::{HyphenAdverb, Lex, ParseResult, Parsed, Score, SeenSet, WordStruct};
-use opencorpora::kind::{Case, Number, PartOfSpeach};
+use opencorpora::kind::{Case, Number, PartOfSpeech};
 use opencorpora::OpencorporaTagReg;
 
 const HA_PREFIX: &str = "по-";
@@ -48,7 +48,7 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .filter(|parsed| {
                 let tag = parsed.lex.get_tag(morph);
                 match (tag.pos, tag.number, tag.case) {
-                    (Some(PartOfSpeach::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
+                    (Some(PartOfSpeech::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
                     _ => false,
                 }
             })
