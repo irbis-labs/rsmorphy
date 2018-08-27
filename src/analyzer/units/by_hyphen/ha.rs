@@ -48,7 +48,7 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .filter(|parsed| {
                 let tag = parsed.lex.get_tag(morph);
                 match (tag.pos, tag.number, tag.case) {
-                    (Some(PartOfSpeech::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
+                    (Some(PartOfSpeech::AdjectiveFull), Some(Number::Sing), Some(Case::Datv)) => true,
                     _ => false,
                 }
             })

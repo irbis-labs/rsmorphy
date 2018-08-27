@@ -106,7 +106,10 @@ impl OpencorporaTagReg {
         };
 
         let x = match self.pos {
-            Some(PartOfSpeech::Noun) | Some(PartOfSpeech::Adjf) | Some(PartOfSpeech::Prtf) => {
+            | Some(PartOfSpeech::Noun)
+            | Some(PartOfSpeech::AdjectiveFull)
+            | Some(PartOfSpeech::ParticipleFull)
+            => {
                 match self.pos {
                     Some(PartOfSpeech::Noun)
                         if self.case != Some(Case::Nomn) && self.case != Some(Case::Accs) =>
@@ -126,7 +129,7 @@ impl OpencorporaTagReg {
                         Some((Number::Sing, Some(Case::Gent)))
                     }
 
-                    Some(PartOfSpeech::Adjf) | Some(PartOfSpeech::Prtf)
+                    Some(PartOfSpeech::AdjectiveFull) | Some(PartOfSpeech::ParticipleFull)
                         if index == 1 && self.gender == Some(Gender::Femn) =>
                     {
                         Some((Number::Plur, Some(Case::Nomn)))
