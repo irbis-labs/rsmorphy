@@ -9,7 +9,7 @@ use crate::container::Score;
 use crate::container::WordStruct;
 use crate::opencorpora::kind::Case;
 use crate::opencorpora::kind::Number;
-use crate::opencorpora::kind::PartOfSpeach;
+use crate::opencorpora::kind::PartOfSpeech;
 use crate::opencorpora::OpencorporaTagReg;
 
 const HA_PREFIX: &str = "по-";
@@ -55,7 +55,7 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .filter(|parsed| {
                 let tag = parsed.lex.get_tag(morph);
                 match (tag.pos, tag.number, tag.case) {
-                    (Some(PartOfSpeach::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
+                    (Some(PartOfSpeech::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
                     _ => false,
                 }
             })

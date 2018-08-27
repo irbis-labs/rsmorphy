@@ -16,7 +16,7 @@ pub struct OpencorporaTagReg {
     pub fmt_int: DefaultAtom,
     pub grammemes: GrammemeSet,
 
-    pub pos: Option<PartOfSpeach>,
+    pub pos: Option<PartOfSpeech>,
     pub animacy: Option<Animacy>,
     pub aspect: Option<Aspect>,
     pub case: Option<Case>,
@@ -73,7 +73,7 @@ impl OpencorporaTagReg {
 
         let grammemes = GrammemeSet::parse_fmt_int(&fmt_int);
 
-        let pos = PartOfSpeach::try_from_fmt_int(&fmt_int);
+        let pos = PartOfSpeech::try_from_fmt_int(&fmt_int);
         let animacy = Animacy::try_from_fmt_int(&fmt_int);
         let aspect = Aspect::try_from_fmt_int(&fmt_int);
         let case = Case::try_from_fmt_int(&fmt_int);
@@ -131,9 +131,9 @@ impl OpencorporaTagReg {
         };
 
         let x = match self.pos {
-            Some(PartOfSpeach::Noun) | Some(PartOfSpeach::Adjf) | Some(PartOfSpeach::Prtf) => {
+            Some(PartOfSpeech::Noun) | Some(PartOfSpeech::Adjf) | Some(PartOfSpeech::Prtf) => {
                 match self.pos {
-                    Some(PartOfSpeach::Noun)
+                    Some(PartOfSpeech::Noun)
                         if self.case != Some(Case::Nomn) && self.case != Some(Case::Accs) =>
                     {
                         match self.case {
@@ -147,11 +147,11 @@ impl OpencorporaTagReg {
                         _ => Some((Number::Sing, Some(Case::Accs))),
                     },
 
-                    Some(PartOfSpeach::Noun) if index == 1 => {
+                    Some(PartOfSpeech::Noun) if index == 1 => {
                         Some((Number::Sing, Some(Case::Gent)))
                     }
 
-                    Some(PartOfSpeach::Adjf) | Some(PartOfSpeach::Prtf)
+                    Some(PartOfSpeech::Adjf) | Some(PartOfSpeech::Prtf)
                         if index == 1 && self.gender == Some(Gender::Femn) =>
                     {
                         Some((Number::Plur, Some(Case::Nomn)))
@@ -185,7 +185,7 @@ impl OpencorporaTagReg {
 //        let sample = OpencorporaTagReg::from_str("PRTF,impf,tran,past,actv anim,masc,sing,accs,Infr");
 //        let tag = OpencorporaTagReg {
 //            string: "PRTF,impf,tran,past,actv anim,masc,sing,accs,Infr".into(),
-//            pos: Some(PartOfSpeach::Prtf),
+//            pos: Some(PartOfSpeech::Prtf),
 //            animacy: Some(Animacy::Anim),
 //            aspect: Some(Aspect::Impf),
 //            case: Some(Case::Accs),
