@@ -3,37 +3,37 @@ pub enum PartOfSpeech {
     /// имя существительное
     Noun,
     /// имя прилагательное (полное)
-    Adjf,
+    AdjectiveFull,
     /// имя прилагательное (краткое)
-    Adjs,
+    AdjectiveShort,
     /// компаратив
-    Comp,
+    Comparative,
     /// глагол (личная форма)
     Verb,
     /// глагол (инфинитив)
-    Infn,
+    Infinitive,
     /// причастие (полное)
-    Prtf,
+    ParticipleFull,
     /// причастие (краткое)
-    Prts,
+    ParticipleShort,
     /// деепричастие
-    Grnd,
+    Gerund,
     /// числительное
-    Numr,
+    Number,
     /// наречие
-    Advb,
+    Adverb,
     /// местоимение-существительное
-    Npro,
+    Pronoun,
     /// предикатив
-    Pred,
+    Predicative,
     /// предлог
-    Prep,
+    Preposition,
     /// союз
-    Conj,
+    Conjunction,
     /// частица
-    Prcl,
+    Particle,
     /// междометие
-    Intj,
+    Interjection,
 }
 
 regex!(
@@ -73,22 +73,22 @@ impl PartOfSpeech {
             .next()
             .and_then(|cap| match &cap[1] {
                 "NOUN" => Some(Noun),
-                "ADJF" => Some(Adjf),
-                "ADJS" => Some(Adjs),
-                "COMP" => Some(Comp),
+                "ADJF" => Some(AdjectiveFull),
+                "ADJS" => Some(AdjectiveShort),
+                "COMP" => Some(Comparative),
                 "VERB" => Some(Verb),
-                "INFN" => Some(Infn),
-                "PRTF" => Some(Prtf),
-                "PRTS" => Some(Prts),
-                "GRND" => Some(Grnd),
-                "NUMR" => Some(Numr),
-                "ADVB" => Some(Advb),
-                "NPRO" => Some(Npro),
-                "PRED" => Some(Pred),
-                "PREP" => Some(Prep),
-                "CONJ" => Some(Conj),
-                "PRCL" => Some(Prcl),
-                "INTJ" => Some(Intj),
+                "INFN" => Some(Infinitive),
+                "PRTF" => Some(ParticipleFull),
+                "PRTS" => Some(ParticipleShort),
+                "GRND" => Some(Gerund),
+                "NUMR" => Some(Number),
+                "ADVB" => Some(Adverb),
+                "NPRO" => Some(Pronoun),
+                "PRED" => Some(Predicative),
+                "PREP" => Some(Preposition),
+                "CONJ" => Some(Conjunction),
+                "PRCL" => Some(Particle),
+                "INTJ" => Some(Interjection),
                 _ => None,
             })
     }
@@ -97,7 +97,14 @@ impl PartOfSpeech {
         use self::PartOfSpeech::*;
 
         match self {
-            Conj | Numr | Npro | Pred | Prep | Prcl | Intj => false,
+            | Conjunction
+            | Number
+            | Pronoun
+            | Predicative
+            | Preposition
+            | Particle
+            | Interjection
+            => false,
             _ => true,
         }
     }
