@@ -37,6 +37,11 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
         trace!("KnownPrefixAnalyzer::parse()");
         trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
+        // This analyzer only works on longer words
+        if word_lower.chars().count() < self.min_reminder_length {
+            return;
+        }
+
         for (prefix, unprefixed_word) in self.possible_splits(morph, word_lower) {
             'iter_parses: for parsed in morph.parse(unprefixed_word) {
                 let tag = parsed.lex.get_tag(morph);
@@ -84,7 +89,8 @@ impl KnownPrefixAnalyzer {
         word: &'s str,
     ) -> impl Iterator<Item = (&'s str, &'s str)> + 'i {
         let word_len = word.chars().count();
-        assert!(word_len >= self.min_reminder_length);
+        // This is checked in <Self as AnalyzedUnit>::parse
+        debug_assert!(word_len >= self.min_reminder_length);
         let limit = word_len - self.min_reminder_length;
         let word_prefixes = morph.dict.prediction_prefixes.sorted_prefixes(word);
         trace!("word_prefixes: {}", word_prefixes.join(", "));
