@@ -124,4 +124,27 @@ mod tests {
         assert_eq!(RU.parse("минимальный").len(), 2);
         assert_eq!(RU.parse("менимальный").len(), 3);
     }
+
+    #[test]
+    fn parse_one_letter() {
+        assert_eq!(RU.parse("с").len(), 25);
+    }
+
+    #[test]
+    fn parse_one_letter_and_dot() {
+        assert_eq!(RU.parse("м.").len(), 1);
+    }
+
+    #[test]
+    fn parse_unknown_two_letter() {
+        assert_eq!(RU.parse("ТМ").len(), 1);
+        assert_eq!(RU.parse("КТ").len(), 1);
+        assert_eq!(RU.parse("1С").len(), 1);
+    }
+
+    #[test]
+    fn parse_dash() {
+        assert_eq!(RU.parse("Р-ка").len(), 1);
+        assert_eq!(RU.parse("з-то").len(), 1);
+    }
 }
