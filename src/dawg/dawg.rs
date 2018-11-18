@@ -46,7 +46,7 @@ impl Dawg {
                 None => break,
             };
             if self.dict.has_value(index) {
-                result.push(&key[..i + 1])
+                result.push(&key[..=i])
             };
         }
         result

@@ -51,8 +51,7 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
                     (Some(PartOfSpeach::Adjf), Some(Number::Sing), Some(Case::Datv)) => true,
                     _ => false,
                 }
-            })
-            .for_each(|parsed: Parsed| {
+            }).for_each(|parsed: Parsed| {
                 let word = WordStruct::new(word_lower, parsed.lex.is_known());
                 let lex = Lex::from_stack(morph, StackSource::new(HyphenAdverb::new(word)));
                 result.push(Parsed::new(lex, HA_SCORE));

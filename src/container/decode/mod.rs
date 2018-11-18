@@ -62,6 +62,5 @@ pub fn unescape<'s: 'i, 'i>(s: &'s str) -> impl Iterator<Item = &'s str> + 'i {
                 }
                 _ => true,
             }
-        })
-        .map(|(c1, _)| c1)
+        }).map(|(c1, _)| c1)
 }

@@ -172,8 +172,8 @@ impl MorphySerde for Dictionary {
             .or_else(|_| follow_str(s, "f").map(|s| (s, false)))
             .map_err(|_| DecodeError::UnknownPartType)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ',')?;
-        let (s, para_id) =
-            take_str_while_char(follow_str(s, ",")?, is_hex_digit).and_then(parse_hex_int::<u16>)?;
+        let (s, para_id) = take_str_while_char(follow_str(s, ",")?, is_hex_digit)
+            .and_then(parse_hex_int::<u16>)?;
         let (s, idx) = follow_str(s, ",")
             .ok()
             .map(|s| take_str_while_char(s, is_hex_digit).and_then(parse_hex_int::<u16>))
