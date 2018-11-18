@@ -40,7 +40,7 @@ env:
   - DEADLINKS_VERS=0.3.0
   - RUSTFLAGS="-C link-dead-code"
   - RUST_LOG=off
-  - TARPAULIN_VERS=0.6.6
+  - TARPAULIN_VERS=0.6.8
 
 install:
 - cargo install --list
@@ -67,7 +67,7 @@ jobs:
     - cargo test --verbose --all -- --test-threads=1
 
   - stage: test
-    rust: nightly-2018-08-25
+    rust: nightly-2018-11-18
     script:
     - cargo test --verbose --all -- --test-threads=1
 
@@ -79,6 +79,7 @@ jobs:
   - stage: quality
     env:
     - FEATURE=non-fatal-checks
+    rust: stable
     install:
     - cargo-deadlinks -V | grep $DEADLINKS_VERS || cargo install cargo-deadlinks --vers $DEADLINKS_VERS --force
     script:
@@ -87,6 +88,7 @@ jobs:
   - stage: quality
     env:
     - FEATURE=fmt
+    rust: stable
     install:
     - rustup component add rustfmt-preview
       # rustfmt fails if can't find generated files.
@@ -95,16 +97,16 @@ jobs:
     - cargo fmt -- --check
 
   - stage: quality
-    rust: nightly
+    rust: stable
     env:
     - FEATURE=clippy
     install:
-    - rustup component add clippy-preview --toolchain=nightly
+    - rustup component add clippy-preview
     script:
     - cargo clippy -- -D warnings
 
   - stage: quality
-    rust: stable
+    rust: nightly-2018-11-18
     env:
     - FEATURE=cov
     install:
