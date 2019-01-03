@@ -49,7 +49,7 @@ pub fn unescape<'s: 'i, 'i>(s: &'s str) -> impl Iterator<Item = &'s str> + 'i {
         .filter(move |&(c1, c2)| {
             // trace!(r#"c1, c2: "{}", "{}""#, c1, c2);
             // FIXME a bug in clippy; https://github.com/rust-lang-nursery/rust-clippy/issues/860
-            #[cfg_attr(feature = "cargo-clippy", allow(match_same_arms))]
+            #[allow(clippy::match_same_arms)]
             match (esc, c1, c2) {
                 (false, r"\", "") => true,
                 (false, r"\", _) => {

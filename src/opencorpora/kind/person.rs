@@ -1,4 +1,3 @@
-#[cfg_attr(feature = "cargo-clippy", allow(enum_variant_names))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Person {
     /// 1 лицо

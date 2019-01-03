@@ -1,12 +1,12 @@
 #![deny(bare_trait_objects)]
 #![deny(missing_copy_implementations)]
 #![deny(missing_debug_implementations)]
-#![cfg_attr(feature = "cargo-clippy", allow(items_after_statements))]
-#![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
-#![cfg_attr(feature = "cargo-clippy", allow(module_inception))]
+#![allow(clippy::items_after_statements)]
+#![allow(clippy::match_bool)]
+#![allow(clippy::module_inception)]
 // TODO post a bug report; https://github.com/Manishearth/rust-clippy/wiki#regex_macro
 // false positive, this regex macro implemented in this crate and is not available in the upstream anymore
-#![cfg_attr(feature = "cargo-clippy", allow(regex_macro))]
+#![allow(clippy::regex_macro)]
 #![cfg_attr(feature = "quiet", allow(warnings))]
 
 extern crate base64;
@@ -24,8 +24,6 @@ extern crate num;
 extern crate regex;
 extern crate roman;
 extern crate serde;
-//#[macro_use]
-//extern crate serde_derive;
 extern crate serde_json;
 extern crate string_cache;
 extern crate unicode_categories as uc;
