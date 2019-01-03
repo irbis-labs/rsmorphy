@@ -139,11 +139,13 @@ impl MorphySerde for Shaped {
             "s:{},",
             match self.kind {
                 Latin => "l",
-                Number { is_float } => if is_float {
-                    "f"
-                } else {
-                    "i"
-                },
+                Number { is_float } => {
+                    if is_float {
+                        "f"
+                    } else {
+                        "i"
+                    }
+                }
                 Punctuation => "p",
                 RomanNumber => "r",
             },

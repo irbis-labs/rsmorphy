@@ -63,7 +63,8 @@ impl Lex {
                     .intersection(&new_grammemes.set)
                     .count();
                 (lex, hsl)
-            }).max_by_key(|&(_, hsl)| hsl)
+            })
+            .max_by_key(|&(_, hsl)| hsl)
             .map(|(lex, _)| lex)
     }
 }

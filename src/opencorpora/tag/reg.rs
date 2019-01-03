@@ -141,8 +141,8 @@ impl OpencorporaTagReg {
         GrammemeSet {
             set: match x {
                 None => HashSet::default(),
-                Some((number, None)) => hashset!{ number.to_grammeme() },
-                Some((number, Some(case))) => hashset!{ number.to_grammeme(), case.to_grammeme() },
+                Some((number, None)) => hashset! { number.to_grammeme() },
+                Some((number, Some(case))) => hashset! { number.to_grammeme(), case.to_grammeme() },
             },
         }
     }

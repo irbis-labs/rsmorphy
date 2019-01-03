@@ -81,7 +81,8 @@ impl Source for StackHyphenated {
                 "{}-{}",
                 self.left.get_normal_form(morph),
                 right.get_normal_form(morph)
-            ).into(),
+            )
+            .into(),
         }
     }
 

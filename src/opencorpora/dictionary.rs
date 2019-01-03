@@ -178,7 +178,7 @@ impl Dictionary {
             // {u'plur': set([u'GNdr', u'masc', u'femn', u'neut'])}
             let plur = Grammeme::new("plur");
             let gndr = Grammeme::new("GNdr");
-            let mut extra_incompatible = hashset!{ gndr.clone() };
+            let mut extra_incompatible = hashset! { gndr.clone() };
             extra_incompatible.extend(grammeme_metas[&gndr].children.iter().cloned());
 
             for grammeme in grammemes.keys() {
@@ -211,7 +211,7 @@ impl Dictionary {
         profiler.waypoint("prediction_suffixes_dawgs");
 
         // TODO load char_substitutes
-        let char_substitutes = btreemap!{"е".into() => "ё".into()};
+        let char_substitutes = btreemap! {"е".into() => "ё".into()};
 
         Dictionary {
             meta,
@@ -330,6 +330,7 @@ fn load_paradigms<R: Read>(reader: &mut R) -> Vec<Vec<ParadigmEntry>> {
             (0..paradigm_len)
                 .map(|_| reader.read_u16::<LittleEndian>().unwrap())
                 .collect::<Vec<u16>>()
-        }).map(ParadigmEntry::build)
+        })
+        .map(ParadigmEntry::build)
         .collect()
 }

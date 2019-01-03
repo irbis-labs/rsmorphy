@@ -114,7 +114,8 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                         / f64::from(total_counts[prefix_id as usize]),
                 );
                 Parsed { lex, score }
-            }).collect();
+            })
+            .collect();
 
         subresult.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap().reverse());
         result.extend(subresult.into_iter());
