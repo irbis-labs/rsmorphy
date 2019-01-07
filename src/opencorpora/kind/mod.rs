@@ -19,7 +19,7 @@ pub use self::involvement::Involvement;
 pub use self::mood::Mood;
 pub use self::number::Number;
 pub use self::person::Person;
-pub use self::pos::PartOfSpeach;
+pub use self::pos::PartOfSpeech;
 pub use self::tense::Tense;
 pub use self::transitivity::Transitivity;
 pub use self::voice::Voice;

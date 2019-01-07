@@ -1,39 +1,39 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum PartOfSpeach {
+pub enum PartOfSpeech {
     /// имя существительное
     Noun,
     /// имя прилагательное (полное)
-    Adjf,
+    AdjectiveFull,
     /// имя прилагательное (краткое)
-    Adjs,
+    AdjectiveShort,
     /// компаратив
-    Comp,
+    Comparative,
     /// глагол (личная форма)
     Verb,
     /// глагол (инфинитив)
-    Infn,
+    Infinitive,
     /// причастие (полное)
-    Prtf,
+    ParticipleFull,
     /// причастие (краткое)
-    Prts,
+    ParticipleShort,
     /// деепричастие
-    Grnd,
+    Gerund,
     /// числительное
-    Numr,
+    Number,
     /// наречие
-    Advb,
+    Adverb,
     /// местоимение-существительное
-    Npro,
+    Pronoun,
     /// предикатив
-    Pred,
+    Predicative,
     /// предлог
-    Prep,
+    Preposition,
     /// союз
-    Conj,
+    Conjunction,
     /// частица
-    Prcl,
+    Particle,
     /// междометие
-    Intj,
+    Interjection,
 }
 
 regex!(
@@ -61,43 +61,50 @@ regex!(
 "
 );
 
-impl PartOfSpeach {
+impl PartOfSpeech {
     pub fn try_from_str<S>(s: S) -> Option<Self>
     where
         S: AsRef<str>,
     {
-        use self::PartOfSpeach::*;
+        use self::PartOfSpeech::*;
 
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
                 "NOUN" => Some(Noun),
-                "ADJF" => Some(Adjf),
-                "ADJS" => Some(Adjs),
-                "COMP" => Some(Comp),
+                "ADJF" => Some(AdjectiveFull),
+                "ADJS" => Some(AdjectiveShort),
+                "COMP" => Some(Comparative),
                 "VERB" => Some(Verb),
-                "INFN" => Some(Infn),
-                "PRTF" => Some(Prtf),
-                "PRTS" => Some(Prts),
-                "GRND" => Some(Grnd),
-                "NUMR" => Some(Numr),
-                "ADVB" => Some(Advb),
-                "NPRO" => Some(Npro),
-                "PRED" => Some(Pred),
-                "PREP" => Some(Prep),
-                "CONJ" => Some(Conj),
-                "PRCL" => Some(Prcl),
-                "INTJ" => Some(Intj),
+                "INFN" => Some(Infinitive),
+                "PRTF" => Some(ParticipleFull),
+                "PRTS" => Some(ParticipleShort),
+                "GRND" => Some(Gerund),
+                "NUMR" => Some(Number),
+                "ADVB" => Some(Adverb),
+                "NPRO" => Some(Pronoun),
+                "PRED" => Some(Predicative),
+                "PREP" => Some(Preposition),
+                "CONJ" => Some(Conjunction),
+                "PRCL" => Some(Particle),
+                "INTJ" => Some(Interjection),
                 _ => None,
             })
     }
 
     pub fn is_productive(self) -> bool {
-        use self::PartOfSpeach::*;
+        use self::PartOfSpeech::*;
 
         match self {
-            Conj | Numr | Npro | Pred | Prep | Prcl | Intj => false,
+            | Conjunction
+            | Number
+            | Pronoun
+            | Predicative
+            | Preposition
+            | Particle
+            | Interjection
+            => false,
             _ => true,
         }
     }
@@ -109,11 +116,11 @@ mod tests {
 
     #[test]
     fn try_from_str() {
-        assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_str("NOUN"));
+        assert_eq!(Some(PartOfSpeech::Noun), PartOfSpeech::try_from_str("NOUN"));
         assert_eq!(
-            Some(PartOfSpeach::Noun),
-            PartOfSpeach::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn")
+            Some(PartOfSpeech::Noun),
+            PartOfSpeech::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn")
         );
-        assert_eq!(None, PartOfSpeach::try_from_str("UNKN"));
+        assert_eq!(None, PartOfSpeech::try_from_str("UNKN"));
     }
 }
