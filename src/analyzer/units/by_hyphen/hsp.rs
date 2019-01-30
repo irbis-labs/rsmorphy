@@ -1,9 +1,7 @@
-use analyzer::units::abc::*;
-use analyzer::MorphAnalyzer;
-use container::stack::StackParticle;
-use container::HyphenSeparatedParticle;
-use container::Lex;
-use container::{ParseResult, Parsed, SeenSet};
+use crate::{
+    analyzer::{units::abc::*, MorphAnalyzer},
+    container::{stack::StackParticle, HyphenSeparatedParticle, Lex, ParseResult, Parsed, SeenSet},
+};
 
 // TODO move into `Dictionary`
 pub static PARTICLES_AFTER_HYPHEN: [&'static str; 8] = [
@@ -42,19 +40,19 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("HyphenSeparatedParticleAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("HyphenSeparatedParticleAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         for &particle in &PARTICLES_AFTER_HYPHEN {
             if word_lower.len() <= particle.len() || !word_lower.ends_with(particle) {
                 continue;
             };
-            trace!(r#" particle: "{}" "#, particle);
+            log::trace!(r#" particle: "{}" "#, particle);
             let unsuffixed_word = &word_lower[..word_lower.len() - particle.len()];
-            trace!(r#" unsuffixed_word: "{}" "#, unsuffixed_word);
+            log::trace!(r#" unsuffixed_word: "{}" "#, unsuffixed_word);
 
             'subparse: for parsed in morph.parse(unsuffixed_word) {
-                trace!(r#" subparsed: {:?} "#, parsed);
+                log::trace!(r#" subparsed: {:?} "#, parsed);
                 let lex_stack = parsed.lex.stack;
                 // If a word ends with with one of the particles, it can't ends with an another.
                 if lex_stack.particle.is_some() {

@@ -25,14 +25,25 @@ impl Gender {
     where
         S: AsRef<str>,
     {
+        use self::Gender::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "masc" => Some(Gender::Masc),
-                "femn" => Some(Gender::Femn),
-                "neut" => Some(Gender::Neut),
+                "masc" => Some(Masc),
+                "femn" => Some(Femn),
+                "neut" => Some(Neut),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Gender::*;
+
+        match self {
+            Masc => "мужской род",
+            Femn => "женский род",
+            Neut => "средний род",
+        }
     }
 }

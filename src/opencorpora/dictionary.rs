@@ -1,24 +1,31 @@
-use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap, HashSet};
-use std::fmt;
-use std::fs::File;
-use std::io::Read;
-use std::iter::FromIterator;
-use std::path::{Path, PathBuf};
+use std::{
+    borrow::Cow,
+    collections::{BTreeMap, HashMap, HashSet},
+    fmt,
+    fs::File,
+    io::Read,
+    iter::FromIterator,
+    path::{Path, PathBuf},
+};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use flate2::read::GzDecoder;
+use maplit::hashset;
 use serde_json;
 use serde_json::Value;
 
-use container::paradigm::{ParadigmId, ParadigmIndex};
-pub use dawg::HH;
-pub use dawg::HHH;
-use dawg::{CompletionDawg, Dawg};
-use opencorpora::grammeme::{Grammeme, GrammemeReg};
-use opencorpora::paradigm::ParadigmEntry;
-use opencorpora::tag::OpencorporaTagReg;
-use util::DumbProfiler;
+pub use crate::dawg::{HH, HHH};
+
+use crate::{
+    container::paradigm::{ParadigmId, ParadigmIndex},
+    dawg::{CompletionDawg, Dawg},
+    opencorpora::{
+        grammeme::{Grammeme, GrammemeReg},
+        paradigm::ParadigmEntry,
+        tag::OpencorporaTagReg,
+    },
+    util::DumbProfiler,
+};
 
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
@@ -211,7 +218,7 @@ impl Dictionary {
         profiler.waypoint("prediction_suffixes_dawgs");
 
         // TODO load char_substitutes
-        let char_substitutes = btreemap! {"е".into() => "ё".into()};
+        let char_substitutes = maplit::btreemap! {"е".into() => "ё".into()};
 
         Dictionary {
             meta,

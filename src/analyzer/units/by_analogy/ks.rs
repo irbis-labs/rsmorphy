@@ -1,10 +1,13 @@
 use std::borrow::Cow;
 
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::stack::StackAffix;
-use container::{Affix, Dictionary, Lex, ParseResult, Parsed, Score, Seen, SeenSet, WordStruct};
-use opencorpora::dictionary::{PredictionSuffixesDawg, HHH};
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{
+        stack::StackAffix, Affix, Dictionary, Lex, ParseResult, Parsed, Score, Seen, SeenSet,
+        WordStruct,
+    },
+    opencorpora::dictionary::{PredictionSuffixesDawg, HHH},
+};
 
 /// Parse the word by checking how the words with similar suffixes
 /// are parsed.
@@ -35,8 +38,8 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
-        trace!("KnownSuffixAnalyzer::parse()");
-        trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
+        log::trace!("KnownSuffixAnalyzer::parse()");
+        log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
         let char_len: usize = word_lower.chars().count();
 
@@ -50,7 +53,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
         let mut total_counts: Vec<u16> = vec![1; morph.dict.paradigm_prefixes.len()];
 
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
-            trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
+            log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
             'iter_splits: for &i in &morph.dict.prediction_splits {
                 if i >= char_len {
@@ -62,21 +65,25 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                     .take(char_len - i)
                     .map(char::len_utf8)
                     .sum();
-                trace!("i: {}, pos: {}", i, pos);
+                log::trace!("i: {}, pos: {}", i, pos);
 
                 let (word_start, word_end) = (&word_lower[..pos], &word_lower[pos..]);
-                trace!("word_start: {}, word_end: {}", word_start, word_end);
+                log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
                 let para_data = suffixes_dawg.similar_items(word_end, &morph.dict.char_substitutes);
                 for (fixed_suffix, parses) in para_data {
-                    trace!("fixed_suffix: {}", fixed_suffix);
-
                     let fixed_word: Cow<str> = if fixed_suffix == word_end {
                         Cow::from(word_lower)
                     } else {
                         Cow::from(format!("{}{}", word_start, fixed_suffix))
                     };
+                    log::trace!(
+                        "fixed_suffix: {:?}, fixed_word: {:?}",
+                        fixed_suffix,
+                        fixed_word
+                    );
 
+                    log::trace!("parses: {:?}", parses);
                     'iter_parses: for HHH(cnt, para_id, idx) in parses {
                         let tag = morph.dict.get_tag(para_id.into(), idx.into());
 
@@ -84,6 +91,13 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                             continue 'iter_parses;
                         }
 
+                        log::trace!("tc: {:?}", total_counts);
+                        log::trace!(
+                            "prefix_id: {:?}, tc[prefix_id]: {:?}, cnt: {:?}",
+                            prefix_id,
+                            total_counts[prefix_id as usize],
+                            cnt
+                        );
                         total_counts[prefix_id as usize] += cnt;
 
                         let seen = Seen::new(fixed_word.clone(), tag, para_id);

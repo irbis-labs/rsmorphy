@@ -1,7 +1,7 @@
 use boolinator::Boolinator;
 use serde_json::Value;
 
-use opencorpora::Grammeme;
+use crate::opencorpora::Grammeme;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GrammemeReg {

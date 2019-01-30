@@ -1,10 +1,11 @@
 use std::path::Path;
 
-use container::{ParseResult, SeenSet};
-use opencorpora::dictionary::Dictionary;
-
-use analyzer::units::*;
-use estimator::SingleTagProbabilityEstimator;
+use crate::{
+    analyzer::units::*,
+    container::{ParseResult, SeenSet},
+    estimator::SingleTagProbabilityEstimator,
+    opencorpora::dictionary::Dictionary,
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct Units {
@@ -107,10 +108,11 @@ impl MorphAnalyzer {
 #[cfg(test)]
 mod tests {
     use env_logger;
-    use {rsmorphy_dict_ru, MorphAnalyzer};
 
-    lazy_static! {
-        static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
+    use crate::MorphAnalyzer;
+
+    lazy_static::lazy_static! {
+        static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
     }
 
     #[test]

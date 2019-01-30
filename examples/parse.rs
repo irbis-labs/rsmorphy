@@ -1,11 +1,12 @@
 //extern crate rustyline;
 extern crate rsmorphy;
 
-use rsmorphy::{prelude::*, rsmorphy_dict_ru};
+use dict_ru;
+use rsmorphy::prelude::*;
 
 pub mod util;
 
-use util::{input_loop, print_row_parsed};
+use crate::util::{input_loop, print_row_parsed};
 
 fn table(morph: &MorphAnalyzer, s: &str) {
     for (i, parsed) in morph.parse(s).into_iter().enumerate() {
@@ -14,7 +15,7 @@ fn table(morph: &MorphAnalyzer, s: &str) {
 }
 
 fn main() {
-    let morph_ru = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
+    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
 
     input_loop(|word| table(&morph_ru, word))
 }

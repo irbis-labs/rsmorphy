@@ -1,12 +1,9 @@
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackSource;
-use container::Lex;
-use container::Shaped;
-use container::{ParseResult, Parsed, SeenSet};
-use opencorpora::OpencorporaTagReg;
-use shapes::is_roman_number;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{abc::*, stack::StackSource, Lex, ParseResult, Parsed, SeenSet, Shaped},
+    opencorpora::OpencorporaTagReg,
+    shapes::is_roman_number,
+};
 
 #[derive(Debug, Clone)]
 pub struct RomanAnalyzer {
@@ -30,8 +27,8 @@ impl AnalyzerUnit for RomanAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("RomanAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("RomanAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         if !is_roman_number(word_lower) {
             return;
         }

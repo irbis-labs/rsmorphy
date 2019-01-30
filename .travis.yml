@@ -40,7 +40,7 @@ env:
   - DEADLINKS_VERS=0.3.0
   - RUSTFLAGS="-C link-dead-code"
   - RUST_LOG=off
-  - TARPAULIN_VERS=0.6.8
+  - TARPAULIN_VERS=0.7.0
 
 install:
 - cargo install --list
@@ -52,7 +52,7 @@ script: skip
 jobs:
   include:
   - stage: test
-    rust: 1.27.0
+    rust: 1.31.0
     script:
     - cargo test --verbose --all -- --test-threads=1
 
@@ -67,7 +67,7 @@ jobs:
     - cargo test --verbose --all -- --test-threads=1
 
   - stage: test
-    rust: nightly-2018-11-18
+    rust: nightly-2019-01-29
     script:
     - cargo test --verbose --all -- --test-threads=1
 
@@ -106,7 +106,7 @@ jobs:
     - cargo clippy -- -D warnings
 
   - stage: quality
-    rust: nightly-2018-11-18
+    rust: nightly-2019-01-29
     env:
     - FEATURE=cov
     install:

@@ -1,10 +1,14 @@
-use analyzer::units::abc::*;
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackSource;
-use container::{HyphenAdverb, Lex, ParseResult, Parsed, Score, SeenSet, WordStruct};
-use opencorpora::kind::{Case, Number, PartOfSpeach};
-use opencorpora::OpencorporaTagReg;
+use crate::{
+    analyzer::{units::abc::*, MorphAnalyzer},
+    container::{
+        abc::*, stack::StackSource, HyphenAdverb, Lex, ParseResult, Parsed, Score, SeenSet,
+        WordStruct,
+    },
+    opencorpora::{
+        kind::{Case, Number, PartOfSpeach},
+        OpencorporaTagReg,
+    },
+};
 
 const HA_PREFIX: &str = "по-";
 const HA_SCORE: Score = Score::Fake(0.7);
@@ -35,8 +39,8 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("HyphenAdverbAnalyzer::parse()");
-        trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
+        log::trace!("HyphenAdverbAnalyzer::parse()");
+        log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
         if word.chars().count() < 5 || !word.starts_with(HA_PREFIX) {
             return;

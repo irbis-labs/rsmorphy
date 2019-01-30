@@ -1,9 +1,14 @@
-use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
+use std::{
+    collections::HashSet,
+    hash::{Hash, Hasher},
+};
 
-use analyzer::MorphAnalyzer;
-use opencorpora::grammeme::GrammemeSet;
-use opencorpora::kind::*;
+use maplit::hashset;
+
+use crate::{
+    analyzer::MorphAnalyzer,
+    opencorpora::{grammeme::GrammemeSet, kind::*},
+};
 
 //#[derive(Deserialize)]
 #[derive(Debug, Clone, Eq)]
@@ -142,7 +147,9 @@ impl OpencorporaTagReg {
             set: match x {
                 None => HashSet::default(),
                 Some((number, None)) => hashset! { number.to_grammeme() },
-                Some((number, Some(case))) => hashset! { number.to_grammeme(), case.to_grammeme() },
+                Some((number, Some(case))) => {
+                    maplit::hashset! { number.to_grammeme(), case.to_grammeme() }
+                }
             },
         }
     }

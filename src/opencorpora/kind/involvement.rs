@@ -21,13 +21,23 @@ impl Involvement {
     where
         S: AsRef<str>,
     {
+        use self::Involvement::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "incl" => Some(Involvement::Incl),
-                "excl" => Some(Involvement::Excl),
+                "incl" => Some(Incl),
+                "excl" => Some(Excl),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Involvement::*;
+
+        match self {
+            Incl => "говорящий включён в действие",
+            Excl => "говорящий не включён в действие",
+        }
     }
 }

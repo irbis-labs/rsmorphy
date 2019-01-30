@@ -1,9 +1,10 @@
-use std::borrow::Cow;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
+use std::{
+    borrow::Cow,
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+};
 
-use container::paradigm::ParadigmId;
-use opencorpora::tag::OpencorporaTagReg;
+use crate::{container::paradigm::ParadigmId, opencorpora::tag::OpencorporaTagReg};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {

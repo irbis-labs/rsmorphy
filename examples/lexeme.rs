@@ -3,11 +3,12 @@ extern crate rsmorphy;
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
 
-use rsmorphy::{prelude::*, rsmorphy_dict_ru};
+use dict_ru;
+use rsmorphy::prelude::*;
 
 pub mod util;
 
-use util::{input_loop, print_row_lex};
+use crate::util::{input_loop, print_row_lex};
 
 fn print_lexeme(morph: &MorphAnalyzer, lex: &Lex) {
     for (i, lex) in lex.iter_lexeme(morph).enumerate() {
@@ -30,7 +31,7 @@ fn list(morph: &MorphAnalyzer, s: &str) {
 }
 
 fn main() {
-    let morph_ru = MorphAnalyzer::from_file(rsmorphy_dict_ru::DICT_PATH);
+    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
 
     input_loop(|word| list(&morph_ru, word));
 }

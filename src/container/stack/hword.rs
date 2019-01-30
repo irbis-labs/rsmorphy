@@ -1,12 +1,15 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::paradigm::ParadigmId;
-use container::stack::{StackAffix, StackSource};
-use container::{Lex, Score};
-use opencorpora::OpencorporaTagReg;
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{
+        abc::*,
+        paradigm::ParadigmId,
+        stack::{StackAffix, StackSource},
+        Lex, Score,
+    },
+    opencorpora::OpencorporaTagReg,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackHyphenated {

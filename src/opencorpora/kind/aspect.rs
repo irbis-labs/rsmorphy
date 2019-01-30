@@ -21,13 +21,24 @@ impl Aspect {
     where
         S: AsRef<str>,
     {
+        use self::Aspect::*;
+
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "perf" => Some(Aspect::Perf),
-                "impf" => Some(Aspect::Impf),
+                "perf" => Some(Perf),
+                "impf" => Some(Impf),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Aspect::*;
+
+        match self {
+            Perf => "совершенный вид",
+            Impf => "несовершенный вид",
+        }
     }
 }

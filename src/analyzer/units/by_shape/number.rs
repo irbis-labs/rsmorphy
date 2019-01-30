@@ -1,13 +1,10 @@
 use std::str::FromStr;
 
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackSource;
-use container::Lex;
-use container::Shaped;
-use container::{ParseResult, Parsed, SeenSet};
-use opencorpora::OpencorporaTagReg;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{abc::*, stack::StackSource, Lex, ParseResult, Parsed, SeenSet, Shaped},
+    opencorpora::OpencorporaTagReg,
+};
 
 /// This analyzer marks integer numbers with "NUMB,int" or "NUMB,real" tags.
 ///
@@ -41,8 +38,8 @@ impl AnalyzerUnit for NumberAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("NumberAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("NumberAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         // TODO Improve number parser [#12]
         let shaped = if i128::from_str(word_lower).is_ok() {

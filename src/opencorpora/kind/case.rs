@@ -1,4 +1,4 @@
-use opencorpora::Grammeme;
+use crate::opencorpora::Grammeme;
 
 /// Падеж
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -54,40 +54,62 @@ impl Case {
     where
         S: AsRef<str>,
     {
+        use self::Case::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "nomn" => Some(Case::Nomn),
-                "gent" => Some(Case::Gent),
-                "datv" => Some(Case::Datv),
-                "accs" => Some(Case::Accs),
-                "ablt" => Some(Case::Ablt),
-                "loct" => Some(Case::Loct),
-                "voct" => Some(Case::Voct),
-                "gen1" => Some(Case::Gen1),
-                "gen2" => Some(Case::Gen2),
-                "acc2" => Some(Case::Acc2),
-                "loc1" => Some(Case::Loc1),
-                "loc2" => Some(Case::Loc2),
+                "nomn" => Some(Nomn),
+                "gent" => Some(Gent),
+                "datv" => Some(Datv),
+                "accs" => Some(Accs),
+                "ablt" => Some(Ablt),
+                "loct" => Some(Loct),
+                "voct" => Some(Voct),
+                "gen1" => Some(Gen1),
+                "gen2" => Some(Gen2),
+                "acc2" => Some(Acc2),
+                "loc1" => Some(Loc1),
+                "loc2" => Some(Loc2),
                 _ => None,
             })
     }
 
     pub fn to_grammeme(self) -> Grammeme {
+        use self::Case::*;
+
         match self {
-            Case::Nomn => Grammeme::new("nomn"),
-            Case::Gent => Grammeme::new("gent"),
-            Case::Datv => Grammeme::new("datv"),
-            Case::Accs => Grammeme::new("accs"),
-            Case::Ablt => Grammeme::new("ablt"),
-            Case::Loct => Grammeme::new("loct"),
-            Case::Voct => Grammeme::new("voct"),
-            Case::Gen1 => Grammeme::new("gen1"),
-            Case::Gen2 => Grammeme::new("gen2"),
-            Case::Acc2 => Grammeme::new("acc2"),
-            Case::Loc1 => Grammeme::new("loc1"),
-            Case::Loc2 => Grammeme::new("loc2"),
+            Nomn => Grammeme::new("nomn"),
+            Gent => Grammeme::new("gent"),
+            Datv => Grammeme::new("datv"),
+            Accs => Grammeme::new("accs"),
+            Ablt => Grammeme::new("ablt"),
+            Loct => Grammeme::new("loct"),
+            Voct => Grammeme::new("voct"),
+            Gen1 => Grammeme::new("gen1"),
+            Gen2 => Grammeme::new("gen2"),
+            Acc2 => Grammeme::new("acc2"),
+            Loc1 => Grammeme::new("loc1"),
+            Loc2 => Grammeme::new("loc2"),
+        }
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Case::*;
+
+        match self {
+            Nomn => "именительный падеж",
+            Gent => "родительный падеж",
+            Datv => "дательный падеж",
+            Accs => "винительный падеж",
+            Ablt => "творительный падеж",
+            Loct => "предложный падеж",
+            Voct => "звательный падеж",
+            Gen1 => "первый родительный падеж",
+            Gen2 => "второй родительный (частичный) падеж",
+            Acc2 => "второй винительный падеж",
+            Loc1 => "первый предложный падеж",
+            Loc2 => "второй предложный (местный) падеж",
         }
     }
 }

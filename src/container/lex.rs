@@ -1,13 +1,10 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::decode::*;
-use container::paradigm::ParadigmId;
-use container::stack::StackParticle;
-use container::{Score, Seen};
-use opencorpora::{GrammemeSet, OpencorporaTagReg};
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{abc::*, decode::*, paradigm::ParadigmId, stack::StackParticle, Score, Seen},
+    opencorpora::{GrammemeSet, OpencorporaTagReg},
+};
 
 pub type Lexeme = Vec<Lex>;
 

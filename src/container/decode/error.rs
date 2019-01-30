@@ -1,5 +1,4 @@
-use std::num::ParseFloatError;
-use std::num::ParseIntError;
+use std::num::{ParseFloatError, ParseIntError};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DecodeError {

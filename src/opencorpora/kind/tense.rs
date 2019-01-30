@@ -24,14 +24,25 @@ impl Tense {
     where
         S: AsRef<str>,
     {
+        use self::Tense::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "pres" => Some(Tense::Pres),
-                "past" => Some(Tense::Past),
-                "futr" => Some(Tense::Futr),
+                "pres" => Some(Pres),
+                "past" => Some(Past),
+                "futr" => Some(Futr),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Tense::*;
+
+        match self {
+            Pres => "настоящее время",
+            Past => "прошедшее время",
+            Futr => "будущее время",
+        }
     }
 }

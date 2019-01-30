@@ -21,13 +21,23 @@ impl Transitivity {
     where
         S: AsRef<str>,
     {
+        use self::Transitivity::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "tran" => Some(Transitivity::Tran),
-                "intr" => Some(Transitivity::Intr),
+                "tran" => Some(Tran),
+                "intr" => Some(Intr),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Transitivity::*;
+
+        match self {
+            Tran => "переходный",
+            Intr => "непереходный",
+        }
     }
 }

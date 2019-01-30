@@ -21,13 +21,24 @@ impl Animacy {
     where
         S: AsRef<str>,
     {
+        use self::Animacy::*;
+
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "anim" => Some(Animacy::Anim),
-                "inan" => Some(Animacy::Inan),
+                "anim" => Some(Anim),
+                "inan" => Some(Inan),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Animacy::*;
+
+        match self {
+            Anim => "одушевлённое",
+            Inan => "неодушевлённое",
+        }
     }
 }

@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use opencorpora::grammeme::Grammeme;
+use crate::opencorpora::grammeme::Grammeme;
 
 #[derive(Debug)]
 pub struct OTag {

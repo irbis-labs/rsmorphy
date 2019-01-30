@@ -1,13 +1,12 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::decode::*;
-use container::paradigm::ParadigmId;
-use container::stack::StackSource;
-use container::{Lex, Score, WordStruct};
-use opencorpora::tag::OpencorporaTagReg;
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{
+        abc::*, decode::*, paradigm::ParadigmId, stack::StackSource, Lex, Score, WordStruct,
+    },
+    opencorpora::tag::OpencorporaTagReg,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HyphenAdverb {

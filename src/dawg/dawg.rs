@@ -1,16 +1,9 @@
-use std::collections::BTreeMap;
-use std::fs::File;
-use std::io::Read;
-use std::marker::PhantomData;
-use std::path::Path;
+use std::{collections::BTreeMap, fs::File, io::Read, marker::PhantomData, path::Path};
 
 use base64;
 use flate2::read::GzDecoder;
 
-use dawg::completer::Completer;
-use dawg::dictionary::Dictionary;
-use dawg::guide::Guide;
-use dawg::value::DawgValue;
+use crate::dawg::{completer::Completer, dictionary::Dictionary, guide::Guide, value::DawgValue};
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 
@@ -116,7 +109,7 @@ where
         mut index: u32,
         replace_chars: &BTreeMap<String, String>,
     ) {
-        trace!(r#"DAWG::similar_items_() index: {}"#, index);
+        log::trace!(r#"DAWG::similar_items_() index: {}"#, index);
 
         let start_pos = current_prefix.len();
         let subkey = &key[start_pos..];
@@ -124,17 +117,17 @@ where
         let mut word_pos = start_pos;
 
         for b_step in subkey.split("").filter(|v| !v.is_empty()) {
-            trace!(r#" b_step: {:?}"#, b_step);
+            log::trace!(r#" b_step: {:?}"#, b_step);
 
             if let Some(replace_char) = replace_chars.get(b_step) {
-                trace!(
+                log::trace!(
                     r#" b_step in replace_chars ({:?} => {:?})"#,
                     b_step,
                     replace_char
                 );
 
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
-                    trace!(r#" next_index: {}"#, next_index);
+                    log::trace!(r#" next_index: {}"#, next_index);
                     let prefix = format!(
                         "{}{}{}",
                         current_prefix,
@@ -148,27 +141,27 @@ where
                 Some(v) => v,
                 None => return,
             };
-            trace!(r#" index: {}"#, index);
+            log::trace!(r#" index: {}"#, index);
             word_pos += b_step.len()
         }
         if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
-            trace!(r#" index: {}"#, index);
+            log::trace!(r#" index: {}"#, index);
             let found_key = format!("{}{}", current_prefix, subkey);
-            trace!(r#" found_key: {}"#, found_key);
+            log::trace!(r#" found_key: {}"#, found_key);
             let value = self.value_for_index_(index);
             result.insert(0, (found_key, value));
         }
     }
 
     fn value_for_index_(&self, index: u32) -> Vec<V> {
-        trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
+        log::trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
         let mut result: Vec<V> = Vec::new();
         let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, "");
         while let Some(key) = completer.next_key() {
-            trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
+            log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
             let value = V::new_in_place(move |buf| {
                 let decoded = base64::decode_config_slice(&key, base64::STANDARD, buf).unwrap();
-                trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
+                log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
                 assert_eq!(decoded, buf.len());
             });
             result.push(value);

@@ -1,15 +1,10 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackSource;
-use container::Lex;
-use container::Score;
-use opencorpora::tag::OpencorporaTagReg;
-
-use container::decode::*;
-use container::paradigm::ParadigmId;
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{abc::*, decode::*, paradigm::ParadigmId, stack::StackSource, Lex, Score},
+    opencorpora::tag::OpencorporaTagReg,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Unknown {

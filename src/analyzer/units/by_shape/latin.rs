@@ -1,12 +1,9 @@
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackSource;
-use container::Lex;
-use container::Shaped;
-use container::{ParseResult, Parsed, SeenSet};
-use opencorpora::OpencorporaTagReg;
-use shapes::is_latin;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{abc::*, stack::StackSource, Lex, ParseResult, Parsed, SeenSet, Shaped},
+    opencorpora::OpencorporaTagReg,
+    shapes::is_latin,
+};
 
 /// This analyzer marks latin words with "LATN" tag.
 ///
@@ -34,8 +31,8 @@ impl AnalyzerUnit for LatinAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("LatinAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("LatinAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         if !is_latin(word_lower) {
             return;
         }

@@ -1,16 +1,14 @@
-use std::borrow::Cow;
-use std::collections::BTreeSet;
-use std::iter::FromIterator;
+use std::{borrow::Cow, collections::BTreeSet, iter::FromIterator};
 
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::stack::StackSource;
-use container::{Initials, InitialsKind};
-use container::{Lex, Score};
-use container::{ParseResult, Parsed, SeenSet};
-use opencorpora::OpencorporaTagReg;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{
+        stack::StackSource, Initials, InitialsKind, Lex, ParseResult, Parsed, Score, SeenSet,
+    },
+    opencorpora::OpencorporaTagReg,
+};
 
-lazy_static! {
+lazy_static::lazy_static! {
     #[derive(Debug)]
     pub static ref LETTERS: BTreeSet<&'static str> = {
         let set = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ".split("").filter(|v| !v.is_empty());
@@ -63,13 +61,13 @@ impl AnalyzerUnit for InitialsAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("AbbreviatedFirstNameAnalyzer::parse()");
-        trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
-        trace!(
+        log::trace!("AbbreviatedFirstNameAnalyzer::parse()");
+        log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
+        log::trace!(
             r#" LETTERS: "{:?}" "#,
             LETTERS.iter().cloned().collect::<Vec<&str>>().join(", ")
         );
-        trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
+        log::trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
 
         if let Some(&letter) = LETTERS.get(word) {
             for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {

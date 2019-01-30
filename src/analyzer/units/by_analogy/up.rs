@@ -1,12 +1,8 @@
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackAffix;
-use container::Affix;
-use container::Lex;
-use container::{ParseResult, Parsed, SeenSet};
-use util::add_parsed_if_not_seen;
-use util::word_splits;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{abc::*, stack::StackAffix, Affix, Lex, ParseResult, Parsed, SeenSet},
+    util::{add_parsed_if_not_seen, word_splits},
+};
 
 // FIXME unused const MIN_REMINDER_LENGTH: isize = 3;
 
@@ -36,8 +32,8 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
-        trace!("UnknownPrefixAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("UnknownPrefixAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         for (prefix, unprefixed_word) in word_splits(word_lower, None, None) {
             let mut subresult = ParseResult::new();

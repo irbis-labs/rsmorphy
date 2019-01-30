@@ -1,12 +1,15 @@
-use {
+use std::{borrow::Cow, fmt};
+
+use crate::{
     analyzer::MorphAnalyzer,
     container::{
         abc::*, paradigm::ParadigmId, Dictionary, HyphenAdverb, Initials, Lex, Score, Shaped,
         Unknown,
     },
     opencorpora::OpencorporaTagReg,
-    std::{borrow::Cow, fmt},
 };
+
+use self::StackSource::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum StackSource {
@@ -27,35 +30,35 @@ impl StackSource {
 
     pub fn as_dictionary(&self) -> Option<&Dictionary> {
         match self {
-            StackSource::Dictionary(source) => Some(source),
+            Dictionary(source) => Some(source),
             _ => None,
         }
     }
 
     pub fn as_hyphen_adverb(&self) -> Option<&HyphenAdverb> {
         match self {
-            StackSource::HyphenAdverb(source) => Some(source),
+            HyphenAdverb(source) => Some(source),
             _ => None,
         }
     }
 
     pub fn as_initials(&self) -> Option<&Initials> {
         match self {
-            StackSource::Initials(source) => Some(source),
+            Initials(source) => Some(source),
             _ => None,
         }
     }
 
     pub fn as_shaped(&self) -> Option<&Shaped> {
         match self {
-            StackSource::Shaped(source) => Some(source),
+            Shaped(source) => Some(source),
             _ => None,
         }
     }
 
     pub fn as_unknown(&self) -> Option<&Unknown> {
         match self {
-            StackSource::Unknown(source) => Some(source),
+            Unknown(source) => Some(source),
             _ => None,
         }
     }
@@ -65,153 +68,166 @@ impl StackSource {
         morph: &'m MorphAnalyzer,
     ) -> Box<dyn Iterator<Item = Lex> + 'i> {
         match self {
-            StackSource::Dictionary(source) => Box::new(source.iter_lexeme(morph)),
-            StackSource::HyphenAdverb(source) => Box::new(source.iter_lexeme(morph)),
-            StackSource::Initials(source) => Box::new(source.iter_lexeme(morph)),
-            StackSource::Shaped(source) => Box::new(source.iter_lexeme(morph)),
-            StackSource::Unknown(source) => Box::new(source.iter_lexeme(morph)),
+            Dictionary(source) => Box::new(source.iter_lexeme(morph)),
+            HyphenAdverb(source) => Box::new(source.iter_lexeme(morph)),
+            Initials(source) => Box::new(source.iter_lexeme(morph)),
+            Shaped(source) => Box::new(source.iter_lexeme(morph)),
+            Unknown(source) => Box::new(source.iter_lexeme(morph)),
+        }
+    }
+
+    pub fn title_rus(&self) -> &'static str {
+        match self {
+            Dictionary(dict_source) => match dict_source.word_lower().is_known() {
+                true => "Словарное слово",
+                false => "Неизвестное слово",
+            },
+            HyphenAdverb(_) => "Наречие с дефисом",
+            Initials(_) => "Инициал",
+            Shaped(_) => "Не слово",
+            Unknown(_) => "Неизвестное слово",
         }
     }
 }
 
 impl From<Dictionary> for StackSource {
     fn from(source: Dictionary) -> Self {
-        StackSource::Dictionary(source)
+        Dictionary(source)
     }
 }
 
 impl From<HyphenAdverb> for StackSource {
     fn from(source: HyphenAdverb) -> Self {
-        StackSource::HyphenAdverb(source)
+        HyphenAdverb(source)
     }
 }
 
 impl From<Initials> for StackSource {
     fn from(source: Initials) -> Self {
-        StackSource::Initials(source)
+        Initials(source)
     }
 }
 
 impl From<Shaped> for StackSource {
     fn from(source: Shaped) -> Self {
-        StackSource::Shaped(source)
+        Shaped(source)
     }
 }
 
 impl From<Unknown> for StackSource {
     fn from(source: Unknown) -> Self {
-        StackSource::Unknown(source)
+        Unknown(source)
     }
 }
 
 impl Source for StackSource {
     fn score(&self) -> Score {
         match *self {
-            StackSource::Dictionary(ref source) => source.score(),
-            StackSource::HyphenAdverb(ref source) => source.score(),
-            StackSource::Initials(ref source) => source.score(),
-            StackSource::Shaped(ref source) => source.score(),
-            StackSource::Unknown(ref source) => source.score(),
+            Dictionary(ref source) => source.score(),
+            HyphenAdverb(ref source) => source.score(),
+            Initials(ref source) => source.score(),
+            Shaped(ref source) => source.score(),
+            Unknown(ref source) => source.score(),
         }
     }
 
     fn is_lemma(&self) -> bool {
         match *self {
-            StackSource::Dictionary(ref source) => source.is_lemma(),
-            StackSource::HyphenAdverb(ref source) => source.is_lemma(),
-            StackSource::Initials(ref source) => source.is_lemma(),
-            StackSource::Shaped(ref source) => source.is_lemma(),
-            StackSource::Unknown(ref source) => source.is_lemma(),
+            Dictionary(ref source) => source.is_lemma(),
+            HyphenAdverb(ref source) => source.is_lemma(),
+            Initials(ref source) => source.is_lemma(),
+            Shaped(ref source) => source.is_lemma(),
+            Unknown(ref source) => source.is_lemma(),
         }
     }
 
     fn is_known(&self) -> bool {
         match *self {
-            StackSource::Dictionary(ref source) => source.is_known(),
-            StackSource::HyphenAdverb(ref source) => source.is_known(),
-            StackSource::Initials(ref source) => source.is_known(),
-            StackSource::Shaped(ref source) => source.is_known(),
-            StackSource::Unknown(ref source) => source.is_known(),
+            Dictionary(ref source) => source.is_known(),
+            HyphenAdverb(ref source) => source.is_known(),
+            Initials(ref source) => source.is_known(),
+            Shaped(ref source) => source.is_known(),
+            Unknown(ref source) => source.is_known(),
         }
     }
 
     fn get_word(&self) -> Cow<str> {
         match *self {
-            StackSource::Dictionary(ref source) => source.get_word(),
-            StackSource::HyphenAdverb(ref source) => source.get_word(),
-            StackSource::Initials(ref source) => source.get_word(),
-            StackSource::Shaped(ref source) => source.get_word(),
-            StackSource::Unknown(ref source) => source.get_word(),
+            Dictionary(ref source) => source.get_word(),
+            HyphenAdverb(ref source) => source.get_word(),
+            Initials(ref source) => source.get_word(),
+            Shaped(ref source) => source.get_word(),
+            Unknown(ref source) => source.get_word(),
         }
     }
 
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
         match *self {
-            StackSource::Dictionary(ref source) => source.get_normal_form(morph),
-            StackSource::HyphenAdverb(ref source) => source.get_normal_form(morph),
-            StackSource::Initials(ref source) => source.get_normal_form(morph),
-            StackSource::Shaped(ref source) => source.get_normal_form(morph),
-            StackSource::Unknown(ref source) => source.get_normal_form(morph),
+            Dictionary(ref source) => source.get_normal_form(morph),
+            HyphenAdverb(ref source) => source.get_normal_form(morph),
+            Initials(ref source) => source.get_normal_form(morph),
+            Shaped(ref source) => source.get_normal_form(morph),
+            Unknown(ref source) => source.get_normal_form(morph),
         }
     }
 
     fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
         match *self {
-            StackSource::Dictionary(ref source) => source.get_tag(morph),
-            StackSource::HyphenAdverb(ref source) => source.get_tag(morph),
-            StackSource::Initials(ref source) => source.get_tag(morph),
-            StackSource::Shaped(ref source) => source.get_tag(morph),
-            StackSource::Unknown(ref source) => source.get_tag(morph),
+            Dictionary(ref source) => source.get_tag(morph),
+            HyphenAdverb(ref source) => source.get_tag(morph),
+            Initials(ref source) => source.get_tag(morph),
+            Shaped(ref source) => source.get_tag(morph),
+            Unknown(ref source) => source.get_tag(morph),
         }
     }
 
     fn try_get_para_id(&self) -> Option<ParadigmId> {
         match *self {
-            StackSource::Dictionary(ref source) => source.try_get_para_id(),
-            StackSource::HyphenAdverb(ref source) => source.try_get_para_id(),
-            StackSource::Initials(ref source) => source.try_get_para_id(),
-            StackSource::Shaped(ref source) => source.try_get_para_id(),
-            StackSource::Unknown(ref source) => source.try_get_para_id(),
+            Dictionary(ref source) => source.try_get_para_id(),
+            HyphenAdverb(ref source) => source.try_get_para_id(),
+            Initials(ref source) => source.try_get_para_id(),
+            Shaped(ref source) => source.try_get_para_id(),
+            Unknown(ref source) => source.try_get_para_id(),
         }
     }
 
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match *self {
-            StackSource::Dictionary(ref source) => source.write_word(f),
-            StackSource::HyphenAdverb(ref source) => source.write_word(f),
-            StackSource::Initials(ref source) => source.write_word(f),
-            StackSource::Shaped(ref source) => source.write_word(f),
-            StackSource::Unknown(ref source) => source.write_word(f),
+            Dictionary(ref source) => source.write_word(f),
+            HyphenAdverb(ref source) => source.write_word(f),
+            Initials(ref source) => source.write_word(f),
+            Shaped(ref source) => source.write_word(f),
+            Unknown(ref source) => source.write_word(f),
         }
     }
 
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, morph: &MorphAnalyzer) -> fmt::Result {
         match *self {
-            StackSource::Dictionary(ref source) => source.write_normal_form(f, morph),
-            StackSource::HyphenAdverb(ref source) => source.write_normal_form(f, morph),
-            StackSource::Initials(ref source) => source.write_normal_form(f, morph),
-            StackSource::Shaped(ref source) => source.write_normal_form(f, morph),
-            StackSource::Unknown(ref source) => source.write_normal_form(f, morph),
+            Dictionary(ref source) => source.write_normal_form(f, morph),
+            HyphenAdverb(ref source) => source.write_normal_form(f, morph),
+            Initials(ref source) => source.write_normal_form(f, morph),
+            Shaped(ref source) => source.write_normal_form(f, morph),
+            Unknown(ref source) => source.write_normal_form(f, morph),
         }
     }
 
     fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
         match *self {
-            StackSource::Dictionary(ref source) => source.get_lexeme(morph),
-            StackSource::HyphenAdverb(ref source) => source.get_lexeme(morph),
-            StackSource::Initials(ref source) => source.get_lexeme(morph),
-            StackSource::Shaped(ref source) => source.get_lexeme(morph),
-            StackSource::Unknown(ref source) => source.get_lexeme(morph),
+            Dictionary(ref source) => source.get_lexeme(morph),
+            HyphenAdverb(ref source) => source.get_lexeme(morph),
+            Initials(ref source) => source.get_lexeme(morph),
+            Shaped(ref source) => source.get_lexeme(morph),
+            Unknown(ref source) => source.get_lexeme(morph),
         }
     }
 
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex {
         match *self {
-            StackSource::Dictionary(ref source) => source.get_lemma(morph),
-            StackSource::HyphenAdverb(ref source) => source.get_lemma(morph),
-            StackSource::Initials(ref source) => source.get_lemma(morph),
-            StackSource::Shaped(ref source) => source.get_lemma(morph),
-            StackSource::Unknown(ref source) => source.get_lemma(morph),
+            Dictionary(ref source) => source.get_lemma(morph),
+            HyphenAdverb(ref source) => source.get_lemma(morph),
+            Initials(ref source) => source.get_lemma(morph),
+            Shaped(ref source) => source.get_lemma(morph),
+            Unknown(ref source) => source.get_lemma(morph),
         }
     }
 }
@@ -219,11 +235,11 @@ impl Source for StackSource {
 impl MorphySerde for StackSource {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match *self {
-            StackSource::Dictionary(ref source) => source.encode(f),
-            StackSource::HyphenAdverb(ref source) => source.encode(f),
-            StackSource::Initials(ref source) => source.encode(f),
-            StackSource::Shaped(ref source) => source.encode(f),
-            StackSource::Unknown(ref source) => source.encode(f),
+            Dictionary(ref source) => source.encode(f),
+            HyphenAdverb(ref source) => source.encode(f),
+            Initials(ref source) => source.encode(f),
+            Shaped(ref source) => source.encode(f),
+            Unknown(ref source) => source.encode(f),
         }
     }
 

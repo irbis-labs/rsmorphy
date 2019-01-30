@@ -1,3 +1,5 @@
+use self::AffixKind::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AffixKind {
     KnownSuffix,
@@ -24,48 +26,70 @@ impl Affix {
     where
         S: Into<String>,
     {
-        Affix::new(part, AffixKind::KnownSuffix)
+        Affix::new(part, KnownSuffix)
     }
 
     pub fn known_prefix<S>(part: S) -> Self
     where
         S: Into<String>,
     {
-        Affix::new(part, AffixKind::KnownPrefix)
+        Affix::new(part, KnownPrefix)
     }
 
     pub fn unknown_prefix<S>(part: S) -> Self
     where
         S: Into<String>,
     {
-        Affix::new(part, AffixKind::UnknownPrefix)
+        Affix::new(part, UnknownPrefix)
     }
 
     pub fn is_known(&self) -> bool {
         match self.kind {
-            AffixKind::KnownSuffix | AffixKind::KnownPrefix => true,
-            AffixKind::UnknownPrefix => false,
+            KnownSuffix | KnownPrefix => true,
+            UnknownPrefix => false,
         }
     }
 
     pub fn is_known_suffix(&self) -> bool {
         match self.kind {
-            AffixKind::KnownSuffix => true,
+            KnownSuffix => true,
             _ => false,
         }
     }
 
     pub fn is_known_prefix(&self) -> bool {
         match self.kind {
-            AffixKind::KnownPrefix => true,
+            KnownPrefix => true,
             _ => false,
         }
     }
 
     pub fn is_unknown_prefix(&self) -> bool {
         match self.kind {
-            AffixKind::UnknownPrefix => true,
+            UnknownPrefix => true,
             _ => false,
+        }
+    }
+
+    pub fn is_prefix(&self) -> bool {
+        match self.kind {
+            KnownPrefix | UnknownPrefix => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_suffix(&self) -> bool {
+        match self.kind {
+            KnownPrefix | UnknownPrefix => false,
+            _ => true,
+        }
+    }
+
+    pub fn title_rus(&self) -> &'static str {
+        match self.kind {
+            KnownPrefix => "Известный префикс",
+            KnownSuffix => "Известный суффикс",
+            UnknownPrefix => "Неизвестный префикс",
         }
     }
 }

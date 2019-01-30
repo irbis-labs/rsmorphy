@@ -1,13 +1,16 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::decode::*;
-use container::paradigm::ParadigmId;
-use container::stack::{StackAffix, StackHyphenated, StackSource};
-use container::{HyphenSeparatedParticle, Lex, Score};
-use opencorpora::OpencorporaTagReg;
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{
+        abc::*,
+        decode::*,
+        paradigm::ParadigmId,
+        stack::{StackAffix, StackHyphenated, StackSource},
+        HyphenSeparatedParticle, Lex, Score,
+    },
+    opencorpora::OpencorporaTagReg,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackParticle {

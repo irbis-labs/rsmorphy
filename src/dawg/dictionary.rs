@@ -1,12 +1,10 @@
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
+use std::{fs::File, io::Read, path::Path};
 
 use boolinator::Boolinator;
 use byteorder::{LittleEndian, ReadBytesExt};
 use flate2::read::GzDecoder;
 
-use dawg::units;
+use crate::dawg::units;
 
 /// Dictionary class for retrieval and binary I/O.
 #[derive(Debug, Clone)]
@@ -69,18 +67,18 @@ impl Dictionary {
 
     /// Follows a transition
     pub fn follow_char(&self, label: u8, index: u32) -> Option<u32> {
-        trace!(
+        log::trace!(
             r#"Dictionary::follow_char() label: {:x}, index = {:x} "#,
             label,
             index
         );
         let unit = self.units[index as usize];
-        trace!(r#"Dictionary::follow_char() unit: {:x} "#, unit);
+        log::trace!(r#"Dictionary::follow_char() unit: {:x} "#, unit);
         let offset = units::offset(unit);
-        trace!(r#"Dictionary::follow_char() offset: {:x} "#, offset);
+        log::trace!(r#"Dictionary::follow_char() offset: {:x} "#, offset);
         let next_index = (index ^ offset ^ u32::from(label)) & units::PRECISION_MASK;
         let leaf_label = units::label(self.units[next_index as usize]);
-        trace!(r#"Dictionary::follow_char() leaf_label: {:x} "#, leaf_label);
+        log::trace!(r#"Dictionary::follow_char() leaf_label: {:x} "#, leaf_label);
         if leaf_label == u32::from(label) {
             return Some(next_index);
         }

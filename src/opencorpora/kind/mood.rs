@@ -21,13 +21,23 @@ impl Mood {
     where
         S: AsRef<str>,
     {
+        use self::Mood::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "indc" => Some(Mood::Indc),
-                "impr" => Some(Mood::Impr),
+                "indc" => Some(Indc),
+                "impr" => Some(Impr),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Mood::*;
+
+        match self {
+            Indc => "изъявительное наклонение",
+            Impr => "повелительное наклонение",
+        }
     }
 }

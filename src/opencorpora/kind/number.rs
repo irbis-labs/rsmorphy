@@ -1,4 +1,4 @@
-use opencorpora::Grammeme;
+use crate::opencorpora::Grammeme;
 
 /// Число
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -24,20 +24,31 @@ impl Number {
     where
         S: AsRef<str>,
     {
+        use self::Number::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "sing" => Some(Number::Sing),
-                "plur" => Some(Number::Plur),
+                "sing" => Some(Sing),
+                "plur" => Some(Plur),
                 _ => None,
             })
     }
 
     pub fn to_grammeme(self) -> Grammeme {
+        use self::Number::*;
         match self {
-            Number::Sing => Grammeme::new("sing"),
-            Number::Plur => Grammeme::new("plur"),
+            Sing => Grammeme::new("sing"),
+            Plur => Grammeme::new("plur"),
+        }
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Number::*;
+
+        match self {
+            Sing => "единственное число",
+            Plur => "множественное число",
         }
     }
 }

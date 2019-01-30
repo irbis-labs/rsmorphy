@@ -1,17 +1,16 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackSource;
-use container::Lex;
-use container::Score;
-use container::WordStruct;
-use opencorpora::paradigm::ParadigmEntry;
-use opencorpora::tag::OpencorporaTagReg;
-
-use container::decode::*;
-use container::paradigm::{ParadigmId, ParadigmIndex};
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{
+        abc::*,
+        decode::*,
+        paradigm::{ParadigmId, ParadigmIndex},
+        stack::StackSource,
+        Lex, Score, WordStruct,
+    },
+    opencorpora::{paradigm::ParadigmEntry, tag::OpencorporaTagReg},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Dictionary {

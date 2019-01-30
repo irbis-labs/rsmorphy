@@ -1,7 +1,9 @@
 use std::cmp::min;
 
-use analyzer::MorphAnalyzer;
-use container::{ParseResult, Parsed, SeenSet};
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{ParseResult, Parsed, SeenSet},
+};
 
 pub fn add_parsed_if_not_seen(
     morph: &MorphAnalyzer,
@@ -34,7 +36,7 @@ where
         0
     };
 
-    trace!("max_split: {}", max_split);
+    log::trace!("max_split: {}", max_split);
     let mut pos = 0;
     word.chars().take(max_split).map(move |ch| {
         pos += ch.len_utf8();

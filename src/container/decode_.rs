@@ -1,7 +1,10 @@
-use std::str::FromStr;
-use std::num::ParseIntError;
-use std::num::ParseFloatError;
-
+use std::{
+    str::FromStr,
+    num::{
+        ParseIntError,
+        ParseFloatError
+    }
+};
 
 pub enum DecodeError {
     UnexpectedEnd,

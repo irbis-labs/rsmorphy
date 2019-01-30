@@ -1,13 +1,12 @@
-use std::borrow::Cow;
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
-use analyzer::MorphAnalyzer;
-use container::paradigm::ParadigmId;
-use container::Lex;
-use container::Score;
-use opencorpora::tag::OpencorporaTagReg;
+pub use crate::container::decode::error::DecodeError;
 
-pub use container::decode::error::DecodeError;
+use crate::{
+    analyzer::MorphAnalyzer,
+    container::{paradigm::ParadigmId, Lex, Score},
+    opencorpora::tag::OpencorporaTagReg,
+};
 
 pub trait Source {
     // TODO move out `score` from a word container

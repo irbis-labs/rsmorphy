@@ -1,11 +1,15 @@
-use analyzer::units::abc::*;
-use analyzer::MorphAnalyzer;
-//use container::{Dictionary, HyphenSeparatedParticle};
-use container::{/*Parsed, */ ParseResult, SeenSet};
-//use container::{Lex, Score};
-//use container::stack::Stack;
-//use container::stack::StackAffix;
-//use container::stack::StackHyphenated;
+use crate::{
+    analyzer::{units::abc::*, MorphAnalyzer},
+    container::{
+        ParseResult,
+        SeenSet,
+        //        Dictionary,
+        //        HyphenSeparatedParticle,
+        //        Lex,
+        //        Score,
+        //        stack::{Stack, StackAffix, StackHyphenated},
+    },
+};
 
 /// Parse the word by parsing its hyphen-separated parts.
 ///
@@ -26,8 +30,8 @@ impl AnalyzerUnit for HyphenatedWordsAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
-        trace!("HyphenatedWordsAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("HyphenatedWordsAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         // FIXME unimplemented
         return;

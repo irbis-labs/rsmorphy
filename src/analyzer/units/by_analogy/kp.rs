@@ -1,9 +1,8 @@
-use analyzer::units::abc::AnalyzerUnit;
-use analyzer::MorphAnalyzer;
-use container::abc::*;
-use container::stack::StackAffix;
-use container::{Affix, AffixKind, Lex, ParseResult, Parsed, SeenSet};
-use util::add_parsed_if_not_seen;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{abc::*, stack::StackAffix, Affix, AffixKind, Lex, ParseResult, Parsed, SeenSet},
+    util::add_parsed_if_not_seen,
+};
 
 /// Parse the word by checking if it starts with a known prefix
 /// and parsing the reminder.
@@ -34,8 +33,8 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
-        trace!("KnownPrefixAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("KnownPrefixAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         // This analyzer only works on longer words
         if word_lower.chars().count() < self.min_reminder_length {
@@ -93,7 +92,7 @@ impl KnownPrefixAnalyzer {
         debug_assert!(word_len >= self.min_reminder_length);
         let limit = word_len - self.min_reminder_length;
         let word_prefixes = morph.dict.prediction_prefixes.sorted_prefixes(word);
-        trace!("word_prefixes: {}", word_prefixes.join(", "));
+        log::trace!("word_prefixes: {}", word_prefixes.join(", "));
         word_prefixes
             .into_iter()
             .map(move |prefix| (prefix.chars().count(), prefix))

@@ -22,13 +22,23 @@ impl Voice {
     where
         S: AsRef<str>,
     {
+        use self::Voice::*;
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "actv" => Some(Voice::Actv),
-                "pssv" => Some(Voice::Pssv),
+                "actv" => Some(Actv),
+                "pssv" => Some(Pssv),
                 _ => None,
             })
+    }
+
+    pub fn title_rus(self) -> &'static str {
+        use self::Voice::*;
+
+        match self {
+            Actv => "действительный залог",
+            Pssv => "страдательный залог",
+        }
     }
 }

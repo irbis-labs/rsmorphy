@@ -11,4 +11,8 @@ impl HyphenSeparatedParticle {
         let particle = particle.into();
         HyphenSeparatedParticle { particle }
     }
+
+    pub fn title_rus(&self) -> &'static str {
+        "частица"
+    }
 }

@@ -1,11 +1,8 @@
-use analyzer::MorphAnalyzer;
-use container::stack::StackSource;
-use container::Unknown;
-use container::{Lex, Score};
-use container::{ParseResult, Parsed, SeenSet};
-use opencorpora::OpencorporaTagReg;
-
-use analyzer::units::abc::AnalyzerUnit;
+use crate::{
+    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
+    container::{stack::StackSource, Lex, ParseResult, Parsed, Score, SeenSet, Unknown},
+    opencorpora::OpencorporaTagReg,
+};
 
 const SCORE: Score = Score::Fake(1.0);
 
@@ -31,8 +28,8 @@ impl AnalyzerUnit for UnknownAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
-        trace!("UnknownAnalyzer::parse()");
-        trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
+        log::trace!("UnknownAnalyzer::parse()");
+        log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         if seen_parses.is_empty() {
             let lex = Lex::from_stack(morph, StackSource::from(Unknown::new(word_lower)));
