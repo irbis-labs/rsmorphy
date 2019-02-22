@@ -84,6 +84,6 @@ impl<'a> Completer<'a> {
     }
 
     pub fn key(&self) -> &str {
-        unsafe { ::std::str::from_utf8_unchecked(&self.key) }.trim_right()
+        unsafe { ::std::str::from_utf8_unchecked(&self.key) }.trim_end()
     }
 }

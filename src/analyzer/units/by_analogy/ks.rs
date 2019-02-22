@@ -142,15 +142,16 @@ impl KnownSuffixAnalyzer {
         morph: &'m MorphAnalyzer,
         word: &'s str,
     ) -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i {
+        use std::ops::Deref;
         morph
             .dict
             .paradigm_prefixes_rev
             .iter()
-            .filter(move |&&(_, ref prefix)| word.starts_with(prefix.as_str()))
+            .filter(move |&&(_, ref prefix)| word.starts_with(prefix.deref()))
             .map(move |&(prefix_idx, ref prefix)| {
                 (
                     prefix_idx,
-                    prefix.as_str(),
+                    prefix.deref(),
                     &morph.dict.prediction_suffixes_dawgs[prefix_idx as usize],
                 )
             })

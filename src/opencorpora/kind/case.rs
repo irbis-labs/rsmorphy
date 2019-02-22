@@ -50,7 +50,7 @@ regex!(
 );
 
 impl Case {
-    pub fn try_from_str<S>(s: S) -> Option<Self>
+    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
     where
         S: AsRef<str>,
     {

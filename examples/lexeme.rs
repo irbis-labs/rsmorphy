@@ -1,5 +1,3 @@
-extern crate rsmorphy;
-
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
 

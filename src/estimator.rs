@@ -7,7 +7,7 @@ pub struct SingleTagProbabilityEstimator {}
 
 impl SingleTagProbabilityEstimator {
     pub fn prob(self, morph: &MorphAnalyzer, word_lower: &str, tag: &OpencorporaTagReg) -> f64 {
-        let dawg_key = format!("{}:{}", word_lower, tag.string);
+        let dawg_key = format!("{}:{}", word_lower, tag.fmt_int);
         f64::from(morph.dict.p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1_000_000.0
     }
 

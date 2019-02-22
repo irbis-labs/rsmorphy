@@ -1,5 +1,3 @@
-extern crate rsmorphy;
-
 use dict_ru;
 use rsmorphy::prelude::*;
 

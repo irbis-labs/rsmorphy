@@ -10,7 +10,7 @@ pub struct GrammemeSet {
 regex!(SEP, r"(,| )");
 
 impl GrammemeSet {
-    pub fn new<S>(s: S) -> Self
+    pub fn parse_fmt_int<S>(s: S) -> Self
     where
         S: AsRef<str>,
     {

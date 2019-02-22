@@ -4,6 +4,7 @@ use std::{
 };
 
 use maplit::hashset;
+use string_cache::DefaultAtom;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -13,7 +14,7 @@ use crate::{
 //#[derive(Deserialize)]
 #[derive(Debug, Clone, Eq)]
 pub struct OpencorporaTagReg {
-    pub string: String,
+    pub fmt_int: DefaultAtom,
     pub grammemes: GrammemeSet,
 
     pub pos: Option<PartOfSpeach>,
@@ -34,42 +35,42 @@ pub struct OpencorporaTagReg {
 
 impl Hash for OpencorporaTagReg {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.string.hash(state)
+        self.fmt_int.hash(state)
     }
 }
 
 impl PartialEq for OpencorporaTagReg {
     fn eq(&self, other: &OpencorporaTagReg) -> bool {
-        self.string.eq(&other.string)
+        self.fmt_int.eq(&other.fmt_int)
     }
 }
 
 impl OpencorporaTagReg {
     pub fn new<S>(s: S) -> Self
     where
-        S: Into<String>,
+        S: Into<DefaultAtom>,
     {
-        let string = s.into();
+        let fmt_int = s.into();
 
-        let grammemes = GrammemeSet::new(&string);
+        let grammemes = GrammemeSet::parse_fmt_int(&fmt_int);
 
-        let pos = PartOfSpeach::try_from_str(&string);
-        let animacy = Animacy::try_from_str(&string);
-        let aspect = Aspect::try_from_str(&string);
-        let case = Case::try_from_str(&string);
-        let gender = Gender::try_from_str(&string);
-        let involvement = Involvement::try_from_str(&string);
-        let mood = Mood::try_from_str(&string);
-        let number = Number::try_from_str(&string);
-        let person = Person::try_from_str(&string);
-        let tense = Tense::try_from_str(&string);
-        let transitivity = Transitivity::try_from_str(&string);
-        let voice = Voice::try_from_str(&string);
+        let pos = PartOfSpeach::try_from_fmt_int(&fmt_int);
+        let animacy = Animacy::try_from_fmt_int(&fmt_int);
+        let aspect = Aspect::try_from_fmt_int(&fmt_int);
+        let case = Case::try_from_fmt_int(&fmt_int);
+        let gender = Gender::try_from_fmt_int(&fmt_int);
+        let involvement = Involvement::try_from_fmt_int(&fmt_int);
+        let mood = Mood::try_from_fmt_int(&fmt_int);
+        let number = Number::try_from_fmt_int(&fmt_int);
+        let person = Person::try_from_fmt_int(&fmt_int);
+        let tense = Tense::try_from_fmt_int(&fmt_int);
+        let transitivity = Transitivity::try_from_fmt_int(&fmt_int);
+        let voice = Voice::try_from_fmt_int(&fmt_int);
 
-        let has_apro = string.contains("Apro");
+        let has_apro = fmt_int.contains("Apro");
 
         OpencorporaTagReg {
-            string,
+            fmt_int,
             grammemes,
             has_apro,
             pos,
@@ -97,7 +98,7 @@ impl OpencorporaTagReg {
         let mut new_grammemes = self.grammemes.set.clone();
         new_grammemes.extend(required.set.iter().cloned());
         for grammeme in &required.set {
-            let meta = &morph.dict.grammeme_metas[grammeme];
+            let meta = &morph.dict.grammemes[grammeme].1;
             new_grammemes = &new_grammemes - &meta.incompatible;
         }
         GrammemeSet { set: new_grammemes }

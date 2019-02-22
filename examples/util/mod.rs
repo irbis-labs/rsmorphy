@@ -1,8 +1,5 @@
-extern crate rustyline;
-
-use self::rustyline::error::ReadlineError;
-use self::rustyline::Editor;
 use rsmorphy::prelude::*;
+use rustyline::{error::ReadlineError, Editor};
 
 pub fn print_row_parsed(morph: &MorphAnalyzer, n: usize, &Parsed { ref lex, score }: &Parsed) {
     println!(
@@ -11,7 +8,7 @@ pub fn print_row_parsed(morph: &MorphAnalyzer, n: usize, &Parsed { ref lex, scor
         score = score.value(),
         lex = lex.get_word(),
         norm = lex.get_normal_form(morph),
-        tag = lex.get_tag(morph).string.as_str(),
+        tag = lex.get_tag(morph).fmt_int,
         enc = lex.stack.encoded()
     );
 }
@@ -23,7 +20,7 @@ pub fn print_row_lex(morph: &MorphAnalyzer, n: usize, lex: &Lex) {
         score = Score::Fake(0.0).value(), //lex.score.value(),
         lex = lex.get_word(),
         norm = lex.get_normal_form(morph),
-        tag = lex.get_tag(morph).string.as_str(),
+        tag = lex.get_tag(morph).fmt_int,
         enc = lex.stack.encoded()
     );
 }

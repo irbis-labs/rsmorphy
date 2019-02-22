@@ -1,5 +1,3 @@
-extern crate rsmorphy;
-
 use dict_ru;
 use rsmorphy::prelude::*;
 
@@ -19,7 +17,7 @@ fn main() {
     let bread = Lex::from_id(&morph_ru, "ru:d:хлеб,878").unwrap();
     // let fish = Lex::from_id(&morph_ru, "ru:d:рыба,35").unwrap();
 
-    let ablt_set = GrammemeSet::new("ablt");
+    let ablt_set = GrammemeSet::parse_fmt_int("ablt");
 
     println!(
         " ::: {} {} + {} {} = {} {}",

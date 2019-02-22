@@ -62,7 +62,7 @@ regex!(
 );
 
 impl PartOfSpeach {
-    pub fn try_from_str<S>(s: S) -> Option<Self>
+    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
     where
         S: AsRef<str>,
     {
@@ -133,11 +133,11 @@ mod tests {
 
     #[test]
     fn try_from_str() {
-        assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_str("NOUN"));
+        assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_fmt_int("NOUN"));
         assert_eq!(
             Some(PartOfSpeach::Noun),
-            PartOfSpeach::try_from_str("NOUN,anim,masc,Fixd,Abbr sing,nomn")
+            PartOfSpeach::try_from_fmt_int("NOUN,anim,masc,Fixd,Abbr sing,nomn")
         );
-        assert_eq!(None, PartOfSpeach::try_from_str("UNKN"));
+        assert_eq!(None, PartOfSpeach::try_from_fmt_int("UNKN"));
     }
 }

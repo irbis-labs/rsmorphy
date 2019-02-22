@@ -13,6 +13,7 @@ use flate2::read::GzDecoder;
 use maplit::hashset;
 use serde_json;
 use serde_json::Value;
+use string_cache::DefaultAtom;
 
 pub use crate::dawg::{HH, HHH};
 
@@ -31,28 +32,32 @@ pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
 pub type ConditionalProbDistDawg = CompletionDawg<HH>;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Clone, Debug, Default)]
 pub struct GrammemeMeta {
+    // XXX remove
     pub index: usize,
     pub children: HashSet<Grammeme>,
     pub incompatible: HashSet<Grammeme>,
 }
 
+#[allow(missing_copy_implementations)]
+#[derive(Clone, Debug, Default)]
+pub struct DictionaryMeta {}
+
 /// Open Corpora dictionary wrapper class.
 #[derive(Debug, Clone)]
 pub struct Dictionary {
-    pub meta: HashMap<String, Value>,
-    pub grammemes: HashMap<Grammeme, GrammemeReg>,
-    pub grammeme_metas: HashMap<Grammeme, GrammemeMeta>,
+    pub meta: DictionaryMeta,
+    pub grammemes: HashMap<Grammeme, (GrammemeReg, GrammemeMeta)>,
     pub gramtab: Vec<OpencorporaTagReg>,
-    pub suffixes: Vec<String>,
+    pub suffixes: Vec<DefaultAtom>,
     pub paradigms: Vec<Vec<ParadigmEntry>>,
     pub words: WordsDawg,
     pub p_t_given_w: ConditionalProbDistDawg,
     pub prediction_prefixes: Dawg,
     pub prediction_suffixes_dawgs: Vec<PredictionSuffixesDawg>,
-    pub paradigm_prefixes: Vec<String>,
-    pub paradigm_prefixes_rev: Vec<(u16, String)>,
+    pub paradigm_prefixes: Vec<DefaultAtom>,
+    pub paradigm_prefixes_rev: Vec<(u16, DefaultAtom)>,
     pub prediction_splits: Vec<usize>,
     pub char_substitutes: BTreeMap<String, String>,
 }
@@ -81,7 +86,9 @@ impl PathLoader {
     where
         S: AsRef<Path>,
     {
-        GzDecoder::new(File::open(&self.path(name)).unwrap())
+        let path = self.path(name);
+        log::debug!("Open dict file {:?}", path);
+        GzDecoder::new(File::open(&path).unwrap())
     }
 
     fn json<S, T>(&self, name: S) -> serde_json::Result<T>
@@ -102,12 +109,16 @@ impl Dictionary {
 
         let mut profiler = DumbProfiler::start();
 
-        let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
-        let meta = HashMap::from_iter(meta.into_iter());
+        let meta = DictionaryMeta::default();
+
+        let meta_json = {
+            let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
+            HashMap::<String, Value>::from_iter(meta.into_iter())
+        };
         profiler.waypoint("meta");
 
-        let paradigm_prefixes: Vec<String> = {
-            meta["compile_options"]
+        let paradigm_prefixes: Vec<DefaultAtom> = {
+            meta_json["compile_options"]
                 .as_object()
                 .unwrap()
                 .get("paradigm_prefixes")
@@ -115,12 +126,12 @@ impl Dictionary {
                 .as_array()
                 .unwrap()
                 .iter()
-                .map(|v| v.as_str().unwrap().to_owned())
+                .map(|v| v.as_str().unwrap().into())
                 .collect()
         };
         let max_suffix_length = {
-            meta.get("prediction_options")
-                .unwrap_or_else(|| &meta["compile_options"])
+            meta_json.get("prediction_options")
+                .unwrap_or_else(|| &meta_json["compile_options"])
                 .as_object()
                 .unwrap()
                 .get("max_suffix_length")
@@ -150,34 +161,31 @@ impl Dictionary {
         let gramtab = gramtab.into_iter().map(OpencorporaTagReg::new).collect();
         profiler.waypoint("gramtab'");
 
-        // TODO join `grammemes` and `grammeme_metas` into one set
         let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
         profiler.waypoint("grammemes");
-        let grammemes = grammemes
-            .into_iter()
-            .map(GrammemeReg::from_json)
-            .map(|gr| (gr.name.clone(), gr));
-        let grammemes = HashMap::from_iter(grammemes);
-        let grammeme_metas = {
-            let mut grammeme_metas = HashMap::<Grammeme, GrammemeMeta>::default();
-            for (index, grammeme) in grammemes.keys().enumerate() {
-                if !grammeme_metas.contains_key(grammeme) {
-                    grammeme_metas.insert(
-                        grammeme.clone(),
-                        GrammemeMeta {
-                            index,
-                            ..GrammemeMeta::default()
-                        },
-                    );
-                }
-            }
-            for (grammeme, gram_reg) in &grammemes {
+
+        let grammemes = {
+            let grammemes = grammemes
+                .into_iter()
+                .map(GrammemeReg::from_json)
+                .enumerate()
+                .map(|(index, gr)| {
+                    let gr_meta = GrammemeMeta { index, ..GrammemeMeta::default() };
+                    (gr.name.clone(), (gr, gr_meta))
+                });
+            let mut grammemes = HashMap::from_iter(grammemes);
+
+            let gram_regs: Vec<GrammemeReg> = grammemes.values()
+                .map(|v| v.0.clone())
+                .collect();
+            for gram_reg in &gram_regs {
                 if let Some(ref parent) = gram_reg.parent {
-                    grammeme_metas
+                    grammemes
                         .get_mut(parent)
-                        .unwrap()
+                        .expect("Grammeme parent")
+                        .1
                         .children
-                        .insert(grammeme.clone());
+                        .insert(gram_reg.name.clone());
                 }
             }
 
@@ -185,31 +193,43 @@ impl Dictionary {
             // {u'plur': set([u'GNdr', u'masc', u'femn', u'neut'])}
             let plur = Grammeme::new("plur");
             let gndr = Grammeme::new("GNdr");
-            let mut extra_incompatible = hashset! { gndr.clone() };
-            extra_incompatible.extend(grammeme_metas[&gndr].children.iter().cloned());
+            let mut extra_incompatible: HashSet<Grammeme> = hashset! { gndr.clone() };
+            extra_incompatible.extend(grammemes[&gndr].1.children.iter().cloned());
 
-            for grammeme in grammemes.keys() {
-                let gm: &mut GrammemeMeta = grammeme_metas.get_mut(grammeme).unwrap();
-                if grammeme == &plur {
+            for gram_reg in &gram_regs {
+                let gm = grammemes.get_mut(&gram_reg.name).unwrap();
+                let gm: &mut GrammemeMeta = &mut gm.1;
+                if gram_reg.name == plur {
                     gm.incompatible
-                        .extend(extra_incompatible.iter().cloned().filter(|v| v != grammeme));
+                        .extend(extra_incompatible.iter()
+                            .filter(|&v| *v != gram_reg.name)
+                            .cloned()
+                        );
                 }
                 gm.incompatible
-                    .extend(gm.children.iter().cloned().filter(|v| v != grammeme));
+                    .extend(gm.children.iter()
+                        .filter(|&v| *v != gram_reg.name)
+                        .cloned()
+                    );
             }
-            grammeme_metas
+
+            grammemes
         };
         profiler.waypoint("grammemes'");
 
         let paradigms = load_paradigms(&mut load.reader("paradigms.array.gz"));
         profiler.waypoint("paradigms");
+
         let words = CompletionDawg::from_reader(&mut load.reader("words.dawg.gz"));
         profiler.waypoint("words");
+
         let p_t_given_w = CompletionDawg::from_reader(&mut load.reader("p_t_given_w.intdawg.gz"));
         profiler.waypoint("p_t_given_w");
+
         let prediction_prefixes =
             Dawg::from_reader(&mut load.reader("prediction-prefixes.dawg.gz"));
         profiler.waypoint("prediction_prefixes");
+
         let prediction_suffixes_dawgs = Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
             CompletionDawg::from_reader(
                 &mut load.reader(format!("prediction-suffixes-{}.dawg.gz", i)),
@@ -223,7 +243,6 @@ impl Dictionary {
         Dictionary {
             meta,
             grammemes,
-            grammeme_metas,
             gramtab,
             suffixes,
             paradigms,
