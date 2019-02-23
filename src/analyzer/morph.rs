@@ -24,7 +24,7 @@ pub struct Units {
     pub unknown: UnknownAnalyzer,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct MorphAnalyzer {
     pub dict: Dictionary,
     pub estimator: SingleTagProbabilityEstimator,

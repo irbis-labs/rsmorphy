@@ -41,17 +41,23 @@ pub struct GrammemeMeta {
 }
 
 #[allow(missing_copy_implementations)]
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct DictionaryMeta {}
 
+#[derive(Debug)]
+pub struct Paradigms {
+    idx: Vec<u32>,
+    data: Vec<ParadigmEntry>,
+}
+
 /// Open Corpora dictionary wrapper class.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Dictionary {
     pub meta: DictionaryMeta,
     pub grammemes: HashMap<Grammeme, (GrammemeReg, GrammemeMeta)>,
     pub gramtab: Vec<OpencorporaTagReg>,
     pub suffixes: Vec<DefaultAtom>,
-    pub paradigms: Vec<Vec<ParadigmEntry>>,
+    pub paradigms: Paradigms,
     pub words: WordsDawg,
     pub p_t_given_w: ConditionalProbDistDawg,
     pub prediction_prefixes: Dawg,
@@ -217,7 +223,7 @@ impl Dictionary {
         };
         profiler.waypoint("grammemes'");
 
-        let paradigms = load_paradigms(&mut load.reader("paradigms.array.gz"));
+        let paradigms = Paradigms::from_reader(&mut load.reader("paradigms.array.gz"));
         profiler.waypoint("paradigms");
 
         let words = CompletionDawg::from_reader(&mut load.reader("words.dawg.gz"));
@@ -257,24 +263,25 @@ impl Dictionary {
         }
     }
 
+    #[inline]
     pub fn get_paradigm<Id>(&self, id: Id) -> &[ParadigmEntry]
     where
         Id: Into<ParadigmId>,
     {
-        let id = id.into();
-        &self.paradigms[id.value() as usize]
+        self.paradigms.get(id)
     }
 
+    #[inline]
     pub fn get_paradigm_entry<Id, Idx>(&self, id: Id, idx: Idx) -> ParadigmEntry
     where
         Id: Into<ParadigmId>,
         Idx: Into<ParadigmIndex>,
     {
-        let idx = idx.into();
-        self.get_paradigm(id)[idx.value() as usize]
+        self.get_paradigm(id)[idx.into().value() as usize]
     }
 
     /// Return tag as a string
+    #[inline]
     pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &OpencorporaTagReg {
         &self.gramtab[self.get_paradigm_entry(id, idx).tag_id as usize]
     }
@@ -282,15 +289,17 @@ impl Dictionary {
     /// Return a list of
     ///     (prefix, tag, suffix)
     /// tuples representing the paradigm.
+    #[inline]
     pub fn build_paradigm_info(&self, id: ParadigmId) -> Vec<(&str, &OpencorporaTagReg, &str)> {
         Vec::from_iter(self.iter_paradigm_info(id))
     }
 
+    #[inline]
     pub fn iter_paradigm_info<'a: 'i, 'i>(
         &'a self,
         id: ParadigmId,
     ) -> impl Iterator<Item = (&'a str, &'a OpencorporaTagReg, &'a str)> + 'i {
-        self.paradigms[id.value() as usize]
+        self.paradigms.get(id.value())
             .iter()
             .map(move |entry: &'a ParadigmEntry| self.paradigm_entry_info(*entry))
     }
@@ -298,6 +307,7 @@ impl Dictionary {
     /// Return a tuple
     ///     (prefix, tag, suffix)
     /// tuples representing the paradigm entry.
+    #[inline]
     pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &OpencorporaTagReg, &str) {
         (
             &self.paradigm_prefixes[entry.prefix_id as usize],
@@ -307,6 +317,7 @@ impl Dictionary {
     }
 
     /// Return word stem (given a word, paradigm and the word index).
+    #[inline]
     pub fn get_stem<'a>(&self, id: ParadigmId, idx: ParadigmIndex, fixed_word: &'a str) -> &'a str {
         let (prefix, _, suffix) = self.paradigm_entry_info(self.get_paradigm_entry(id, idx));
         &fixed_word[prefix.len()..fixed_word.len() - suffix.len()]
@@ -348,15 +359,31 @@ impl Dictionary {
     }
 }
 
-fn load_paradigms<R: Read>(reader: &mut R) -> Vec<Vec<ParadigmEntry>> {
-    let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
-    (0..paradigms_count)
-        .map(|_| {
+impl Paradigms {
+    fn from_reader<R: Read>(reader: &mut R) -> Self {
+        let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
+        let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
+        let mut data = Vec::new();
+        idx.push(0);
+        for _ in 0..paradigms_count {
             let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
-            (0..paradigm_len)
+            let paradigm = (0..paradigm_len)
                 .map(|_| reader.read_u16::<LittleEndian>().unwrap())
-                .collect::<Vec<u16>>()
-        })
-        .map(ParadigmEntry::build)
-        .collect()
+                .collect::<Vec<u16>>();
+            let paradigm = ParadigmEntry::build(paradigm);
+            idx.push(idx.last().unwrap() + paradigm.len() as u32);
+            data.extend(paradigm.into_iter())
+        }
+        Paradigms { idx, data }
+    }
+
+    #[inline]
+    pub fn get<Id>(&self, id: Id) -> &[ParadigmEntry]
+    where
+        Id: Into<ParadigmId>,
+    {
+        let id = id.into().value() as usize;
+        let (start, end) = (self.idx[id] as usize, self.idx[id + 1] as usize);
+        &self.data[start..end]
+    }
 }
