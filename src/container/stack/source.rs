@@ -3,10 +3,10 @@ use std::{borrow::Cow, fmt};
 use crate::{
     analyzer::MorphAnalyzer,
     container::{
-        abc::*, paradigm::ParadigmId, Dictionary, HyphenAdverb, Initials, Lex, Score, Shaped,
+        abc::*, Dictionary, HyphenAdverb, Initials, Lex, Score, Shaped,
         Unknown,
     },
-    opencorpora::OpencorporaTagReg,
+    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 use self::StackSource::*;

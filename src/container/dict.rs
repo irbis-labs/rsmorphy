@@ -5,11 +5,10 @@ use crate::{
     container::{
         abc::*,
         decode::*,
-        paradigm::{ParadigmId, ParadigmIndex},
         stack::StackSource,
         Lex, Score, WordStruct,
     },
-    opencorpora::{paradigm::ParadigmEntry, tag::OpencorporaTagReg},
+    opencorpora::{dictionary::{ParadigmEntry, ParadigmId, ParadigmIndex}, tag::OpencorporaTagReg},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -20,6 +19,7 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
+    // FIXME rename into `new_unchecked`
     pub fn new<ID, IDX>(word_lower: WordStruct, para_id: ID, idx: IDX) -> Self
     where
         ID: Into<ParadigmId>,
@@ -50,7 +50,7 @@ impl Dictionary {
         &'s self,
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
-        let paradigm = morph.dict.get_paradigm(self.para_id);
+        let paradigm = morph.dict.para().get(self.para_id).expect("paradigm id");
         let stem = morph
             .dict
             .get_stem(self.para_id, self.idx, self.word_lower.word());

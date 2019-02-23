@@ -2,8 +2,8 @@ use std::{borrow::Cow, fmt};
 
 use crate::{
     analyzer::MorphAnalyzer,
-    container::{abc::*, decode::*, paradigm::ParadigmId, stack::StackSource, Lex, Score},
-    opencorpora::tag::OpencorporaTagReg,
+    container::{abc::*, decode::*, stack::StackSource, Lex, Score},
+    opencorpora::{tag::OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]

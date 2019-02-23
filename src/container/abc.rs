@@ -4,8 +4,8 @@ pub use crate::container::decode::error::DecodeError;
 
 use crate::{
     analyzer::MorphAnalyzer,
-    container::{paradigm::ParadigmId, Lex, Score},
-    opencorpora::tag::OpencorporaTagReg,
+    container::{Lex, Score},
+    opencorpora::{dictionary::ParadigmId, tag::OpencorporaTagReg},
 };
 
 pub trait Source {

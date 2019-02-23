@@ -3,7 +3,6 @@ pub mod abc;
 pub mod word;
 
 pub mod dict;
-pub mod paradigm;
 
 pub mod affix;
 pub mod ha;

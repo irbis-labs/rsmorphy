@@ -4,7 +4,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use crate::{container::paradigm::ParadigmId, opencorpora::tag::OpencorporaTagReg};
+use crate::opencorpora::{OpencorporaTagReg, dictionary::ParadigmId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {

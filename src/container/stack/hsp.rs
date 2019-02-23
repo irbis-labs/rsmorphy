@@ -5,11 +5,10 @@ use crate::{
     container::{
         abc::*,
         decode::*,
-        paradigm::ParadigmId,
         stack::{StackAffix, StackHyphenated, StackSource},
         HyphenSeparatedParticle, Lex, Score,
     },
-    opencorpora::OpencorporaTagReg,
+    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 #[derive(Debug, Clone, PartialEq)]

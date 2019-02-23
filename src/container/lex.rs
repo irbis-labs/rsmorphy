@@ -2,8 +2,8 @@ use std::{borrow::Cow, fmt};
 
 use crate::{
     analyzer::MorphAnalyzer,
-    container::{abc::*, decode::*, paradigm::ParadigmId, stack::StackParticle, Score, Seen},
-    opencorpora::{GrammemeSet, OpencorporaTagReg},
+    container::{abc::*, decode::*, stack::StackParticle, Score, Seen},
+    opencorpora::{GrammemeSet, OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 pub type Lexeme = Vec<Lex>;

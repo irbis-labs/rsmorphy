@@ -1,3 +1,70 @@
+use std::io::Read;
+
+use byteorder::{LittleEndian, ReadBytesExt};
+
+pub type Paradigm<'a> = &'a [ParadigmEntry];
+
+#[derive(Debug)]
+pub struct Paradigms {
+    idx: Vec<u32>,
+    data: Vec<ParadigmEntry>,
+}
+
+impl Paradigms {
+    pub fn from_reader<R: Read>(reader: &mut R) -> Self {
+        let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
+        let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
+        let mut data = Vec::new();
+        idx.push(0);
+        for _ in 0..paradigms_count {
+            let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
+            let paradigm = (0..paradigm_len)
+                .map(|_| reader.read_u16::<LittleEndian>().unwrap())
+                .collect::<Vec<u16>>();
+            let paradigm = ParadigmEntry::build(paradigm);
+            idx.push(idx.last().unwrap() + paradigm.len() as u32);
+            data.extend(paradigm.into_iter())
+        }
+        Paradigms { idx, data }
+    }
+
+    #[inline]
+    pub fn get<'a, Id>(&'a self, id: Id) -> Option<Paradigm<'a>>
+    where
+        Id: Into<ParadigmId>,
+    {
+        let id = id.into().index();
+        if id + 1 < self.idx.len() {
+            let (start, end) = (self.idx[id] as usize, self.idx[id + 1] as usize);
+            Some(&self.data[start..end])
+        } else {
+            None
+        }
+    }
+}
+
+use std::iter::FromIterator;
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct ParadigmEntry {
+    pub prefix_id: u16,
+    pub tag_id: u16,
+    pub suffix_id: u16,
+}
+
+impl ParadigmEntry {
+    pub fn build<P: AsRef<[u16]>>(paradigm: P) -> Vec<Self> {
+        let paradigm = paradigm.as_ref();
+        assert_eq!(0, paradigm.len() % 3, "Wrong paradigm length");
+        let paradigm_len = paradigm.len() / 3;
+        Vec::from_iter((0..paradigm_len).map(|idx| ParadigmEntry {
+            suffix_id: paradigm[idx],
+            tag_id: paradigm[paradigm_len + idx],
+            prefix_id: paradigm[paradigm_len * 2 + idx],
+        }))
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct ParadigmId(u16);
 
@@ -21,6 +88,12 @@ impl ParadigmId {
         Self::new(id as u16)
     }
 
+    #[inline]
+    pub fn index(self) -> usize {
+        self.0 as usize
+    }
+
+    #[inline]
     pub fn value(self) -> u16 {
         self.0
     }
@@ -79,10 +152,18 @@ impl ParadigmIndex {
         Self::new(id as u16)
     }
 
+
+    #[inline]
+    pub fn index(self) -> usize {
+        self.0 as usize
+    }
+
+    #[inline]
     pub fn value(self) -> u16 {
         self.0
     }
 
+    #[inline]
     pub fn is_first(self) -> bool {
         self.0 == 0
     }

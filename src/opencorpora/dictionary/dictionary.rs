@@ -15,40 +15,22 @@ use serde_json;
 use serde_json::Value;
 use string_cache::DefaultAtom;
 
-pub use crate::dawg::{HH, HHH};
-
 use crate::{
-    container::paradigm::{ParadigmId, ParadigmIndex},
     dawg::{CompletionDawg, Dawg},
     opencorpora::{
+        dictionary::*,
         grammeme::{Grammeme, GrammemeReg},
-        paradigm::ParadigmEntry,
         tag::OpencorporaTagReg,
+        dictionary::{Paradigms, ParadigmId, ParadigmIndex}
     },
     util::DumbProfiler,
 };
 
+pub use crate::dawg::{HH, HHH};
+
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
 pub type ConditionalProbDistDawg = CompletionDawg<HH>;
-
-#[derive(Clone, Debug, Default)]
-pub struct GrammemeMeta {
-    // XXX remove
-    pub index: usize,
-    pub children: HashSet<Grammeme>,
-    pub incompatible: HashSet<Grammeme>,
-}
-
-#[allow(missing_copy_implementations)]
-#[derive(Debug, Default)]
-pub struct DictionaryMeta {}
-
-#[derive(Debug)]
-pub struct Paradigms {
-    idx: Vec<u32>,
-    data: Vec<ParadigmEntry>,
-}
 
 /// Open Corpora dictionary wrapper class.
 #[derive(Debug)]
@@ -66,44 +48,6 @@ pub struct Dictionary {
     pub paradigm_prefixes_rev: Vec<(u16, DefaultAtom)>,
     pub prediction_splits: Vec<usize>,
     pub char_substitutes: BTreeMap<String, String>,
-}
-
-struct PathLoader {
-    dict_path: PathBuf,
-}
-
-impl PathLoader {
-    fn new<P>(p: P) -> Self
-    where
-        P: AsRef<Path>,
-    {
-        let dict_path = p.as_ref().into();
-        PathLoader { dict_path }
-    }
-
-    fn path<S>(&self, name: S) -> PathBuf
-    where
-        S: AsRef<Path>,
-    {
-        self.dict_path.join(name)
-    }
-
-    fn reader<S>(&self, name: S) -> impl Read
-    where
-        S: AsRef<Path>,
-    {
-        let path = self.path(name);
-        log::debug!("Open dict file {:?}", path);
-        GzDecoder::new(File::open(&path).unwrap())
-    }
-
-    fn json<S, T>(&self, name: S) -> serde_json::Result<T>
-    where
-        S: AsRef<Path>,
-        for<'de> T: ::serde::Deserialize<'de>,
-    {
-        serde_json::from_reader(self.reader(name))
-    }
 }
 
 impl Dictionary {
@@ -264,26 +208,15 @@ impl Dictionary {
     }
 
     #[inline]
-    pub fn get_paradigm<Id>(&self, id: Id) -> &[ParadigmEntry]
-    where
-        Id: Into<ParadigmId>,
-    {
-        self.paradigms.get(id)
-    }
-
-    #[inline]
-    pub fn get_paradigm_entry<Id, Idx>(&self, id: Id, idx: Idx) -> ParadigmEntry
-    where
-        Id: Into<ParadigmId>,
-        Idx: Into<ParadigmIndex>,
-    {
-        self.get_paradigm(id)[idx.into().value() as usize]
+    pub fn para(&self) -> &Paradigms{
+        &self.paradigms
     }
 
     /// Return tag as a string
     #[inline]
     pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &OpencorporaTagReg {
-        &self.gramtab[self.get_paradigm_entry(id, idx).tag_id as usize]
+        let para = self.para().get(id).expect("paradigm");
+        &self.gramtab[para[idx.index()].tag_id as usize]
     }
 
     /// Return a list of
@@ -299,7 +232,7 @@ impl Dictionary {
         &'a self,
         id: ParadigmId,
     ) -> impl Iterator<Item = (&'a str, &'a OpencorporaTagReg, &'a str)> + 'i {
-        self.paradigms.get(id.value())
+        self.para().get(id.value()).expect("paradigm")
             .iter()
             .map(move |entry: &'a ParadigmEntry| self.paradigm_entry_info(*entry))
     }
@@ -319,7 +252,8 @@ impl Dictionary {
     /// Return word stem (given a word, paradigm and the word index).
     #[inline]
     pub fn get_stem<'a>(&self, id: ParadigmId, idx: ParadigmIndex, fixed_word: &'a str) -> &'a str {
-        let (prefix, _, suffix) = self.paradigm_entry_info(self.get_paradigm_entry(id, idx));
+        let para = self.para().get(id).expect("paradigm");
+        let (prefix, _, suffix) = self.paradigm_entry_info(para[idx.index()]);
         &fixed_word[prefix.len()..fixed_word.len() - suffix.len()]
     }
 
@@ -334,8 +268,8 @@ impl Dictionary {
             fixed_word.into()
         } else {
             let stem = self.get_stem(id, idx, fixed_word);
-            let (normal_prefix, _, normal_suffix) =
-                self.paradigm_entry_info(self.get_paradigm(id)[0]);
+            let para = self.para().get(id).expect("paradigm");
+            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
             format!("{}{}{}", normal_prefix, stem, normal_suffix).into()
         }
     }
@@ -352,38 +286,9 @@ impl Dictionary {
             write!(f, "{}", fixed_word)
         } else {
             let stem = self.get_stem(id, idx, fixed_word);
-            let (normal_prefix, _, normal_suffix) =
-                self.paradigm_entry_info(self.get_paradigm(id)[0]);
+            let para = self.para().get(id).expect("paradigm");
+            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
             write!(f, "{}{}{}", normal_prefix, stem, normal_suffix)
         }
-    }
-}
-
-impl Paradigms {
-    fn from_reader<R: Read>(reader: &mut R) -> Self {
-        let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
-        let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
-        let mut data = Vec::new();
-        idx.push(0);
-        for _ in 0..paradigms_count {
-            let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
-            let paradigm = (0..paradigm_len)
-                .map(|_| reader.read_u16::<LittleEndian>().unwrap())
-                .collect::<Vec<u16>>();
-            let paradigm = ParadigmEntry::build(paradigm);
-            idx.push(idx.last().unwrap() + paradigm.len() as u32);
-            data.extend(paradigm.into_iter())
-        }
-        Paradigms { idx, data }
-    }
-
-    #[inline]
-    pub fn get<Id>(&self, id: Id) -> &[ParadigmEntry]
-    where
-        Id: Into<ParadigmId>,
-    {
-        let id = id.into().value() as usize;
-        let (start, end) = (self.idx[id] as usize, self.idx[id + 1] as usize);
-        &self.data[start..end]
     }
 }

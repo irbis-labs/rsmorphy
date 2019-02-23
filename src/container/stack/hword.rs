@@ -4,11 +4,10 @@ use crate::{
     analyzer::MorphAnalyzer,
     container::{
         abc::*,
-        paradigm::ParadigmId,
         stack::{StackAffix, StackSource},
         Lex, Score,
     },
-    opencorpora::OpencorporaTagReg,
+    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 #[derive(Debug, Clone, PartialEq)]

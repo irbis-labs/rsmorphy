@@ -6,11 +6,10 @@ use crate::{
         abc::*,
         affix::{Affix, AffixKind},
         decode::*,
-        paradigm::ParadigmId,
         stack::StackSource,
         Lex, Score,
     },
-    opencorpora::OpencorporaTagReg,
+    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 #[derive(Debug, Clone, PartialEq)]

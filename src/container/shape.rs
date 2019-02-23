@@ -2,8 +2,8 @@ use std::{borrow::Cow, fmt};
 
 use crate::{
     analyzer::MorphAnalyzer,
-    container::{abc::*, decode::*, paradigm::ParadigmId, stack::StackSource, Lex, Score},
-    opencorpora::OpencorporaTagReg,
+    container::{abc::*, decode::*, stack::StackSource, Lex, Score},
+    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 const NUMBER_SCORE: Score = Score::Real(1.0);

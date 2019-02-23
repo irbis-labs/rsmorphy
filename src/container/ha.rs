@@ -3,9 +3,9 @@ use std::{borrow::Cow, fmt};
 use crate::{
     analyzer::MorphAnalyzer,
     container::{
-        abc::*, decode::*, paradigm::ParadigmId, stack::StackSource, Lex, Score, WordStruct,
+        abc::*, decode::*, stack::StackSource, Lex, Score, WordStruct,
     },
-    opencorpora::tag::OpencorporaTagReg,
+    opencorpora::{tag::OpencorporaTagReg, dictionary::ParadigmId},
 };
 
 #[derive(Debug, Clone, PartialEq)]
