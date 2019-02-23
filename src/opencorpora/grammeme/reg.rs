@@ -1,14 +1,17 @@
 use boolinator::Boolinator;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use string_cache::DefaultAtom;
 
 use crate::opencorpora::Grammeme;
 
+#[derive(Deserialize, Serialize)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GrammemeReg {
     pub name: Grammeme,
     pub parent: Option<Grammeme>,
-    pub alias: String,
-    pub description: String,
+    pub alias: DefaultAtom,
+    pub description: DefaultAtom,
 }
 
 impl GrammemeReg {
@@ -26,8 +29,8 @@ impl GrammemeReg {
         GrammemeReg {
             name: next().map(Grammeme::new).expect("string"),
             parent: next().map(Grammeme::new),
-            alias: next().expect("string"),
-            description: next().expect("string"),
+            alias: next().map(From::from).expect("string"),
+            description: next().map(From::from).expect("string"),
         }
     }
 }

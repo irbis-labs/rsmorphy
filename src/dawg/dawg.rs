@@ -2,11 +2,13 @@ use std::{collections::BTreeMap, fs::File, io::Read, marker::PhantomData, path::
 
 use base64;
 use flate2::read::GzDecoder;
+use serde::{Deserialize, Serialize};
 
 use crate::dawg::{completer::Completer, dictionary::Dictionary, guide::Guide, value::DawgValue};
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 
+#[derive(Deserialize, Serialize)]
 #[derive(Debug, Clone)]
 pub struct Dawg {
     dict: Dictionary,
@@ -52,7 +54,8 @@ impl Dawg {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Serialize)]
+#[derive(Debug)]
 pub struct CompletionDawg<V>
 where
     V: DawgValue,

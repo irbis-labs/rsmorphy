@@ -4,6 +4,7 @@ use std::{
 };
 
 use maplit::hashset;
+use serde::{Deserialize, Serialize};
 use string_cache::DefaultAtom;
 
 use crate::{
@@ -11,7 +12,6 @@ use crate::{
     opencorpora::{grammeme::GrammemeSet, kind::*},
 };
 
-//#[derive(Deserialize)]
 #[derive(Debug, Clone, Eq)]
 pub struct OpencorporaTagReg {
     pub fmt_int: DefaultAtom,
@@ -33,6 +33,20 @@ pub struct OpencorporaTagReg {
     pub has_apro: bool,
 }
 
+impl Serialize for OpencorporaTagReg {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+        let string: &str = self.fmt_int.as_ref();
+        string.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for OpencorporaTagReg {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: serde::Deserializer<'de> {
+        let string: String = Deserialize::deserialize(deserializer)?;
+        Ok(OpencorporaTagReg::from_fmt_int(string))
+    }
+}
+
 impl Hash for OpencorporaTagReg {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.fmt_int.hash(state)
@@ -46,7 +60,7 @@ impl PartialEq for OpencorporaTagReg {
 }
 
 impl OpencorporaTagReg {
-    pub fn new<S>(s: S) -> Self
+    pub fn from_fmt_int<S>(s: S) -> Self
     where
         S: Into<DefaultAtom>,
     {

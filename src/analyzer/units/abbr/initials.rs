@@ -31,7 +31,7 @@ impl Default for InitialsAnalyzer {
                 for &kind in &["Name", "Patr"] {
                     for &gender in &["masc", "femn"] {
                         for &case in &["nomn", "gent", "datv", "accs", "ablt", "loct"] {
-                            let tag = OpencorporaTagReg::new(format!(
+                            let tag = OpencorporaTagReg::from_fmt_int(format!(
                                 "NOUN,anim,{gender},Sgtm,{kind},Fixd,Abbr,Init sing,{case}",
                                 kind = kind,
                                 gender = gender,

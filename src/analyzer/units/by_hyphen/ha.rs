@@ -25,7 +25,7 @@ pub struct HyphenAdverbAnalyzer {
 impl Default for HyphenAdverbAnalyzer {
     fn default() -> Self {
         HyphenAdverbAnalyzer {
-            tag: OpencorporaTagReg::new("ADVB"),
+            tag: OpencorporaTagReg::from_fmt_int("ADVB"),
         }
     }
 }

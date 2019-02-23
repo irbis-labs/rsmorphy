@@ -13,7 +13,7 @@ pub struct RomanAnalyzer {
 impl Default for RomanAnalyzer {
     fn default() -> Self {
         RomanAnalyzer {
-            tag: OpencorporaTagReg::new("ROMN"),
+            tag: OpencorporaTagReg::from_fmt_int("ROMN"),
         }
     }
 }

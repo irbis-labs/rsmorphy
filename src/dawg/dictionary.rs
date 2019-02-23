@@ -3,10 +3,12 @@ use std::{fs::File, io::Read, path::Path};
 use boolinator::Boolinator;
 use byteorder::{LittleEndian, ReadBytesExt};
 use flate2::read::GzDecoder;
+use serde::{Deserialize, Serialize};
 
 use crate::dawg::units;
 
 /// Dictionary class for retrieval and binary I/O.
+#[derive(Deserialize, Serialize)]
 #[derive(Debug, Clone)]
 pub struct Dictionary {
     /// Root index

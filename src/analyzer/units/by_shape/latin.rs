@@ -17,7 +17,7 @@ pub struct LatinAnalyzer {
 impl Default for LatinAnalyzer {
     fn default() -> Self {
         LatinAnalyzer {
-            tag: OpencorporaTagReg::new("LATN"),
+            tag: OpencorporaTagReg::from_fmt_int("LATN"),
         }
     }
 }

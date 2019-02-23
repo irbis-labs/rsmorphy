@@ -17,7 +17,7 @@ pub struct PunctuationAnalyzer {
 impl Default for PunctuationAnalyzer {
     fn default() -> Self {
         PunctuationAnalyzer {
-            tag: OpencorporaTagReg::new("PNCT"),
+            tag: OpencorporaTagReg::from_fmt_int("PNCT"),
         }
     }
 }

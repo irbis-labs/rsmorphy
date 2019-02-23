@@ -1,9 +1,11 @@
 use std::io::Read;
 
+use serde::{Deserialize, Serialize};
 use byteorder::{LittleEndian, ReadBytesExt};
 
 pub type Paradigm<'a> = &'a [ParadigmEntry];
 
+#[derive(Deserialize, Serialize)]
 #[derive(Debug)]
 pub struct Paradigms {
     idx: Vec<u32>,
@@ -29,7 +31,7 @@ impl Paradigms {
     }
 
     #[inline]
-    pub fn get<'a, Id>(&'a self, id: Id) -> Option<Paradigm<'a>>
+    pub fn get<Id>(&self, id: Id) -> Option<Paradigm>
     where
         Id: Into<ParadigmId>,
     {
@@ -45,6 +47,7 @@ impl Paradigms {
 
 use std::iter::FromIterator;
 
+#[derive(Deserialize, Serialize)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct ParadigmEntry {
     pub prefix_id: u16,

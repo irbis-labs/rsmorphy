@@ -23,8 +23,8 @@ pub struct NumberAnalyzer {
 impl Default for NumberAnalyzer {
     fn default() -> Self {
         NumberAnalyzer {
-            tag_int: OpencorporaTagReg::new("NUMB,intg"),
-            tag_real: OpencorporaTagReg::new("NUMB,real"),
+            tag_int: OpencorporaTagReg::from_fmt_int("NUMB,intg"),
+            tag_real: OpencorporaTagReg::from_fmt_int("NUMB,real"),
         }
     }
 }

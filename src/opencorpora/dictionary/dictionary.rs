@@ -9,8 +9,13 @@ use std::{
 };
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use flate2::read::GzDecoder;
+use flate2::{
+    read::GzDecoder,
+    write::GzEncoder,
+    Compression
+};
 use maplit::hashset;
+use serde::{Deserialize, Serialize};
 use serde_json;
 use serde_json::Value;
 use string_cache::DefaultAtom;
@@ -33,6 +38,7 @@ pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
 pub type ConditionalProbDistDawg = CompletionDawg<HH>;
 
 /// Open Corpora dictionary wrapper class.
+#[derive(Deserialize, Serialize)]
 #[derive(Debug)]
 pub struct Dictionary {
     pub meta: DictionaryMeta,
@@ -51,6 +57,22 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
+    pub fn from_bin<P>(path: P) -> bincode::Result<Self>
+    where
+        P: AsRef<Path>,
+    {
+        log::debug!("Load bin dict file {:?}", path.as_ref());
+        bincode::deserialize_from(GzDecoder::new(File::open(path)?))
+    }
+
+    pub fn save_bin<P>(&self, path: P) -> bincode::Result<()>
+    where
+        P: AsRef<Path>,
+    {
+        log::debug!("Save bin dict file {:?}", path.as_ref());
+        bincode::serialize_into(GzEncoder::new(File::create(path)?, Compression::best()), &self)
+    }
+
     pub fn from_file<P>(p: P) -> Self
     where
         P: AsRef<Path>,
@@ -108,7 +130,7 @@ impl Dictionary {
             .expect("array of strings");
         profiler.waypoint("gramtab");
         // TODO opencorpora-ext
-        let gramtab = gramtab.into_iter().map(OpencorporaTagReg::new).collect();
+        let gramtab = gramtab.into_iter().map(OpencorporaTagReg::from_fmt_int).collect();
         profiler.waypoint("gramtab'");
 
         let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
