@@ -50,7 +50,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
         let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
 
         // TODO BTreeMap?
-        let mut total_counts: Vec<u16> = vec![1; morph.dict.paradigm_prefixes.len()];
+        let mut total_counts: Vec<u32> = vec![1; morph.dict.paradigm_prefixes.len()];
 
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
@@ -98,7 +98,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                             total_counts[prefix_id as usize],
                             cnt
                         );
-                        total_counts[prefix_id as usize] += cnt;
+                        total_counts[prefix_id as usize] += cnt as u32;
 
                         let seen = Seen::new(fixed_word.clone(), tag, para_id);
 
@@ -155,5 +155,28 @@ impl KnownSuffixAnalyzer {
                     &morph.dict.prediction_suffixes_dawgs[prefix_idx as usize],
                 )
             })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::util::test::{bootstrap_parse_ru, init_logger};
+    use crate::util::format::ExplainParsed;
+
+    #[test]
+    fn big_count() {
+        init_logger();
+
+        let ks_analyzer = KnownSuffixAnalyzer::default();
+        let (morph, mut result, word, word_lower, mut seen_parses) = bootstrap_parse_ru("существующой");
+        let time = std::time::Instant::now();
+        ks_analyzer.parse(morph, &mut result, word, &word_lower, &mut seen_parses);
+        log::debug!("Elapsed time: {:0.6} s", time.elapsed().as_secs_f64());
+
+        for (i, parsed) in result.iter().enumerate() {
+            log::debug!("{:2}. {}", i + 1, ExplainParsed(morph, parsed));
+        }
     }
 }

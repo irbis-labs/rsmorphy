@@ -3,12 +3,10 @@ use std::{
     collections::{BTreeMap, HashMap, HashSet},
     fmt,
     fs::File,
-    io::Read,
     iter::FromIterator,
-    path::{Path, PathBuf},
+    path::Path,
 };
 
-use byteorder::{LittleEndian, ReadBytesExt};
 use flate2::{
     read::GzDecoder,
     write::GzEncoder,

@@ -3,14 +3,15 @@ use std::iter::FromIterator;
 
 use dict_ru;
 use rsmorphy::prelude::*;
+use rsmorphy::util::format::ExplainLex;
 
 pub mod util;
 
-use crate::util::{input_loop, print_row_lex};
+use crate::util::input_loop;
 
 fn print_lexeme(morph: &MorphAnalyzer, lex: &Lex) {
     for (i, lex) in lex.iter_lexeme(morph).enumerate() {
-        print_row_lex(morph, i, &lex);
+        println!(r#"{:2}. {}"#, i + 1, ExplainLex(morph, &lex));
     }
 }
 

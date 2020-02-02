@@ -1,13 +1,14 @@
 use dict_ru;
 use rsmorphy::prelude::*;
+use rsmorphy::util::format::ExplainParsed;
 
 pub mod util;
 
-use crate::util::{input_loop, print_row_parsed};
+use crate::util::{input_loop};
 
 fn table(morph: &MorphAnalyzer, s: &str) {
     for (i, parsed) in morph.parse(s).into_iter().enumerate() {
-        print_row_parsed(morph, i, &parsed);
+        println!(r#"{:2}. {}"#, i + 1, ExplainParsed(morph, &parsed));
     }
 }
 

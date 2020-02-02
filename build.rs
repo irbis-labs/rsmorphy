@@ -1,10 +1,13 @@
+use std::env;
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
 
 fn main() {
-    let mut f = File::create("src/release.rs").expect("Can't create a file");
+    let release_path = &Path::new(&env::var("OUT_DIR").unwrap()).join("release.rs");
+    let mut f = File::create(release_path).expect("Can't create a file");
 
     let res = Command::new("rustc")
         .arg("--version")

@@ -1,9 +1,8 @@
 use dict_ru;
 use rsmorphy::prelude::*;
+use rsmorphy::util::format::ExplainParsed;
 
 pub mod util;
-
-use crate::util::print_row_parsed;
 
 fn table(morph: &MorphAnalyzer, s: &str) {
     for (i, parsed) in morph.parse(s).into_iter().enumerate() {
@@ -14,8 +13,8 @@ fn table(morph: &MorphAnalyzer, s: &str) {
             score: parsed.score,
         }; //dec.score()
         assert_eq!(s, "");
-        print_row_parsed(morph, i, &parsed);
-        print_row_parsed(morph, i, &decoded);
+        println!(r#"{:2}. {}"#, i + 1, ExplainParsed(morph, &parsed));
+        println!(r#"{:2}. {}"#, i + 1, ExplainParsed(morph, &decoded));
         println!();
     }
 }

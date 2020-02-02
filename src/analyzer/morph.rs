@@ -107,38 +107,36 @@ impl MorphAnalyzer {
 
 #[cfg(test)]
 mod tests {
-    use env_logger;
-
-    use crate::MorphAnalyzer;
-
-    lazy_static::lazy_static! {
-        static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
-    }
+    use crate::util::test::{RU, init_logger};
 
     #[test]
     fn load_ru() {
-        env_logger::init();
+        init_logger();
         let _ = RU.dict;
     }
 
     #[test]
     fn parse() {
+        init_logger();
         assert_eq!(RU.parse("минимальный").len(), 2);
         assert_eq!(RU.parse("менимальный").len(), 3);
     }
 
     #[test]
     fn parse_one_letter() {
+        init_logger();
         assert_eq!(RU.parse("с").len(), 25);
     }
 
     #[test]
     fn parse_one_letter_and_dot() {
+        init_logger();
         assert_eq!(RU.parse("м.").len(), 1);
     }
 
     #[test]
     fn parse_unknown_two_letter() {
+        init_logger();
         assert_eq!(RU.parse("ТМ").len(), 1);
         assert_eq!(RU.parse("КТ").len(), 1);
         assert_eq!(RU.parse("1С").len(), 1);
@@ -146,6 +144,7 @@ mod tests {
 
     #[test]
     fn parse_dash() {
+        init_logger();
         assert_eq!(RU.parse("Р-ка").len(), 1);
         assert_eq!(RU.parse("з-то").len(), 1);
     }

@@ -16,11 +16,14 @@ pub mod container;
 pub mod dawg;
 pub mod estimator;
 pub mod opencorpora;
-pub mod release;
 pub mod shapes;
 pub mod util;
 
 pub mod prelude;
+
+pub mod release {
+    include!(concat!(env!("OUT_DIR"), "/release.rs"));
+}
 
 pub use crate::{
     analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
