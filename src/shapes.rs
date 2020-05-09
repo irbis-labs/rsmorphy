@@ -1,5 +1,5 @@
 use roman;
-use uc::UnicodeCategories;
+use unicode_categories::UnicodeCategories;
 
 #[inline]
 pub fn is_ascii_alpha(ch: u8) -> bool {
