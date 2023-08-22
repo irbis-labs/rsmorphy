@@ -35,6 +35,6 @@ impl AnalyzerUnit for RomanAnalyzer {
         let shaped = Shaped::roman_number(word_lower);
         let score = shaped.score();
         let lex = Lex::from_stack(morph, StackSource::from(shaped));
-        result.push(Parsed::new(lex, score));
+        result.list.push(Parsed::new(lex, score));
     }
 }

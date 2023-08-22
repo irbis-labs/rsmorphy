@@ -1,12 +1,14 @@
+use inlinable_string::InlinableString;
+
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct HyphenSeparatedParticle {
-    pub particle: String,
+    pub particle: InlinableString,
 }
 
 impl HyphenSeparatedParticle {
     pub fn new<P>(particle: P) -> Self
     where
-        P: Into<String>,
+        P: Into<InlinableString>,
     {
         let particle = particle.into();
         HyphenSeparatedParticle { particle }

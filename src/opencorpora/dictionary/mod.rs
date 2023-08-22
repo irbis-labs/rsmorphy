@@ -1,5 +1,4 @@
 mod dictionary;
-mod dictionary_meta;
 mod grammeme_meta;
 mod loader;
 mod paradigm;
@@ -11,6 +10,5 @@ pub use self::{
 };
 
 use self::{
-    dictionary_meta::*,
     loader::*,
 };

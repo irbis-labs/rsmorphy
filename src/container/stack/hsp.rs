@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -73,20 +75,18 @@ impl Source for StackParticle {
         self.stack.is_known()
     }
 
-    fn get_word(&self) -> Cow<str> {
+    fn get_word(&self) -> InlinableString {
         match self.particle {
             None => self.stack.get_word(),
-            Some(ref particle) => {
-                Cow::from(format!("{}{}", self.stack.get_word(), particle.particle))
-            }
+            Some(ref particle) => self.stack.get_word() + &particle.particle,
         }
     }
 
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         match self.particle {
             None => self.stack.get_normal_form(morph),
             Some(ref particle) => {
-                format!("{}{}", self.stack.get_normal_form(morph), particle.particle).into()
+                self.stack.get_normal_form(morph) + &particle.particle
             }
         }
     }

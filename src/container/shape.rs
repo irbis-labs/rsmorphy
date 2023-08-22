@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -19,14 +21,14 @@ pub enum ShapeKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shaped {
-    word: String,
+    word: InlinableString,
     kind: ShapeKind,
 }
 
 impl Shaped {
     pub fn new<S>(word: S, kind: ShapeKind) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         let word = word.into();
         Shaped { word, kind }
@@ -34,28 +36,28 @@ impl Shaped {
 
     pub fn number<S>(word: S, is_float: bool) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Shaped::new(word, ShapeKind::Number { is_float })
     }
 
     pub fn roman_number<S>(word: S) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Shaped::new(word, ShapeKind::RomanNumber)
     }
 
     pub fn latin<S>(word: S) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Shaped::new(word, ShapeKind::Latin)
     }
 
     pub fn punctuation<S>(word: S) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Shaped::new(word, ShapeKind::Punctuation)
     }
@@ -84,12 +86,12 @@ impl Source for Shaped {
         false
     }
 
-    fn get_word(&self) -> Cow<str> {
-        Cow::from(self.word.as_str())
+    fn get_word(&self) -> InlinableString {
+        self.word.clone()
     }
 
-    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> Cow<str> {
-        Cow::from(self.word.as_str())
+    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
+        self.word.clone()
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {

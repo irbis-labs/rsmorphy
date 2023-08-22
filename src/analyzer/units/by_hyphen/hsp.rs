@@ -63,7 +63,7 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
                 let container = StackParticle::new(h_stack, hs_particle);
                 let lex = Lex::from_stack(morph, container);
                 let score = parsed.score * SCORE_DECAY;
-                result.push(Parsed::new(lex, score));
+                result.list.push(Parsed::new(lex, score));
             }
         }
     }

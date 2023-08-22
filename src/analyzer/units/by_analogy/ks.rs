@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
@@ -49,17 +49,12 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
         let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
 
-        // TODO BTreeMap?
         let mut total_counts: Vec<u32> = vec![1; morph.dict.paradigm_prefixes.len()];
 
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
-            'iter_splits: for &i in &morph.dict.prediction_splits {
-                if i >= char_len {
-                    continue;
-                }
-
+            'iter_splits: for i in morph.dict.prediction_splits(char_len - 1) {
                 let pos = word_lower
                     .chars()
                     .take(char_len - i)
@@ -72,10 +67,10 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
                 let para_data = suffixes_dawg.similar_items(word_end, &morph.dict.char_substitutes);
                 for (fixed_suffix, parses) in para_data {
-                    let fixed_word: Cow<str> = if fixed_suffix == word_end {
-                        Cow::from(word_lower)
+                    let fixed_word = if fixed_suffix == word_end {
+                        word_lower.into()
                     } else {
-                        Cow::from(format!("{}{}", word_start, fixed_suffix))
+                        InlinableString::from(word_start) + &fixed_suffix
                     };
                     log::trace!(
                         "fixed_suffix: {:?}, fixed_word: {:?}",
@@ -120,7 +115,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
             }
         }
 
-        let mut subresult: ParseResult = subresult
+        let mut subresult: Vec<Parsed> = subresult
             .into_iter()
             .map(|(cnt, prefix_id, lex)| {
                 let score = Score::Fake(
@@ -132,7 +127,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
             .collect();
 
         subresult.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap().reverse());
-        result.extend(subresult.into_iter());
+        result.list.extend(subresult.into_iter());
     }
 }
 

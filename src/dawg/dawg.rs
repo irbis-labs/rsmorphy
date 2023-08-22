@@ -2,7 +2,9 @@ use std::{collections::BTreeMap, fs::File, io::Read, marker::PhantomData, path::
 
 use base64;
 use flate2::read::GzDecoder;
+use inlinable_string::{InlinableString, StringExt};
 use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 
 use crate::dawg::{completer::Completer, dictionary::Dictionary, guide::Guide, value::DawgValue};
 
@@ -98,15 +100,15 @@ where
         &self,
         key: &str,
         replaces: &BTreeMap<String, String>,
-    ) -> Vec<(String, Vec<V>)> {
-        let mut result: Vec<(String, Vec<V>)> = Vec::new();
+    ) -> SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]> {
+        let mut result = SmallVec::new();
         self.similar_items_(&mut result, "", key, self.dawg.dict.root, replaces);
         result
     }
 
     fn similar_items_(
         &self,
-        result: &mut Vec<(String, Vec<V>)>,
+        result: &mut SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]>,
         current_prefix: &str,
         key: &str,
         mut index: u32,
@@ -131,12 +133,10 @@ where
 
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
                     log::trace!(r#" next_index: {}"#, next_index);
-                    let prefix = format!(
-                        "{}{}{}",
-                        current_prefix,
-                        &key[start_pos..word_pos],
-                        replace_char
-                    );
+                    let mut prefix = InlinableString::new();
+                    prefix.push_str(current_prefix);
+                    prefix.push_str(&key[start_pos..word_pos]);
+                    prefix.push_str(replace_char);
                     self.similar_items_(result, &prefix, key, next_index, replace_chars);
                 };
             }
@@ -149,16 +149,16 @@ where
         }
         if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
             log::trace!(r#" index: {}"#, index);
-            let found_key = format!("{}{}", current_prefix, subkey);
+            let found_key = InlinableString::from(current_prefix) + subkey;
             log::trace!(r#" found_key: {}"#, found_key);
             let value = self.value_for_index_(index);
             result.insert(0, (found_key, value));
         }
     }
 
-    fn value_for_index_(&self, index: u32) -> Vec<V> {
+    fn value_for_index_(&self, index: u32) -> SmallVec<[V; 8]> {
         log::trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
-        let mut result: Vec<V> = Vec::new();
+        let mut result = SmallVec::new();
         let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, "");
         while let Some(key) = completer.next_key() {
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);

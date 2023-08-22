@@ -49,8 +49,6 @@ impl MorphAnalyzer {
         P: AsRef<Path>,
     {
         let dict = Dictionary::from_file(p);
-        // TODO consider move into dict?
-        // char_substitutes = dictionary.words.compile_replaces(char_substitutes or {})
         MorphAnalyzer::new(dict)
     }
 
@@ -100,7 +98,7 @@ impl MorphAnalyzer {
 
         let mut result = look_over();
         self.estimator
-            .apply_to_parses(self, word, &word_lower, &mut result);
+            .apply_to_parses(self, word, &word_lower, &mut result.list);
         result
     }
 }

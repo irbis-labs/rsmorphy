@@ -1,5 +1,4 @@
 use std::{
-    borrow::Cow,
     collections::{BTreeMap, HashMap, HashSet},
     fmt,
     fs::File,
@@ -12,22 +11,19 @@ use flate2::{
     write::GzEncoder,
     Compression
 };
+use inlinable_string::InlinableString;
 use maplit::hashset;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use serde_json::Value;
 use string_cache::DefaultAtom;
 
-use crate::{
-    dawg::{CompletionDawg, Dawg},
-    opencorpora::{
-        dictionary::*,
-        grammeme::{Grammeme, GrammemeReg},
-        tag::OpencorporaTagReg,
-        dictionary::{Paradigms, ParadigmId, ParadigmIndex}
-    },
-    util::DumbProfiler,
-};
+use crate::dawg::{CompletionDawg, Dawg};
+use crate::opencorpora::dictionary::*;
+use crate::opencorpora::grammeme::{Grammeme, GrammemeReg};
+use crate::opencorpora::tag::OpencorporaTagReg;
+use crate::opencorpora::dictionary::{Paradigms, ParadigmId, ParadigmIndex};
+use crate::util::DumbProfiler;
 
 pub use crate::dawg::{HH, HHH};
 
@@ -39,7 +35,6 @@ pub type ConditionalProbDistDawg = CompletionDawg<HH>;
 #[derive(Deserialize, Serialize)]
 #[derive(Debug)]
 pub struct Dictionary {
-    pub meta: DictionaryMeta,
     pub grammemes: HashMap<Grammeme, (GrammemeReg, GrammemeMeta)>,
     pub gramtab: Vec<OpencorporaTagReg>,
     pub suffixes: Vec<DefaultAtom>,
@@ -50,7 +45,7 @@ pub struct Dictionary {
     pub prediction_suffixes_dawgs: Vec<PredictionSuffixesDawg>,
     pub paradigm_prefixes: Vec<DefaultAtom>,
     pub paradigm_prefixes_rev: Vec<(u16, DefaultAtom)>,
-    pub prediction_splits: Vec<usize>,
+    pub max_suffix_length: usize,
     pub char_substitutes: BTreeMap<String, String>,
 }
 
@@ -78,8 +73,6 @@ impl Dictionary {
         let load = PathLoader::new(p);
 
         let mut profiler = DumbProfiler::start();
-
-        let meta = DictionaryMeta::default();
 
         let meta_json = {
             let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
@@ -109,7 +102,6 @@ impl Dictionary {
                 .as_u64()
                 .unwrap() as usize
         };
-        let prediction_splits = (1..=max_suffix_length).rev().collect();
         profiler.waypoint("meta'");
 
         let paradigm_prefixes_rev = paradigm_prefixes
@@ -211,7 +203,6 @@ impl Dictionary {
         let char_substitutes = maplit::btreemap! {"е".into() => "ё".into()};
 
         Dictionary {
-            meta,
             grammemes,
             gramtab,
             suffixes,
@@ -222,9 +213,13 @@ impl Dictionary {
             prediction_suffixes_dawgs,
             paradigm_prefixes,
             paradigm_prefixes_rev,
-            prediction_splits,
+            max_suffix_length,
             char_substitutes,
         }
+    }
+
+    pub fn prediction_splits(&self, word_len: usize) -> impl Iterator<Item = usize> {
+        (1 ..= self.max_suffix_length.min(word_len)).rev()
     }
 
     #[inline]
@@ -277,24 +272,24 @@ impl Dictionary {
         &fixed_word[prefix.len()..fixed_word.len() - suffix.len()]
     }
 
-    /// Build a normal form.
-    pub fn build_normal_form<'a>(
+    /// Build the normal form.
+    pub fn build_normal_form(
         &self,
         id: ParadigmId,
         idx: ParadigmIndex,
-        fixed_word: &'a str,
-    ) -> Cow<'a, str> {
+        fixed_word: &str,
+    ) -> InlinableString {
         if idx.is_first() {
             fixed_word.into()
         } else {
             let stem = self.get_stem(id, idx, fixed_word);
             let para = self.para().get(id).expect("paradigm");
             let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
-            format!("{}{}{}", normal_prefix, stem, normal_suffix).into()
+            InlinableString::from(normal_prefix) + stem + normal_suffix
         }
     }
 
-    /// Write a normal form.
+    /// Write the normal form.
     pub fn write_normal_form<'a, W: fmt::Write>(
         &self,
         f: &mut W,

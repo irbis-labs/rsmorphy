@@ -16,7 +16,7 @@ impl SingleTagProbabilityEstimator {
         morph: &MorphAnalyzer,
         _word: &str,
         word_lower: &str,
-        parses: &mut Vec<Parsed>,
+        parses: &mut [Parsed],
     ) {
         if parses.is_empty() {
             return;

@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -151,7 +153,7 @@ impl Source for StackSource {
         }
     }
 
-    fn get_word(&self) -> Cow<str> {
+    fn get_word(&self) -> InlinableString {
         match *self {
             Dictionary(ref source) => source.get_word(),
             HyphenAdverb(ref source) => source.get_word(),
@@ -161,7 +163,7 @@ impl Source for StackSource {
         }
     }
 
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         match *self {
             Dictionary(ref source) => source.get_normal_form(morph),
             HyphenAdverb(ref source) => source.get_normal_form(morph),

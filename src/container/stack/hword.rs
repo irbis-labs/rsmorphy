@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -69,22 +71,19 @@ impl Source for StackHyphenated {
         }
     }
 
-    fn get_word(&self) -> Cow<str> {
+    fn get_word(&self) -> InlinableString {
         match self.right {
             None => self.left.get_word(),
-            Some(ref right) => Cow::from(format!("{}-{}", self.left.get_word(), right.get_word())),
+            Some(ref right) => self.left.get_word() + "-" + &right.get_word(),
         }
     }
 
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         match self.right {
             None => self.left.get_normal_form(morph),
-            Some(ref right) => format!(
-                "{}-{}",
-                self.left.get_normal_form(morph),
-                right.get_normal_form(morph)
-            )
-            .into(),
+            Some(ref right) => {
+                self.left.get_normal_form(morph) + "-" + &right.get_normal_form(morph)
+            },
         }
     }
 

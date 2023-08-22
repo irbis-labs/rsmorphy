@@ -1,3 +1,5 @@
+use inlinable_string::InlinableString;
+
 use self::AffixKind::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -9,14 +11,14 @@ pub enum AffixKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Affix {
-    pub part: String,
+    pub part: InlinableString,
     pub kind: AffixKind,
 }
 
 impl Affix {
     pub fn new<S>(part: S, kind: AffixKind) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         let part = part.into();
         Affix { part, kind }
@@ -24,21 +26,21 @@ impl Affix {
 
     pub fn known_suffix<S>(part: S) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Affix::new(part, KnownSuffix)
     }
 
     pub fn known_prefix<S>(part: S) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Affix::new(part, KnownPrefix)
     }
 
     pub fn unknown_prefix<S>(part: S) -> Self
     where
-        S: Into<String>,
+        S: Into<InlinableString>,
     {
         Affix::new(part, UnknownPrefix)
     }

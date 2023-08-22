@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -32,12 +34,12 @@ impl Source for HyphenAdverb {
         self.word_lower.is_known()
     }
 
-    fn get_word(&self) -> Cow<str> {
-        Cow::from(self.word_lower.word())
+    fn get_word(&self) -> InlinableString {
+        self.word_lower.word().into()
     }
 
-    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> Cow<str> {
-        Cow::from(self.word_lower.word())
+    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
+        self.word_lower.word().into()
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {

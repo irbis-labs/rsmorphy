@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -14,7 +16,7 @@ pub enum InitialsKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Initials {
-    pub letter: Cow<'static, str>,
+    pub letter: InlinableString,
     pub kind: InitialsKind,
     pub tag_idx: u8,
 }
@@ -51,11 +53,11 @@ impl Source for Initials {
         unimplemented!()
     }
 
-    fn get_word(&self) -> Cow<str> {
+    fn get_word(&self) -> InlinableString {
         self.letter.clone()
     }
 
-    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
         self.letter.clone()
     }
 
@@ -110,7 +112,6 @@ impl MorphySerde for Initials {
         let (s, gender) = take_1_char(s)?;
         let (s, case) = take_1_char(s)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ",")?, ';')?;
-        let letter = Cow::from(word.to_string());
         let tag_idx = decode_tag_idx(kind, gender, case)?;
         let kind = match kind {
             'n' => InitialsKind::FirstName,
@@ -123,7 +124,7 @@ impl MorphySerde for Initials {
             Initials {
                 kind,
                 tag_idx,
-                letter,
+                letter: word.into(),
             },
         ))
     }

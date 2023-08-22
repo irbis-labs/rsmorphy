@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -45,7 +47,7 @@ impl Lex {
         }
     }
 
-    pub fn get_plural<'m>(&self, morph: &'m MorphAnalyzer, num: usize) -> Option<Lex> {
+    pub fn get_plural(&self, morph: &MorphAnalyzer, num: usize) -> Option<Lex> {
         self.inflect(morph, &self.get_tag(morph).numeral_agreement_grammemes(num))
     }
 
@@ -79,11 +81,11 @@ impl Source for Lex {
         self.stack.is_known()
     }
 
-    fn get_word(&self) -> Cow<str> {
+    fn get_word(&self) -> InlinableString {
         self.stack.get_word()
     }
 
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         self.stack.get_normal_form(morph)
     }
 

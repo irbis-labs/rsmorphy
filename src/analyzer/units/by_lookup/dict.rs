@@ -35,7 +35,7 @@ impl AnalyzerUnit for DictionaryAnalyzer {
                 let word_lower = WordStruct::known(fixed_word.clone());
                 let container = Dictionary::new(word_lower, para_id, idx);
                 let lex = Lex::from_stack(morph, StackSource::from(container));
-                result.push(Parsed::new(lex, DICT_SCORE));
+                result.list.push(Parsed::new(lex, DICT_SCORE));
             }
         }
     }

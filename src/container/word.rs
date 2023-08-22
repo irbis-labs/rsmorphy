@@ -1,22 +1,22 @@
-use std::sync::Arc;
+use inlinable_string::InlinableString;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct WordStruct {
     is_known: bool,
-    word: Arc<String>,
+    word: InlinableString,
 }
 
 impl WordStruct {
-    pub fn new<W: Into<String>>(word: W, is_known: bool) -> Self {
-        let word = Arc::new(word.into());
+    pub fn new<W: Into<InlinableString>>(word: W, is_known: bool) -> Self {
+        let word = word.into();
         WordStruct { word, is_known }
     }
 
-    pub fn known<W: Into<String>>(word: W) -> Self {
+    pub fn known<W: Into<InlinableString>>(word: W) -> Self {
         WordStruct::new(word, true)
     }
 
-    pub fn unknown<W: Into<String>>(word: W) -> Self {
+    pub fn unknown<W: Into<InlinableString>>(word: W) -> Self {
         WordStruct::new(word, false)
     }
 

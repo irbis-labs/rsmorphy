@@ -11,5 +11,3 @@ impl Parsed {
         Parsed { lex, score }
     }
 }
-
-pub type ParseResult = Vec<Parsed>;

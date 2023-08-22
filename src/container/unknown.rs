@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -8,13 +10,13 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Unknown {
-    pub word_lower: String,
+    pub word_lower: InlinableString,
 }
 
 impl Unknown {
     pub fn new<W>(word_lower: W) -> Self
     where
-        W: Into<String>,
+        W: Into<InlinableString>,
     {
         let word_lower = word_lower.into();
         Unknown { word_lower }
@@ -43,12 +45,12 @@ impl Source for Unknown {
         false
     }
 
-    fn get_word(&self) -> Cow<str> {
-        self.word_lower.as_str().into()
+    fn get_word(&self) -> InlinableString {
+        self.word_lower.clone()
     }
 
-    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> Cow<str> {
-        self.word_lower.as_str().into()
+    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
+        self.word_lower.clone()
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {

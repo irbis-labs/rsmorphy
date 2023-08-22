@@ -33,7 +33,7 @@ impl AnalyzerUnit for UnknownAnalyzer {
 
         if seen_parses.is_empty() {
             let lex = Lex::from_stack(morph, StackSource::from(Unknown::new(word_lower)));
-            result.push(Parsed::new(lex, SCORE));
+            result.list.push(Parsed::new(lex, SCORE));
         }
     }
 }

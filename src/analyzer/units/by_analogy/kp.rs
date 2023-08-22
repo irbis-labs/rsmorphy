@@ -56,7 +56,7 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
                     continue;
                 }
                 let affix = Some(Affix {
-                    part: prefix.to_string(),
+                    part: prefix.into(),
                     kind: AffixKind::KnownPrefix,
                 });
                 let container = StackAffix::new(lex_stack.stack.left.stack, affix);

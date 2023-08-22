@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::BTreeSet, iter::FromIterator};
+use std::{collections::BTreeSet, iter::FromIterator};
 
 use crate::{
     analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
@@ -71,15 +71,13 @@ impl AnalyzerUnit for InitialsAnalyzer {
 
         if let Some(&letter) = LETTERS.get(word) {
             for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {
-                let tag_idx = tag_idx as u8;
-                let letter = Cow::from(letter);
                 let container = Initials {
-                    letter,
+                    letter: letter.into(),
                     kind,
-                    tag_idx,
+                    tag_idx: tag_idx as u8,
                 };
                 let lex = Lex::from_stack(morph, StackSource::from(container));
-                result.push(Parsed::new(lex, SCORE));
+                result.list.push(Parsed::new(lex, SCORE));
             }
         }
     }

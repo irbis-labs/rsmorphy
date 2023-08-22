@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -91,11 +93,11 @@ impl Source for Dictionary {
         self.word_lower.is_known()
     }
 
-    fn get_word(&self) -> Cow<str> {
-        Cow::from(self.word_lower.word())
+    fn get_word(&self) -> InlinableString {
+        self.word_lower.word().into()
     }
 
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         morph
             .dict
             .build_normal_form(self.para_id, self.idx, self.word_lower.word())

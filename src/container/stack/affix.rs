@@ -1,4 +1,6 @@
-use std::{borrow::Cow, fmt};
+use std::fmt;
+
+use inlinable_string::InlinableString;
 
 use crate::{
     analyzer::MorphAnalyzer,
@@ -61,22 +63,24 @@ impl Source for StackAffix {
         }
     }
 
-    fn get_word(&self) -> Cow<str> {
+    fn get_word(&self) -> InlinableString {
         match self.affix {
             None => self.stack.get_word(),
             Some(ref affix) => match affix.kind {
                 AffixKind::KnownSuffix => self.stack.get_word(),
-                _ => format!("{}{}", affix.part, self.stack.get_word()).into(),
+                _ => {
+                    affix.part.clone() + &self.stack.get_word()
+                },
             },
         }
     }
 
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> Cow<str> {
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         match self.affix {
             None => self.stack.get_normal_form(morph),
             Some(ref affix) => match affix.kind {
                 AffixKind::KnownSuffix => self.stack.get_normal_form(morph),
-                _ => format!("{}{}", affix.part, self.stack.get_normal_form(morph)).into(),
+                _ => affix.part.clone() + &self.stack.get_normal_form(morph),
             },
         }
     }

@@ -39,6 +39,6 @@ impl AnalyzerUnit for PunctuationAnalyzer {
         let shaped = Shaped::punctuation(word_lower);
         let score = shaped.score();
         let lex = Lex::from_stack(morph, StackSource::from(shaped));
-        result.push(Parsed::new(lex, score));
+        result.list.push(Parsed::new(lex, score));
     }
 }

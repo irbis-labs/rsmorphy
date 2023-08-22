@@ -12,7 +12,7 @@ pub fn add_parsed_if_not_seen(
     parsed: Parsed,
 ) {
     if seen_parses.insert(&parsed.lex.as_seen(morph)) {
-        result.push(parsed);
+        result.list.push(parsed);
     }
 }
 

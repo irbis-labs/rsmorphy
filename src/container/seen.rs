@@ -1,14 +1,15 @@
 use std::{
-    borrow::Cow,
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
 };
+
+use inlinable_string::InlinableString;
 
 use crate::opencorpora::{OpencorporaTagReg, dictionary::ParadigmId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {
-    pub word: Cow<'a, str>,
+    pub word: InlinableString,
     pub tag: &'a OpencorporaTagReg,
     pub para_id: Option<ParadigmId>,
 }
@@ -16,7 +17,7 @@ pub struct Seen<'a> {
 impl<'a> Seen<'a> {
     pub fn new<W, P, PID>(word: W, tag: &'a OpencorporaTagReg, para_id: P) -> Self
     where
-        W: Into<Cow<'a, str>>,
+        W: Into<InlinableString>,
         P: Into<Option<PID>>,
         PID: Into<ParadigmId>,
     {

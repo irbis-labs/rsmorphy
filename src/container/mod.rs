@@ -13,6 +13,7 @@ pub mod unknown;
 
 pub mod lex;
 pub mod parsed;
+pub mod parse_result;
 pub mod score;
 pub mod seen;
 pub mod stack;
@@ -38,8 +39,8 @@ pub use self::shape::Shaped;
 pub use self::unknown::Unknown;
 
 pub use self::lex::Lex;
-pub use self::parsed::ParseResult;
 pub use self::parsed::Parsed;
+pub use self::parse_result::ParseResult;
 pub use self::score::Score;
 pub use self::seen::Seen;
 pub use self::seen::SeenSet;
