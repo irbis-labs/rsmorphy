@@ -1,4 +1,4 @@
-pub use crate::analyzer::units::abc::*;
+pub use crate::analyzer::unit::*;
 pub use crate::container::abc::*;
 pub use crate::Grammeme;
 pub use crate::GrammemeSet;

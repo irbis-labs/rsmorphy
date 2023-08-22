@@ -1,5 +1,7 @@
 use std::path::Path;
+use std::sync::Arc;
 
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::units::*;
 use crate::container::ParseResult;
 use crate::container::SeenSet;
@@ -23,11 +25,16 @@ pub struct Units {
     pub unknown: UnknownAnalyzer,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MorphAnalyzer {
-    pub dict: Dictionary,
-    pub estimator: SingleTagProbabilityEstimator,
-    pub units: Units,
+    inner: Arc<Inner>,
+}
+
+#[derive(Debug)]
+struct Inner {
+    dict: Dictionary,
+    estimator: SingleTagProbabilityEstimator,
+    units: Units,
 }
 
 impl MorphAnalyzer {
@@ -35,11 +42,12 @@ impl MorphAnalyzer {
     pub fn new(dict: Dictionary) -> Self {
         let estimator = SingleTagProbabilityEstimator {};
         let units = Units::default();
-        MorphAnalyzer {
+        let inner = Arc::new(Inner {
             dict,
             estimator,
             units,
-        }
+        });
+        MorphAnalyzer { inner }
     }
 
     /// Loads `Dictionary` from disk and creates `MorphAnalyzer`
@@ -49,6 +57,16 @@ impl MorphAnalyzer {
     {
         let dict = Dictionary::from_file(p);
         MorphAnalyzer::new(dict)
+    }
+
+    #[inline]
+    pub fn dict(&self) -> &Dictionary {
+        &self.inner.dict
+    }
+
+    #[inline]
+    pub fn units(&self) -> &Units {
+        &self.inner.units
     }
 
     /// Analyze the word and return a list of `Parsed`:
@@ -61,10 +79,10 @@ impl MorphAnalyzer {
 
             macro_rules! look_in (
                 ($t: ident) => {{
-                    self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
+                    self.units().$t.parse(self, &mut result, word, &word_lower, &mut seen);
                 }};
                 ($t: ident, return_if_found) => {{
-                    self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
+                    self.units().$t.parse(self, &mut result, word, &word_lower, &mut seen);
                     if !result.is_empty() { return result };
                 }}
             );
@@ -96,7 +114,7 @@ impl MorphAnalyzer {
         };
 
         let mut result = look_over();
-        self.estimator
+        self.inner.estimator
             .apply_to_parses(self, word, &word_lower, &mut result.list);
         result
     }
@@ -110,7 +128,7 @@ mod tests {
     #[test]
     fn load_ru() {
         init_logger();
-        let _ = RU.dict;
+        let _ = RU.dict();
     }
 
     #[test]

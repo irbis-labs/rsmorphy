@@ -33,7 +33,7 @@ impl Initials {
             InitialsKind::FirstName => 0,
             InitialsKind::Patronym => 12,
         };
-        (0..morph.units.initials.tags.len() / 2).map(move |tag_idx| {
+        (0..morph.units().initials.tags.len() / 2).map(move |tag_idx| {
             let container = Initials {
                 tag_idx: base + tag_idx as u8,
                 ..self.clone()
@@ -65,7 +65,7 @@ impl Source for Initials {
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
-        &morph.units.initials.tags[self.tag_idx as usize].0
+        &morph.units().initials.tags[self.tag_idx as usize].0
     }
 
     fn try_get_para_id(&self) -> Option<ParadigmId> {

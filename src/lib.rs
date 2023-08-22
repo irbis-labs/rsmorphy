@@ -21,7 +21,7 @@ pub mod util;
 
 pub mod prelude;
 
-pub use crate::analyzer::units::abc::AnalyzerUnit;
+pub use crate::analyzer::unit::AnalyzerUnit;
 pub use crate::analyzer::MorphAnalyzer;
 pub use crate::container::abc::MorphySerde;
 pub use crate::container::abc::Source;

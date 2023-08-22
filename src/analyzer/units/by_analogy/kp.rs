@@ -1,4 +1,4 @@
-use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::stack::StackAffix;
@@ -99,7 +99,7 @@ impl KnownPrefixAnalyzer {
         // This is checked in <Self as AnalyzedUnit>::parse
         debug_assert!(word_len >= self.min_reminder_length);
         let limit = word_len - self.min_reminder_length;
-        let word_prefixes = morph.dict.prediction_prefixes.sorted_prefixes(word);
+        let word_prefixes = morph.dict().prediction_prefixes.sorted_prefixes(word);
         #[cfg(trace_analyzer)]
         log::trace!("word_prefixes: {}", word_prefixes.join(", "));
         word_prefixes

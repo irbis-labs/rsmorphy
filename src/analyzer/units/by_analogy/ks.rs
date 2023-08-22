@@ -1,6 +1,6 @@
 use inlinable_string::InlinableString;
 
-use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackAffix;
 use crate::container::Affix;
@@ -57,13 +57,13 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
         let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
 
-        let mut total_counts: Vec<u32> = vec![1; morph.dict.paradigm_prefixes.len()];
+        let mut total_counts: Vec<u32> = vec![1; morph.dict().paradigm_prefixes.len()];
 
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
             #[cfg(trace_analyzer)]
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
-            'iter_splits: for i in morph.dict.prediction_splits(char_len - 1) {
+            'iter_splits: for i in morph.dict().prediction_splits(char_len - 1) {
                 let pos = word_lower
                     .chars()
                     .take(char_len - i)
@@ -76,7 +76,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                 #[cfg(trace_analyzer)]
                 log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
-                let para_data = suffixes_dawg.similar_items(word_end, &morph.dict.char_substitutes);
+                let para_data = suffixes_dawg.similar_items(word_end, &morph.dict().char_substitutes);
                 for (fixed_suffix, parses) in para_data {
                     let fixed_word = if fixed_suffix == word_end {
                         word_lower.into()
@@ -93,7 +93,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                     #[cfg(trace_analyzer)]
                     log::trace!("parses: {:?}", parses);
                     'iter_parses: for HHH(cnt, para_id, idx) in parses {
-                        let tag = morph.dict.get_tag(para_id.into(), idx.into());
+                        let tag = morph.dict().get_tag(para_id.into(), idx.into());
 
                         if !tag.is_productive() {
                             continue 'iter_parses;
@@ -154,7 +154,7 @@ impl KnownSuffixAnalyzer {
     ) -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i {
         use std::ops::Deref;
         morph
-            .dict
+            .dict()
             .paradigm_prefixes_rev
             .iter()
             .filter(move |&&(_, ref prefix)| word.starts_with(prefix.deref()))
@@ -162,7 +162,7 @@ impl KnownSuffixAnalyzer {
                 (
                     prefix_idx,
                     prefix.deref(),
-                    &morph.dict.prediction_suffixes_dawgs[prefix_idx as usize],
+                    &morph.dict().prediction_suffixes_dawgs[prefix_idx as usize],
                 )
             })
     }

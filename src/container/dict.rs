@@ -53,9 +53,9 @@ impl Dictionary {
         &'s self,
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
-        let paradigm = morph.dict.para().get(self.para_id).expect("paradigm id");
+        let paradigm = morph.dict().para().get(self.para_id).expect("paradigm id");
         let stem = morph
-            .dict
+            .dict()
             .get_stem(self.para_id, self.idx, self.word_lower.word());
         paradigm.iter().enumerate().map(
             move |(
@@ -66,8 +66,8 @@ impl Dictionary {
                     ..
                 },
             )| {
-                let prefix = &morph.dict.paradigm_prefixes[prefix_id as usize];
-                let suffix = &morph.dict.suffixes[suffix_id as usize];
+                let prefix = &morph.dict().paradigm_prefixes[prefix_id as usize];
+                let suffix = &morph.dict().suffixes[suffix_id as usize];
                 let word = WordStruct::new(
                     format!("{}{}{}", prefix, stem, suffix),
                     self.word_lower.is_known(),
@@ -100,12 +100,12 @@ impl Source for Dictionary {
 
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         morph
-            .dict
+            .dict()
             .build_normal_form(self.para_id, self.idx, self.word_lower.word())
     }
 
     fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
-        morph.dict.get_tag(self.para_id, self.idx)
+        morph.dict().get_tag(self.para_id, self.idx)
     }
 
     fn try_get_para_id(&self) -> Option<ParadigmId> {
@@ -118,7 +118,7 @@ impl Source for Dictionary {
 
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, morph: &MorphAnalyzer) -> fmt::Result {
         morph
-            .dict
+            .dict()
             .write_normal_form(f, self.para_id, self.idx, self.word_lower.word())
     }
 

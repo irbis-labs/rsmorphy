@@ -1,4 +1,4 @@
-use crate::analyzer::units::abc::*;
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackParticle;
 use crate::container::HyphenSeparatedParticle;

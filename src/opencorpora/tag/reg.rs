@@ -117,7 +117,7 @@ impl OpencorporaTagReg {
         let mut new_grammemes = self.grammemes.set.clone();
         new_grammemes.extend(required.set.iter().cloned());
         for grammeme in &required.set {
-            let meta = &morph.dict.grammemes[grammeme].1;
+            let meta = &morph.dict().grammemes[grammeme].1;
             new_grammemes = &new_grammemes - &meta.incompatible;
         }
         GrammemeSet { set: new_grammemes }

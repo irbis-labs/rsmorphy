@@ -1,4 +1,4 @@
-use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::stack::StackAffix;
@@ -45,7 +45,7 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
 
         for (prefix, unprefixed_word) in word_splits(word_lower, None, None) {
             let mut subresult = ParseResult::new();
-            morph.units.dictionary.parse(
+            morph.units().dictionary.parse(
                 morph,
                 &mut subresult,
                 unprefixed_word,

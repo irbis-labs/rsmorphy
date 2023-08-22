@@ -135,7 +135,7 @@ impl StackAffix {
                     .as_dictionary()
                     .expect("Should only be Dictionary");
                 let word = dict.word_lower().word();
-                let stem = morph.dict.get_stem(dict.para_id(), dict.idx(), word);
+                let stem = morph.dict().get_stem(dict.para_id(), dict.idx(), word);
                 Some(Affix::known_suffix(&word[stem.len()..]))
             } else {
                 self.affix.clone()

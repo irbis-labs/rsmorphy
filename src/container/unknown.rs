@@ -57,7 +57,7 @@ impl Source for Unknown {
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
-        &morph.units.unknown.tag
+        &morph.units().unknown.tag
     }
 
     fn try_get_para_id(&self) -> Option<ParadigmId> {

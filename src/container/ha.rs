@@ -45,7 +45,7 @@ impl Source for HyphenAdverb {
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
-        &morph.units.ha.tag
+        &morph.units().ha.tag
     }
 
     fn try_get_para_id(&self) -> Option<ParadigmId> {

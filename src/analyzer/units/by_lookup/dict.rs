@@ -1,4 +1,4 @@
-use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackSource;
 use crate::container::Dictionary;
@@ -30,9 +30,9 @@ impl AnalyzerUnit for DictionaryAnalyzer {
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let para_data = morph
-            .dict
+            .dict()
             .words
-            .similar_items(word_lower, &morph.dict.char_substitutes);
+            .similar_items(word_lower, &morph.dict().char_substitutes);
         #[cfg(trace_analyzer)]
         log::trace!(r#" para_data="{:?}" "#, para_data);
 

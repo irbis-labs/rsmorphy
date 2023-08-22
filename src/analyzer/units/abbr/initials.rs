@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
 
-use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackSource;
 use crate::container::Initials;

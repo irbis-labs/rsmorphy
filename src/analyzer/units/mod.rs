@@ -1,5 +1,3 @@
-pub mod abc;
-
 pub mod abbr;
 pub mod by_analogy;
 pub mod by_hyphen;
@@ -9,7 +7,6 @@ pub mod by_shape;
 pub mod unknown;
 
 pub use self::abbr::initials::InitialsAnalyzer;
-pub use self::abc::AnalyzerUnit;
 pub use self::by_analogy::kp::KnownPrefixAnalyzer;
 pub use self::by_analogy::ks::KnownSuffixAnalyzer;
 pub use self::by_analogy::up::UnknownPrefixAnalyzer;

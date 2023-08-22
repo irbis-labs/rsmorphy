@@ -1,15 +1,7 @@
-use crate::{
-    analyzer::{units::abc::*, MorphAnalyzer},
-    container::{
-        ParseResult,
-        SeenSet,
-        //        Dictionary,
-        //        HyphenSeparatedParticle,
-        //        Lex,
-        //        Score,
-        //        stack::{Stack, StackAffix, StackHyphenated},
-    },
-};
+use crate::analyzer::unit::AnalyzerUnit;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::ParseResult;
+use crate::container::SeenSet;
 
 /// Parse the word by parsing its hyphen-separated parts.
 ///

@@ -101,12 +101,12 @@ impl Source for Shaped {
         use self::ShapeKind::*;
 
         match self.kind {
-            Latin => &morph.units.latin.tag,
-            RomanNumber => &morph.units.roman.tag,
-            Punctuation => &morph.units.punct.tag,
+            Latin => &morph.units().latin.tag,
+            RomanNumber => &morph.units().roman.tag,
+            Punctuation => &morph.units().punct.tag,
             Number { is_float } => match is_float {
-                true => &morph.units.number.tag_real,
-                false => &morph.units.number.tag_int,
+                true => &morph.units().number.tag_real,
+                false => &morph.units().number.tag_int,
             },
         }
     }
