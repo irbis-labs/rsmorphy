@@ -24,13 +24,16 @@ impl AnalyzerUnit for DictionaryAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("DictionaryAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let para_data = morph
             .dict
             .words
             .similar_items(word_lower, &morph.dict.char_substitutes);
+        #[cfg(trace_analyzer)]
         log::trace!(r#" para_data="{:?}" "#, para_data);
 
         // `fixed_word` is a word with proper substitute (e.g. ё) letters

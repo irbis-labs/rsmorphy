@@ -30,7 +30,9 @@ impl AnalyzerUnit for HyphenatedWordsAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("HyphenatedWordsAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         // FIXME unimplemented

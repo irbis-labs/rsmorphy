@@ -36,18 +36,23 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("HyphenSeparatedParticleAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         for &particle in &PARTICLES_AFTER_HYPHEN {
             if word_lower.len() <= particle.len() || !word_lower.ends_with(particle) {
                 continue;
             };
+            #[cfg(trace_analyzer)]
             log::trace!(r#" particle: "{}" "#, particle);
             let unsuffixed_word = &word_lower[..word_lower.len() - particle.len()];
+            #[cfg(trace_analyzer)]
             log::trace!(r#" unsuffixed_word: "{}" "#, unsuffixed_word);
 
             'subparse: for parsed in morph.parse(unsuffixed_word) {
+                #[cfg(trace_analyzer)]
                 log::trace!(r#" subparsed: {:?} "#, parsed);
                 let lex_stack = parsed.lex.stack;
                 // If a word ends with with one of the particles, it can't ends with an another.

@@ -38,7 +38,9 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("UnknownPrefixAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         for (prefix, unprefixed_word) in word_splits(word_lower, None, None) {

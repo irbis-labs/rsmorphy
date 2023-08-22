@@ -39,7 +39,9 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("KnownPrefixAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         // This analyzer only works on longer words
@@ -98,6 +100,7 @@ impl KnownPrefixAnalyzer {
         debug_assert!(word_len >= self.min_reminder_length);
         let limit = word_len - self.min_reminder_length;
         let word_prefixes = morph.dict.prediction_prefixes.sorted_prefixes(word);
+        #[cfg(trace_analyzer)]
         log::trace!("word_prefixes: {}", word_prefixes.join(", "));
         word_prefixes
             .into_iter()

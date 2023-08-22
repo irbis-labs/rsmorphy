@@ -36,7 +36,9 @@ impl AnalyzerUnit for PunctuationAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("PunctuationAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         if !is_punctuation(word_lower) {
             return;

@@ -32,7 +32,9 @@ impl AnalyzerUnit for RomanAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("RomanAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         if !is_roman_number(word_lower) {
             return;

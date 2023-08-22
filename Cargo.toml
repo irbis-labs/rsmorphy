@@ -18,8 +18,18 @@ travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 
 [features]
-default         = []
-profile         = []
+default = []
+profile = []
+
+# Tracing features.
+# Normally, you don't need them.
+
+trace_all = [
+    "trace_analyzer",
+    "trace_dawg",
+]
+trace_analyzer = []
+trace_dawg = []
 
 
 [dependencies]

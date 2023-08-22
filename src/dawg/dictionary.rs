@@ -72,17 +72,21 @@ impl Dictionary {
 
     /// Follows a transition
     pub fn follow_char(&self, label: u8, index: u32) -> Option<u32> {
+        #[cfg(trace_dawg)]
         log::trace!(
             r#"Dictionary::follow_char() label: {:x}, index = {:x} "#,
             label,
             index
         );
         let unit = self.units[index as usize];
+        #[cfg(trace_dawg)]
         log::trace!(r#"Dictionary::follow_char() unit: {:x} "#, unit);
         let offset = units::offset(unit);
+        #[cfg(trace_dawg)]
         log::trace!(r#"Dictionary::follow_char() offset: {:x} "#, offset);
         let next_index = (index ^ offset ^ u32::from(label)) & units::PRECISION_MASK;
         let leaf_label = units::label(self.units[next_index as usize]);
+        #[cfg(trace_dawg)]
         log::trace!(r#"Dictionary::follow_char() leaf_label: {:x} "#, leaf_label);
         if leaf_label == u32::from(label) {
             return Some(next_index);

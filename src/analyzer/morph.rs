@@ -63,34 +63,34 @@ impl MorphAnalyzer {
                 ($t: ident) => {{
                     self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
                 }};
-                ($t: ident, return) => {{
+                ($t: ident, return_if_found) => {{
                     self.units.$t.parse(self, &mut result, word, &word_lower, &mut seen);
                     if !result.is_empty() { return result };
                 }}
             );
 
             look_in!(dictionary);
-            look_in!(initials, return);
+            look_in!(initials, return_if_found);
 
-            look_in!(number, return);
+            look_in!(number, return_if_found);
 
-            look_in!(punct, return);
+            look_in!(punct, return_if_found);
 
             look_in!(roman);
-            look_in!(latin, return);
+            look_in!(latin, return_if_found);
 
-            look_in!(hsp, return);
+            look_in!(hsp, return_if_found);
 
-            look_in!(ha, return);
+            look_in!(ha, return_if_found);
 
-            look_in!(hword, return);
+            look_in!(hword, return_if_found);
 
-            look_in!(kp, return);
+            look_in!(kp, return_if_found);
 
             look_in!(up);
-            look_in!(ks, return);
+            look_in!(ks, return_if_found);
 
-            look_in!(unknown, return);
+            look_in!(unknown, return_if_found);
 
             unreachable!();
         };

@@ -122,6 +122,7 @@ where
         mut index: u32,
         replace_chars: &BTreeMap<String, String>,
     ) {
+        #[cfg(trace_dawg)]
         log::trace!(r#"DAWG::similar_items_() index: {}"#, index);
 
         let start_pos = current_prefix.len();
@@ -130,9 +131,11 @@ where
         let mut word_pos = start_pos;
 
         for b_step in subkey.split("").filter(|v| !v.is_empty()) {
+            #[cfg(trace_dawg)]
             log::trace!(r#" b_step: {:?}"#, b_step);
 
             if let Some(replace_char) = replace_chars.get(b_step) {
+                #[cfg(trace_dawg)]
                 log::trace!(
                     r#" b_step in replace_chars ({:?} => {:?})"#,
                     b_step,
@@ -140,6 +143,7 @@ where
                 );
 
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
+                    #[cfg(trace_dawg)]
                     log::trace!(r#" next_index: {}"#, next_index);
                     let mut prefix = InlinableString::new();
                     prefix.push_str(current_prefix);
@@ -152,12 +156,15 @@ where
                 Some(v) => v,
                 None => return,
             };
+            #[cfg(trace_dawg)]
             log::trace!(r#" index: {}"#, index);
             word_pos += b_step.len()
         }
         if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
+            #[cfg(trace_dawg)]
             log::trace!(r#" index: {}"#, index);
             let found_key = InlinableString::from(current_prefix) + subkey;
+            #[cfg(trace_dawg)]
             log::trace!(r#" found_key: {}"#, found_key);
             let value = self.value_for_index_(index);
             result.insert(0, (found_key, value));
@@ -165,15 +172,18 @@ where
     }
 
     fn value_for_index_(&self, index: u32) -> SmallVec<[V; 8]> {
+        #[cfg(trace_dawg)]
         log::trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
         let mut result = SmallVec::new();
         let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, "");
         while let Some(key) = completer.next_key() {
+            #[cfg(trace_dawg)]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
             let value = V::new_in_place(move |buf| {
                 let decoded = STANDARD.decode_slice(&key, buf).unwrap();
+                #[cfg(trace_dawg)]
                 log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
-                assert_eq!(decoded, buf.len());
+                debug_assert_eq!(decoded, buf.len());
             });
             result.push(value);
         }

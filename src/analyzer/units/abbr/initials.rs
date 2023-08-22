@@ -66,12 +66,16 @@ impl AnalyzerUnit for InitialsAnalyzer {
         word_lower: &str,
         _seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("AbbreviatedFirstNameAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
+        #[cfg(trace_analyzer)]
         log::trace!(
             r#" LETTERS: "{:?}" "#,
             LETTERS.iter().cloned().collect::<Vec<&str>>().join(", ")
         );
+        #[cfg(trace_analyzer)]
         log::trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
 
         if let Some(&letter) = LETTERS.get(word) {

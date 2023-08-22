@@ -44,7 +44,9 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("KnownSuffixAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
         let char_len: usize = word_lower.chars().count();
@@ -58,6 +60,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
         let mut total_counts: Vec<u32> = vec![1; morph.dict.paradigm_prefixes.len()];
 
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
+            #[cfg(trace_analyzer)]
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
             'iter_splits: for i in morph.dict.prediction_splits(char_len - 1) {
@@ -66,9 +69,11 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                     .take(char_len - i)
                     .map(char::len_utf8)
                     .sum();
+                #[cfg(trace_analyzer)]
                 log::trace!("i: {}, pos: {}", i, pos);
 
                 let (word_start, word_end) = (&word_lower[..pos], &word_lower[pos..]);
+                #[cfg(trace_analyzer)]
                 log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
                 let para_data = suffixes_dawg.similar_items(word_end, &morph.dict.char_substitutes);
@@ -78,12 +83,14 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                     } else {
                         InlinableString::from(word_start) + &fixed_suffix
                     };
+                    #[cfg(trace_analyzer)]
                     log::trace!(
                         "fixed_suffix: {:?}, fixed_word: {:?}",
                         fixed_suffix,
                         fixed_word
                     );
 
+                    #[cfg(trace_analyzer)]
                     log::trace!("parses: {:?}", parses);
                     'iter_parses: for HHH(cnt, para_id, idx) in parses {
                         let tag = morph.dict.get_tag(para_id.into(), idx.into());
@@ -92,7 +99,9 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                             continue 'iter_parses;
                         }
 
+                        #[cfg(trace_analyzer)]
                         log::trace!("tc: {:?}", total_counts);
+                        #[cfg(trace_analyzer)]
                         log::trace!(
                             "prefix_id: {:?}, tc[prefix_id]: {:?}, cnt: {:?}",
                             prefix_id,

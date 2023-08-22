@@ -33,7 +33,9 @@ impl AnalyzerUnit for UnknownAnalyzer {
         word_lower: &str,
         seen_parses: &mut SeenSet,
     ) {
+        #[cfg(trace_analyzer)]
         log::trace!("UnknownAnalyzer::parse()");
+        #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         if seen_parses.is_empty() {
