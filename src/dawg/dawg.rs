@@ -1,10 +1,12 @@
 use std::{collections::BTreeMap, fs::File, io::Read, marker::PhantomData, path::Path};
 
-use base64;
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine as _;
 use flate2::read::GzDecoder;
 use inlinable_string::{InlinableString, StringExt};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
+
 
 use crate::dawg::{completer::Completer, dictionary::Dictionary, guide::Guide, value::DawgValue};
 
@@ -163,7 +165,7 @@ where
         while let Some(key) = completer.next_key() {
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
             let value = V::new_in_place(move |buf| {
-                let decoded = base64::decode_config_slice(&key, base64::STANDARD, buf).unwrap();
+                let decoded = STANDARD.decode_slice(&key, buf).unwrap();
                 log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
                 assert_eq!(decoded, buf.len());
             });
