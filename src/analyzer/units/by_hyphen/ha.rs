@@ -1,14 +1,18 @@
-use crate::{
-    analyzer::{units::abc::*, MorphAnalyzer},
-    container::{
-        abc::*, stack::StackSource, HyphenAdverb, Lex, ParseResult, Parsed, Score, SeenSet,
-        WordStruct,
-    },
-    opencorpora::{
-        kind::{Case, Number, PartOfSpeach},
-        OpencorporaTagReg,
-    },
-};
+use crate::analyzer::units::abc::*;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::stack::StackSource;
+use crate::container::HyphenAdverb;
+use crate::container::Lex;
+use crate::container::ParseResult;
+use crate::container::Parsed;
+use crate::container::Score;
+use crate::container::SeenSet;
+use crate::container::WordStruct;
+use crate::opencorpora::kind::Case;
+use crate::opencorpora::kind::Number;
+use crate::opencorpora::kind::PartOfSpeach;
+use crate::opencorpora::OpencorporaTagReg;
 
 const HA_PREFIX: &str = "по-";
 const HA_SCORE: Score = Score::Fake(0.7);

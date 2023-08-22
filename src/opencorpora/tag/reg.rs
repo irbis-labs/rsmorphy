@@ -1,16 +1,15 @@
-use std::{
-    collections::HashSet,
-    hash::{Hash, Hasher},
-};
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::hash::Hasher;
 
 use maplit::hashset;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use string_cache::DefaultAtom;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    opencorpora::{grammeme::GrammemeSet, kind::*},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::opencorpora::grammeme::GrammemeSet;
+use crate::opencorpora::kind::*;
 
 #[derive(Debug, Clone, Eq)]
 pub struct OpencorporaTagReg {
@@ -34,14 +33,20 @@ pub struct OpencorporaTagReg {
 }
 
 impl Serialize for OpencorporaTagReg {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
         let string: &str = self.fmt_int.as_ref();
         string.serialize(serializer)
     }
 }
 
 impl<'de> Deserialize<'de> for OpencorporaTagReg {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: serde::Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
         let string: String = Deserialize::deserialize(deserializer)?;
         Ok(OpencorporaTagReg::from_fmt_int(string))
     }

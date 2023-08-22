@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::opencorpora::grammeme::Grammeme;
 
-#[derive(Deserialize, Serialize)]
-#[derive(Clone, Debug, Default)]
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
 pub struct GrammemeMeta {
     // XXX remove
     pub index: usize,

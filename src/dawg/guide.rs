@@ -1,18 +1,20 @@
-use std::{fs::File, io::Read, path::Path};
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::LittleEndian;
+use byteorder::ReadBytesExt;
 use flate2::read::GzDecoder;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct GuideEntry {
     pub child: u8,
     pub sibling: u8,
 }
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Guide {
     /// Root index
     root: u32,

@@ -1,9 +1,9 @@
 use std::cmp::min;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{ParseResult, Parsed, SeenSet},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::container::ParseResult;
+use crate::container::Parsed;
+use crate::container::SeenSet;
 
 pub fn add_parsed_if_not_seen(
     morph: &MorphAnalyzer,
@@ -85,8 +85,9 @@ mod profiler {
 
 #[cfg(test)]
 pub mod test {
-    use crate::{MorphAnalyzer, ParseResult};
     use crate::container::SeenSet;
+    use crate::MorphAnalyzer;
+    use crate::ParseResult;
 
     lazy_static::lazy_static! {
         pub static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
@@ -102,8 +103,16 @@ pub mod test {
         });
     }
 
-    pub fn bootstrap_parse_ru(word: &str) -> (&'static MorphAnalyzer, ParseResult, &str, String, SeenSet) {
-        (&RU, ParseResult::new(), word, word.to_lowercase(), SeenSet::default())
+    pub fn bootstrap_parse_ru(
+        word: &str,
+    ) -> (&'static MorphAnalyzer, ParseResult, &str, String, SeenSet) {
+        (
+            &RU,
+            ParseResult::new(),
+            word,
+            word.to_lowercase(),
+            SeenSet::default(),
+        )
     }
 }
 
@@ -124,7 +133,8 @@ pub mod format {
                 Score::Fake(_) => "F",
             };
             write!(
-                f, "{rf} {score:7.5} :: {lex}",
+                f,
+                "{rf} {score:7.5} :: {lex}",
                 rf = rf,
                 score = score.value(),
                 lex = ExplainLex(morph, lex)
@@ -140,7 +150,8 @@ pub mod format {
             let morph = self.0;
             let lex = self.1;
             write!(
-                f, "{lex:20} — {norm:20} :: {enc:35} :: {tag:40}",
+                f,
+                "{lex:20} — {norm:20} :: {enc:35} :: {tag:40}",
                 lex = lex.get_word(),
                 norm = lex.get_normal_form(morph),
                 tag = lex.get_tag(morph).fmt_int,

@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
-use crate::{opencorpora::OpencorporaTagReg, prelude::*};
+use crate::opencorpora::OpencorporaTagReg;
+use crate::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct SingleTagProbabilityEstimator {}

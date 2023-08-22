@@ -1,19 +1,26 @@
-use std::{collections::BTreeMap, fs::File, io::Read, marker::PhantomData, path::Path};
+use std::collections::BTreeMap;
+use std::fs::File;
+use std::io::Read;
+use std::marker::PhantomData;
+use std::path::Path;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
 use flate2::read::GzDecoder;
-use inlinable_string::{InlinableString, StringExt};
-use serde::{Deserialize, Serialize};
+use inlinable_string::InlinableString;
+use inlinable_string::StringExt;
+use serde::Deserialize;
+use serde::Serialize;
 use smallvec::SmallVec;
 
-
-use crate::dawg::{completer::Completer, dictionary::Dictionary, guide::Guide, value::DawgValue};
+use crate::dawg::completer::Completer;
+use crate::dawg::dictionary::Dictionary;
+use crate::dawg::guide::Guide;
+use crate::dawg::value::DawgValue;
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Dawg {
     dict: Dictionary,
 }
@@ -58,8 +65,7 @@ impl Dawg {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct CompletionDawg<V>
 where
     V: DawgValue,

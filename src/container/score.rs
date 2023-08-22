@@ -1,4 +1,5 @@
-use std::{cmp::Ordering, ops::Mul};
+use std::cmp::Ordering;
+use std::ops::Mul;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Score {

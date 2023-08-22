@@ -1,15 +1,18 @@
-use std::{fs::File, io::Read, path::Path};
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 
 use boolinator::Boolinator;
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::LittleEndian;
+use byteorder::ReadBytesExt;
 use flate2::read::GzDecoder;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::dawg::units;
 
 /// Dictionary class for retrieval and binary I/O.
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Dictionary {
     /// Root index
     pub root: u32,

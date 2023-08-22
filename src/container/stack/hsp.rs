@@ -2,16 +2,17 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{
-        abc::*,
-        decode::*,
-        stack::{StackAffix, StackHyphenated, StackSource},
-        HyphenSeparatedParticle, Lex, Score,
-    },
-    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::decode::*;
+use crate::container::stack::StackAffix;
+use crate::container::stack::StackHyphenated;
+use crate::container::stack::StackSource;
+use crate::container::HyphenSeparatedParticle;
+use crate::container::Lex;
+use crate::container::Score;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackParticle {
@@ -85,9 +86,7 @@ impl Source for StackParticle {
     fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
         match self.particle {
             None => self.stack.get_normal_form(morph),
-            Some(ref particle) => {
-                self.stack.get_normal_form(morph) + &particle.particle
-            }
+            Some(ref particle) => self.stack.get_normal_form(morph) + &particle.particle,
         }
     }
 

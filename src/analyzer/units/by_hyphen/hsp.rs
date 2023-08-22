@@ -1,19 +1,15 @@
-use crate::{
-    analyzer::{units::abc::*, MorphAnalyzer},
-    container::{stack::StackParticle, HyphenSeparatedParticle, Lex, ParseResult, Parsed, SeenSet},
-};
+use crate::analyzer::units::abc::*;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::stack::StackParticle;
+use crate::container::HyphenSeparatedParticle;
+use crate::container::Lex;
+use crate::container::ParseResult;
+use crate::container::Parsed;
+use crate::container::SeenSet;
 
 // TODO move into `Dictionary`
-pub static PARTICLES_AFTER_HYPHEN: [&'static str; 8] = [
-    "-то",
-    "-ка",
-    "-таки",
-    "-де",
-    "-тко",
-    "-тка",
-    "-с",
-    "-ста",
-];
+pub static PARTICLES_AFTER_HYPHEN: [&'static str; 8] =
+    ["-то", "-ка", "-таки", "-де", "-тко", "-тка", "-с", "-ста"];
 
 pub const SCORE_DECAY: f64 = 0.9;
 

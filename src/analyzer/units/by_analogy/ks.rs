@@ -1,13 +1,19 @@
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
-    container::{
-        stack::StackAffix, Affix, Dictionary, Lex, ParseResult, Parsed, Score, Seen, SeenSet,
-        WordStruct,
-    },
-    opencorpora::dictionary::{PredictionSuffixesDawg, HHH},
-};
+use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::stack::StackAffix;
+use crate::container::Affix;
+use crate::container::Dictionary;
+use crate::container::Lex;
+use crate::container::ParseResult;
+use crate::container::Parsed;
+use crate::container::Score;
+use crate::container::Seen;
+use crate::container::SeenSet;
+use crate::container::WordStruct;
+use crate::opencorpora::dictionary::PredictionSuffixesDawg;
+use crate::opencorpora::dictionary::HHH;
 
 /// Parse the word by checking how the words with similar suffixes
 /// are parsed.
@@ -156,16 +162,17 @@ impl KnownSuffixAnalyzer {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use crate::util::test::{bootstrap_parse_ru, init_logger};
     use crate::util::format::ExplainParsed;
+    use crate::util::test::bootstrap_parse_ru;
+    use crate::util::test::init_logger;
 
     #[test]
     fn big_count() {
         init_logger();
 
         let ks_analyzer = KnownSuffixAnalyzer::default();
-        let (morph, mut result, word, word_lower, mut seen_parses) = bootstrap_parse_ru("существующой");
+        let (morph, mut result, word, word_lower, mut seen_parses) =
+            bootstrap_parse_ru("существующой");
         let time = std::time::Instant::now();
         ks_analyzer.parse(morph, &mut result, word, &word_lower, &mut seen_parses);
         log::debug!("Elapsed time: {:0.6} s", time.elapsed().as_secs_f64());

@@ -4,7 +4,10 @@ pub mod map;
 pub mod predicate;
 pub mod take;
 
-pub use self::{follow::*, map::*, predicate::*, take::*};
+pub use self::follow::*;
+pub use self::map::*;
+pub use self::predicate::*;
+pub use self::take::*;
 
 /**
 ```

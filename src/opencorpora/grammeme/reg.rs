@@ -1,12 +1,12 @@
 use boolinator::Boolinator;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value;
 use string_cache::DefaultAtom;
 
 use crate::opencorpora::Grammeme;
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GrammemeReg {
     pub name: Grammeme,
     pub parent: Option<Grammeme>,

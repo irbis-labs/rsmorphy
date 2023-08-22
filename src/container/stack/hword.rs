@@ -2,15 +2,14 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{
-        abc::*,
-        stack::{StackAffix, StackSource},
-        Lex, Score,
-    },
-    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::stack::StackAffix;
+use crate::container::stack::StackSource;
+use crate::container::Lex;
+use crate::container::Score;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackHyphenated {
@@ -83,7 +82,7 @@ impl Source for StackHyphenated {
             None => self.left.get_normal_form(morph),
             Some(ref right) => {
                 self.left.get_normal_form(morph) + "-" + &right.get_normal_form(morph)
-            },
+            }
         }
     }
 

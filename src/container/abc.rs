@@ -1,13 +1,14 @@
 use std::fmt;
 
-use inlinable_string::{InlinableString, StringExt};
+use inlinable_string::InlinableString;
+use inlinable_string::StringExt;
 
+use crate::analyzer::MorphAnalyzer;
 pub use crate::container::decode::error::DecodeError;
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{Lex, Score},
-    opencorpora::{dictionary::ParadigmId, tag::OpencorporaTagReg},
-};
+use crate::container::Lex;
+use crate::container::Score;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::tag::OpencorporaTagReg;
 
 pub trait Source {
     // TODO move out `score` from a word container

@@ -4,7 +4,7 @@ use rsmorphy::util::format::ExplainParsed;
 
 pub mod util;
 
-use crate::util::{input_loop};
+use crate::util::input_loop;
 
 fn table(morph: &MorphAnalyzer, s: &str) {
     for (i, parsed) in morph.parse(s).into_iter().enumerate() {

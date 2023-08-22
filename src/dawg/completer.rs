@@ -1,4 +1,5 @@
-use crate::dawg::{dictionary::Dictionary, guide::Guide};
+use crate::dawg::dictionary::Dictionary;
+use crate::dawg::guide::Guide;
 
 #[derive(Debug, Clone)]
 pub struct Completer<'a> {

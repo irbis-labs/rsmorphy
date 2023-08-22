@@ -1,11 +1,11 @@
-use std::{
-    collections::hash_map::DefaultHasher,
-    hash::{Hash, Hasher},
-};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 
 use inlinable_string::InlinableString;
 
-use crate::opencorpora::{OpencorporaTagReg, dictionary::ParadigmId};
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {

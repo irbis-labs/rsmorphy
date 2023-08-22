@@ -1,11 +1,10 @@
 use std::path::Path;
 
-use crate::{
-    analyzer::units::*,
-    container::{ParseResult, SeenSet},
-    estimator::SingleTagProbabilityEstimator,
-    opencorpora::dictionary::Dictionary,
-};
+use crate::analyzer::units::*;
+use crate::container::ParseResult;
+use crate::container::SeenSet;
+use crate::estimator::SingleTagProbabilityEstimator;
+use crate::opencorpora::dictionary::Dictionary;
 
 #[derive(Debug, Default, Clone)]
 pub struct Units {
@@ -105,7 +104,8 @@ impl MorphAnalyzer {
 
 #[cfg(test)]
 mod tests {
-    use crate::util::test::{RU, init_logger};
+    use crate::util::test::init_logger;
+    use crate::util::test::RU;
 
     #[test]
     fn load_ru() {

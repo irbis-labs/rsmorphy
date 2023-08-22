@@ -2,17 +2,16 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{
-        abc::*,
-        affix::{Affix, AffixKind},
-        decode::*,
-        stack::StackSource,
-        Lex, Score,
-    },
-    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::affix::Affix;
+use crate::container::affix::AffixKind;
+use crate::container::decode::*;
+use crate::container::stack::StackSource;
+use crate::container::Lex;
+use crate::container::Score;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackAffix {
@@ -68,9 +67,7 @@ impl Source for StackAffix {
             None => self.stack.get_word(),
             Some(ref affix) => match affix.kind {
                 AffixKind::KnownSuffix => self.stack.get_word(),
-                _ => {
-                    affix.part.clone() + &self.stack.get_word()
-                },
+                _ => affix.part.clone() + &self.stack.get_word(),
             },
         }
     }

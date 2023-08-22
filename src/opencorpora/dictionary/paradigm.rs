@@ -1,12 +1,13 @@
 use std::io::Read;
 
-use serde::{Deserialize, Serialize};
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::LittleEndian;
+use byteorder::ReadBytesExt;
+use serde::Deserialize;
+use serde::Serialize;
 
 pub type Paradigm<'a> = &'a [ParadigmEntry];
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Paradigms {
     idx: Vec<u32>,
     data: Vec<ParadigmEntry>,
@@ -47,8 +48,7 @@ impl Paradigms {
 
 use std::iter::FromIterator;
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone, Copy)]
 pub struct ParadigmEntry {
     pub prefix_id: u16,
     pub tag_id: u16,
@@ -154,7 +154,6 @@ impl ParadigmIndex {
         assert!(id <= ::std::u16::MAX.into());
         Self::new(id as u16)
     }
-
 
     #[inline]
     pub fn index(self) -> usize {

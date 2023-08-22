@@ -25,11 +25,13 @@ pub mod release {
     include!(concat!(env!("OUT_DIR"), "/release.rs"));
 }
 
-pub use crate::{
-    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
-    container::{
-        abc::{MorphySerde, Source},
-        Lex, ParseResult, Parsed, Score,
-    },
-    opencorpora::{Grammeme, GrammemeSet},
-};
+pub use crate::analyzer::units::abc::AnalyzerUnit;
+pub use crate::analyzer::MorphAnalyzer;
+pub use crate::container::abc::MorphySerde;
+pub use crate::container::abc::Source;
+pub use crate::container::Lex;
+pub use crate::container::ParseResult;
+pub use crate::container::Parsed;
+pub use crate::container::Score;
+pub use crate::opencorpora::Grammeme;
+pub use crate::opencorpora::GrammemeSet;

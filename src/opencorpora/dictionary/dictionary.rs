@@ -1,39 +1,41 @@
-use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    fmt,
-    fs::File,
-    iter::FromIterator,
-    path::Path,
-};
+use std::collections::BTreeMap;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::fmt;
+use std::fs::File;
+use std::iter::FromIterator;
+use std::path::Path;
 
-use flate2::{
-    read::GzDecoder,
-    write::GzEncoder,
-    Compression
-};
+use flate2::read::GzDecoder;
+use flate2::write::GzEncoder;
+use flate2::Compression;
 use inlinable_string::InlinableString;
 use maplit::hashset;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json;
 use serde_json::Value;
 use string_cache::DefaultAtom;
 
-use crate::dawg::{CompletionDawg, Dawg};
+use crate::dawg::CompletionDawg;
+use crate::dawg::Dawg;
+pub use crate::dawg::HH;
+pub use crate::dawg::HHH;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::dictionary::ParadigmIndex;
+use crate::opencorpora::dictionary::Paradigms;
 use crate::opencorpora::dictionary::*;
-use crate::opencorpora::grammeme::{Grammeme, GrammemeReg};
+use crate::opencorpora::grammeme::Grammeme;
+use crate::opencorpora::grammeme::GrammemeReg;
 use crate::opencorpora::tag::OpencorporaTagReg;
-use crate::opencorpora::dictionary::{Paradigms, ParadigmId, ParadigmIndex};
 use crate::util::DumbProfiler;
-
-pub use crate::dawg::{HH, HHH};
 
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
 pub type ConditionalProbDistDawg = CompletionDawg<HH>;
 
 /// Open Corpora dictionary wrapper class.
-#[derive(Deserialize, Serialize)]
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Dictionary {
     pub grammemes: HashMap<Grammeme, (GrammemeReg, GrammemeMeta)>,
     pub gramtab: Vec<OpencorporaTagReg>,
@@ -63,7 +65,10 @@ impl Dictionary {
         P: AsRef<Path>,
     {
         log::debug!("Save bin dict file {:?}", path.as_ref());
-        bincode::serialize_into(GzEncoder::new(File::create(path)?, Compression::best()), &self)
+        bincode::serialize_into(
+            GzEncoder::new(File::create(path)?, Compression::best()),
+            &self,
+        )
     }
 
     pub fn from_file<P>(p: P) -> Self
@@ -93,7 +98,8 @@ impl Dictionary {
                 .collect()
         };
         let max_suffix_length = {
-            meta_json.get("prediction_options")
+            meta_json
+                .get("prediction_options")
                 .unwrap_or_else(|| &meta_json["compile_options"])
                 .as_object()
                 .unwrap()
@@ -120,7 +126,10 @@ impl Dictionary {
             .expect("array of strings");
         profiler.waypoint("gramtab");
         // TODO opencorpora-ext
-        let gramtab = gramtab.into_iter().map(OpencorporaTagReg::from_fmt_int).collect();
+        let gramtab = gramtab
+            .into_iter()
+            .map(OpencorporaTagReg::from_fmt_int)
+            .collect();
         profiler.waypoint("gramtab'");
 
         let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
@@ -132,14 +141,15 @@ impl Dictionary {
                 .map(GrammemeReg::from_json)
                 .enumerate()
                 .map(|(index, gr)| {
-                    let gr_meta = GrammemeMeta { index, ..GrammemeMeta::default() };
+                    let gr_meta = GrammemeMeta {
+                        index,
+                        ..GrammemeMeta::default()
+                    };
                     (gr.name.clone(), (gr, gr_meta))
                 });
             let mut grammemes = HashMap::from_iter(grammemes);
 
-            let gram_regs: Vec<GrammemeReg> = grammemes.values()
-                .map(|v| v.0.clone())
-                .collect();
+            let gram_regs: Vec<GrammemeReg> = grammemes.values().map(|v| v.0.clone()).collect();
             for gram_reg in &gram_regs {
                 if let Some(ref parent) = gram_reg.parent {
                     grammemes
@@ -162,17 +172,15 @@ impl Dictionary {
                 let gm = grammemes.get_mut(&gram_reg.name).unwrap();
                 let gm: &mut GrammemeMeta = &mut gm.1;
                 if gram_reg.name == plur {
-                    gm.incompatible
-                        .extend(extra_incompatible.iter()
+                    gm.incompatible.extend(
+                        extra_incompatible
+                            .iter()
                             .filter(|&v| *v != gram_reg.name)
-                            .cloned()
-                        );
+                            .cloned(),
+                    );
                 }
                 gm.incompatible
-                    .extend(gm.children.iter()
-                        .filter(|&v| *v != gram_reg.name)
-                        .cloned()
-                    );
+                    .extend(gm.children.iter().filter(|&v| *v != gram_reg.name).cloned());
             }
 
             grammemes
@@ -219,11 +227,11 @@ impl Dictionary {
     }
 
     pub fn prediction_splits(&self, word_len: usize) -> impl Iterator<Item = usize> {
-        (1 ..= self.max_suffix_length.min(word_len)).rev()
+        (1..=self.max_suffix_length.min(word_len)).rev()
     }
 
     #[inline]
-    pub fn para(&self) -> &Paradigms{
+    pub fn para(&self) -> &Paradigms {
         &self.paradigms
     }
 
@@ -247,7 +255,9 @@ impl Dictionary {
         &'a self,
         id: ParadigmId,
     ) -> impl Iterator<Item = (&'a str, &'a OpencorporaTagReg, &'a str)> + 'i {
-        self.para().get(id.value()).expect("paradigm")
+        self.para()
+            .get(id.value())
+            .expect("paradigm")
             .iter()
             .map(move |entry: &'a ParadigmEntry| self.paradigm_entry_info(*entry))
     }

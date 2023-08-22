@@ -1,8 +1,14 @@
-use crate::{
-    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
-    container::{abc::*, stack::StackAffix, Affix, Lex, ParseResult, Parsed, SeenSet},
-    util::{add_parsed_if_not_seen, word_splits},
-};
+use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::stack::StackAffix;
+use crate::container::Affix;
+use crate::container::Lex;
+use crate::container::ParseResult;
+use crate::container::Parsed;
+use crate::container::SeenSet;
+use crate::util::add_parsed_if_not_seen;
+use crate::util::word_splits;
 
 // FIXME unused const MIN_REMINDER_LENGTH: isize = 3;
 

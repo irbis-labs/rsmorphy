@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use string_cache::DefaultAtom;
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Grammeme {
     atom: DefaultAtom,
 }

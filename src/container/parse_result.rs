@@ -8,7 +8,7 @@ type ParsedList = SmallVec<[Parsed; 8]>;
 
 #[derive(Debug, Default, Clone)]
 pub struct ParseResult {
-    pub(crate) list: ParsedList
+    pub(crate) list: ParsedList,
 }
 
 impl ops::Deref for ParseResult {

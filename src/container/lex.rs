@@ -2,11 +2,15 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{abc::*, decode::*, stack::StackParticle, Score, Seen},
-    opencorpora::{GrammemeSet, OpencorporaTagReg, dictionary::ParadigmId},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::decode::*;
+use crate::container::stack::StackParticle;
+use crate::container::Score;
+use crate::container::Seen;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::GrammemeSet;
+use crate::opencorpora::OpencorporaTagReg;
 
 pub type Lexeme = Vec<Lex>;
 

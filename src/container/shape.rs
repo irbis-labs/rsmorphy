@@ -2,11 +2,14 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{abc::*, decode::*, stack::StackSource, Lex, Score},
-    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
-};
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::decode::*;
+use crate::container::stack::StackSource;
+use crate::container::Lex;
+use crate::container::Score;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::OpencorporaTagReg;
 
 const NUMBER_SCORE: Score = Score::Real(1.0);
 const DECAYED_SCORE: Score = Score::Fake(0.9);

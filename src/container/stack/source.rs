@@ -2,16 +2,18 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
-use crate::{
-    analyzer::MorphAnalyzer,
-    container::{
-        abc::*, Dictionary, HyphenAdverb, Initials, Lex, Score, Shaped,
-        Unknown,
-    },
-    opencorpora::{OpencorporaTagReg, dictionary::ParadigmId},
-};
-
 use self::StackSource::*;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::Dictionary;
+use crate::container::HyphenAdverb;
+use crate::container::Initials;
+use crate::container::Lex;
+use crate::container::Score;
+use crate::container::Shaped;
+use crate::container::Unknown;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum StackSource {

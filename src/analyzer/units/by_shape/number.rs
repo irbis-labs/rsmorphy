@@ -1,10 +1,15 @@
 use std::str::FromStr;
 
-use crate::{
-    analyzer::{units::abc::AnalyzerUnit, MorphAnalyzer},
-    container::{abc::*, stack::StackSource, Lex, ParseResult, Parsed, SeenSet, Shaped},
-    opencorpora::OpencorporaTagReg,
-};
+use crate::analyzer::units::abc::AnalyzerUnit;
+use crate::analyzer::MorphAnalyzer;
+use crate::container::abc::*;
+use crate::container::stack::StackSource;
+use crate::container::Lex;
+use crate::container::ParseResult;
+use crate::container::Parsed;
+use crate::container::SeenSet;
+use crate::container::Shaped;
+use crate::opencorpora::OpencorporaTagReg;
 
 /// This analyzer marks integer numbers with "NUMB,int" or "NUMB,real" tags.
 ///

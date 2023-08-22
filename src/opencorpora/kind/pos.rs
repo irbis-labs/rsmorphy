@@ -133,7 +133,10 @@ mod tests {
 
     #[test]
     fn try_from_str() {
-        assert_eq!(Some(PartOfSpeach::Noun), PartOfSpeach::try_from_fmt_int("NOUN"));
+        assert_eq!(
+            Some(PartOfSpeach::Noun),
+            PartOfSpeach::try_from_fmt_int("NOUN")
+        );
         assert_eq!(
             Some(PartOfSpeach::Noun),
             PartOfSpeach::try_from_fmt_int("NOUN,anim,masc,Fixd,Abbr sing,nomn")

@@ -1,8 +1,7 @@
-use std::{
-    fs::File,
-    io::Read,
-    path::{Path, PathBuf},
-};
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+use std::path::PathBuf;
 
 use flate2::read::GzDecoder;
 
@@ -38,7 +37,7 @@ impl PathLoader {
     pub fn json<S, T>(&self, name: S) -> serde_json::Result<T>
     where
         S: AsRef<Path>,
-            for<'de> T: ::serde::Deserialize<'de>,
+        for<'de> T: ::serde::Deserialize<'de>,
     {
         serde_json::from_reader(self.reader(name))
     }
