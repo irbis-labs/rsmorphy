@@ -1,13 +1,11 @@
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::stack::StackSource;
 use crate::container::HyphenAdverb;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
 use crate::container::Score;
-use crate::container::SeenSet;
 use crate::container::WordStruct;
 use crate::opencorpora::kind::Case;
 use crate::opencorpora::kind::Number;
@@ -35,25 +33,24 @@ impl Default for HyphenAdverbAnalyzer {
 }
 
 impl AnalyzerUnit for HyphenAdverbAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        _seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("HyphenAdverbAnalyzer::parse()");
         #[cfg(trace_analyzer)]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
-        if word.chars().count() < 5 || !word.starts_with(HA_PREFIX) {
+        let morph = ctx.morph();
+        let word = ctx.word();
+        if !word.starts_with(HA_PREFIX) || word.chars().count() < 5 {
+            return;
+        }
+        let remnant = &word[HA_PREFIX.len()..];
+        if remnant.chars().count() < 2 {
             return;
         }
 
         morph
-            .parse(&word[HA_PREFIX.len()..])
+            .parse(remnant)
             .into_iter()
             .filter(|parsed| {
                 let tag = parsed.lex.get_tag(morph);
@@ -63,9 +60,9 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
                 }
             })
             .for_each(|parsed: Parsed| {
-                let word = WordStruct::new(word_lower, parsed.lex.is_known());
+                let word = WordStruct::new(ctx.word_lower(), parsed.lex.is_known());
                 let lex = Lex::from_stack(morph, StackSource::new(HyphenAdverb::new(word)));
-                result.list.push(Parsed::new(lex, HA_SCORE));
+                ctx.push(Parsed::new(lex, HA_SCORE));
             });
     }
 }

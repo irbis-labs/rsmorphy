@@ -2,6 +2,7 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
+use crate::analyzer::units::abbr::initials::LETTERS;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::decode::*;
@@ -17,9 +18,9 @@ pub enum InitialsKind {
     Patronym,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Initials {
-    pub letter: InlinableString,
+    pub letter: &'static str,
     pub kind: InitialsKind,
     pub tag_idx: u8,
 }
@@ -57,11 +58,11 @@ impl Source for Initials {
     }
 
     fn get_word(&self) -> InlinableString {
-        self.letter.clone()
+        self.letter.into()
     }
 
     fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
-        self.letter.clone()
+        self.letter.into()
     }
 
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
@@ -122,12 +123,13 @@ impl MorphySerde for Initials {
             // FIXME is it proper error?
             _ => Err(DecodeError::UnknownPartType)?,
         };
+        let &letter = LETTERS.get(word).ok_or_else(|| DecodeError::DoesntMatch)?;
         Ok((
             s,
             Initials {
                 kind,
                 tag_idx,
-                letter: word.into(),
+                letter,
             },
         ))
     }

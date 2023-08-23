@@ -1,10 +1,10 @@
 use std::path::Path;
 use std::sync::Arc;
 
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::units::*;
 use crate::container::ParseResult;
-use crate::container::SeenSet;
 use crate::estimator::SingleTagProbabilityEstimator;
 use crate::opencorpora::dictionary::Dictionary;
 
@@ -71,52 +71,48 @@ impl MorphAnalyzer {
 
     /// Analyze the word and return a list of `Parsed`:
     pub fn parse(&self, word: &str) -> ParseResult {
-        let word_lower = word.to_lowercase();
+        let mut context = ParseContext::new(self, word);
 
-        let look_over = || -> ParseResult {
-            let mut result = ParseResult::new();
-            let mut seen = SeenSet::default();
+        self.look_over(&mut context);
+        context.apply_estimator(&self.inner.estimator);
+        context.finish()
+    }
 
-            macro_rules! look_in (
+    fn look_over(&self, ctx: &mut ParseContext) {
+        macro_rules! look_in (
                 ($t: ident) => {{
-                    self.units().$t.parse(self, &mut result, word, &word_lower, &mut seen);
+                    self.units().$t.parse(ctx);
                 }};
-                ($t: ident, return_if_found) => {{
-                    self.units().$t.parse(self, &mut result, word, &word_lower, &mut seen);
-                    if !result.is_empty() { return result };
+                ($t: ident, stop_if_found) => {{
+                    self.units().$t.parse(ctx);
+                    if !ctx.result().is_empty() { return };
                 }}
             );
 
-            look_in!(dictionary);
-            look_in!(initials, return_if_found);
+        look_in!(dictionary);
+        look_in!(initials, stop_if_found);
 
-            look_in!(number, return_if_found);
+        look_in!(number, stop_if_found);
 
-            look_in!(punct, return_if_found);
+        look_in!(punct, stop_if_found);
 
-            look_in!(roman);
-            look_in!(latin, return_if_found);
+        look_in!(roman);
+        look_in!(latin, stop_if_found);
 
-            look_in!(hsp, return_if_found);
+        look_in!(hsp, stop_if_found);
 
-            look_in!(ha, return_if_found);
+        look_in!(ha, stop_if_found);
 
-            look_in!(hword, return_if_found);
+        look_in!(hword, stop_if_found);
 
-            look_in!(kp, return_if_found);
+        look_in!(kp, stop_if_found);
 
-            look_in!(up);
-            look_in!(ks, return_if_found);
+        look_in!(up);
+        look_in!(ks, stop_if_found);
 
-            look_in!(unknown, return_if_found);
+        look_in!(unknown, stop_if_found);
 
-            unreachable!();
-        };
-
-        let mut result = look_over();
-        self.inner.estimator
-            .apply_to_parses(self, word, &word_lower, &mut result.list);
-        result
+        unreachable!();
     }
 }
 

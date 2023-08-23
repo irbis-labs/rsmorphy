@@ -1,33 +1,11 @@
 use std::cmp::min;
 
-use crate::analyzer::MorphAnalyzer;
-use crate::container::ParseResult;
-use crate::container::Parsed;
-use crate::container::SeenSet;
-
-pub fn add_parsed_if_not_seen(
-    morph: &MorphAnalyzer,
-    result: &mut ParseResult,
-    seen_parses: &mut SeenSet,
-    parsed: Parsed,
-) {
-    if seen_parses.insert(&parsed.lex.as_seen(morph)) {
-        result.list.push(parsed);
-    }
-}
-
 /// Returns all splits of a `word` (taking into account `min_reminder` and `max_prefix_length`).
-pub fn word_splits<'w: 'i, 'i, Rem, Pref>(
+pub fn word_splits<'w: 'i, 'i>(
     word: &'w str,
-    min_reminder: Rem,
-    max_prefix_length: Pref,
-) -> impl Iterator<Item = (&'w str, &'w str)> + 'i
-where
-    Rem: Into<Option<usize>>,
-    Pref: Into<Option<usize>>,
-{
-    let min_reminder = min_reminder.into().unwrap_or(3);
-    let max_prefix_length = max_prefix_length.into().unwrap_or(5);
+    min_reminder: usize,
+    max_prefix_length: usize,
+) -> impl Iterator<Item = (&'w str, &'w str)> + 'i {
     let char_len = word.chars().count();
 
     let max_split = if char_len > min_reminder {
@@ -85,9 +63,7 @@ mod profiler {
 
 #[cfg(test)]
 pub mod test {
-    use crate::container::SeenSet;
     use crate::MorphAnalyzer;
-    use crate::ParseResult;
 
     lazy_static::lazy_static! {
         pub static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
@@ -101,18 +77,6 @@ pub mod test {
         INIT.call_once(|| {
             env_logger::init();
         });
-    }
-
-    pub fn bootstrap_parse_ru(
-        word: &str,
-    ) -> (&'static MorphAnalyzer, ParseResult, &str, String, SeenSet) {
-        (
-            &RU,
-            ParseResult::new(),
-            word,
-            word.to_lowercase(),
-            SeenSet::default(),
-        )
     }
 }
 

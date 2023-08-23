@@ -1,16 +1,16 @@
+use inlinable_string::InlinableString;
+
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::stack::StackAffix;
 use crate::container::Affix;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
-use crate::container::SeenSet;
-use crate::util::add_parsed_if_not_seen;
 use crate::util::word_splits;
 
-// FIXME unused const MIN_REMINDER_LENGTH: isize = 3;
+const MIN_REMINDER_LENGTH: usize = 3;
+const MAX_PREFIX_LENGTH: usize = 5;
 
 /// Parses the word by parsing only the word suffix
 /// (with restrictions on prefix & suffix lengths).
@@ -30,30 +30,22 @@ impl Default for UnknownPrefixAnalyzer {
 }
 
 impl AnalyzerUnit for UnknownPrefixAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("UnknownPrefixAnalyzer::parse()");
         #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
-        for (prefix, unprefixed_word) in word_splits(word_lower, None, None) {
-            let mut subresult = ParseResult::new();
-            morph.units().dictionary.parse(
-                morph,
-                &mut subresult,
-                unprefixed_word,
-                unprefixed_word,
-                seen_parses,
-            );
+        let morph = ctx.morph();
+        let word_lower = InlinableString::from(ctx.word_lower());
 
-            'iter_parses: for parsed in subresult {
+        for (prefix, unprefixed_word) in
+            word_splits(&word_lower, MIN_REMINDER_LENGTH, MAX_PREFIX_LENGTH)
+        {
+            let mut subresult = ParseContext::new(morph, unprefixed_word);
+            morph.units().dictionary.parse(&mut subresult);
+
+            'iter_parses: for parsed in subresult.finish() {
                 let tag = parsed.lex.get_tag(morph);
                 if !tag.is_productive() {
                     continue 'iter_parses;
@@ -62,7 +54,7 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
                 let affix = Affix::unknown_prefix(prefix);
                 let lex = Lex::from_stack(morph, StackAffix::new(stack, affix));
                 let score = parsed.score * self.estimate_decay;
-                add_parsed_if_not_seen(morph, result, seen_parses, Parsed::new(lex, score));
+                ctx.push_if_not_seen(Parsed::new(lex, score));
             }
         }
     }

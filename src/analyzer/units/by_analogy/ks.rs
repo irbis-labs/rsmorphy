@@ -1,16 +1,15 @@
 use inlinable_string::InlinableString;
 
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackAffix;
 use crate::container::Affix;
 use crate::container::Dictionary;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
 use crate::container::Score;
 use crate::container::Seen;
-use crate::container::SeenSet;
 use crate::container::WordStruct;
 use crate::opencorpora::dictionary::PredictionSuffixesDawg;
 use crate::opencorpora::dictionary::HHH;
@@ -36,50 +35,47 @@ impl Default for KnownSuffixAnalyzer {
 }
 
 impl AnalyzerUnit for KnownSuffixAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("KnownSuffixAnalyzer::parse()");
         #[cfg(trace_analyzer)]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
-        let char_len: usize = word_lower.chars().count();
-
-        if char_len < self.min_word_length {
+        let chars_count: usize = ctx.word_lower().chars().count();
+        if chars_count < self.min_word_length {
             return;
         }
+
+        let morph = ctx.morph();
+        let word_lower = InlinableString::from(ctx.word_lower());
 
         let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
 
         let mut total_counts: Vec<u32> = vec![1; morph.dict().paradigm_prefixes.len()];
 
-        for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, word_lower) {
+        #[allow(unused_variables)]
+        for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, &word_lower) {
             #[cfg(trace_analyzer)]
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
-            'iter_splits: for i in morph.dict().prediction_splits(char_len - 1) {
+            'iter_splits: for i in morph.dict().prediction_splits(chars_count - 1) {
                 let pos = word_lower
                     .chars()
-                    .take(char_len - i)
+                    .take(chars_count - i)
                     .map(char::len_utf8)
                     .sum();
                 #[cfg(trace_analyzer)]
                 log::trace!("i: {}, pos: {}", i, pos);
 
-                let (word_start, word_end) = (&word_lower[..pos], &word_lower[pos..]);
+                let (word_start, word_end) = word_lower.split_at(pos);
                 #[cfg(trace_analyzer)]
                 log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
-                let para_data = suffixes_dawg.similar_items(word_end, &morph.dict().char_substitutes);
+                let para_data =
+                    suffixes_dawg.similar_items(word_end, &morph.dict().char_substitutes);
                 for (fixed_suffix, parses) in para_data {
                     let fixed_word = if fixed_suffix == word_end {
-                        word_lower.into()
+                        InlinableString::from(ctx.word_lower())
                     } else {
                         InlinableString::from(word_start) + &fixed_suffix
                     };
@@ -112,16 +108,16 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
                         let seen = Seen::new(fixed_word.clone(), tag, para_id);
 
-                        if !seen_parses.insert(&seen) {
+                        if !ctx.mark_as_seen(&seen) {
                             continue 'iter_parses;
                         }
 
                         let word_lower = WordStruct::unknown(seen.word);
                         let source = Dictionary::new(word_lower, para_id, idx);
                         let affix = Affix::known_suffix(fixed_suffix.clone());
-                        let container = StackAffix::new(source, affix);
+                        let stack = StackAffix::new(source, affix);
 
-                        subresult.push((cnt, prefix_id, Lex::from_stack(morph, container)));
+                        subresult.push((cnt, prefix_id, Lex::from_stack(morph, stack)));
                     }
                     if total_counts[prefix_id as usize] > 1 {
                         break 'iter_splits;
@@ -142,7 +138,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
             .collect();
 
         subresult.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap().reverse());
-        result.list.extend(subresult.into_iter());
+        ctx.extend(subresult);
     }
 }
 
@@ -157,12 +153,12 @@ impl KnownSuffixAnalyzer {
             .dict()
             .paradigm_prefixes_rev
             .iter()
-            .filter(move |&&(_, ref prefix)| word.starts_with(prefix.deref()))
-            .map(move |&(prefix_idx, ref prefix)| {
+            .filter(move |(_, prefix)| word.starts_with(prefix.deref()))
+            .map(move |(prefix_idx, prefix)| {
                 (
-                    prefix_idx,
+                    *prefix_idx,
                     prefix.deref(),
-                    &morph.dict().prediction_suffixes_dawgs[prefix_idx as usize],
+                    &morph.dict().prediction_suffixes_dawgs[*prefix_idx as usize],
                 )
             })
     }
@@ -172,22 +168,23 @@ impl KnownSuffixAnalyzer {
 mod tests {
     use super::*;
     use crate::util::format::ExplainParsed;
-    use crate::util::test::bootstrap_parse_ru;
     use crate::util::test::init_logger;
+    use crate::util::test::RU;
 
     #[test]
     fn big_count() {
         init_logger();
 
+        let mut ctx = ParseContext::new(&RU, "существующой");
         let ks_analyzer = KnownSuffixAnalyzer::default();
-        let (morph, mut result, word, word_lower, mut seen_parses) =
-            bootstrap_parse_ru("существующой");
-        let time = std::time::Instant::now();
-        ks_analyzer.parse(morph, &mut result, word, &word_lower, &mut seen_parses);
-        log::debug!("Elapsed time: {:0.6} s", time.elapsed().as_secs_f64());
 
+        let tm = std::time::Instant::now();
+        ks_analyzer.parse(&mut ctx);
+        log::debug!("Elapsed time: {:0.6} s", tm.elapsed().as_secs_f64());
+
+        let result = ctx.finish();
         for (i, parsed) in result.iter().enumerate() {
-            log::debug!("{:2}. {}", i + 1, ExplainParsed(morph, parsed));
+            log::debug!("{:2}. {}", i + 1, ExplainParsed(&RU, parsed));
         }
     }
 }

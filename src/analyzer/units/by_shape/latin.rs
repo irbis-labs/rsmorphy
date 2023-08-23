@@ -1,11 +1,9 @@
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::stack::StackSource;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
-use crate::container::SeenSet;
 use crate::container::Shaped;
 use crate::opencorpora::OpencorporaTagReg;
 use crate::shapes::is_latin;
@@ -28,24 +26,17 @@ impl Default for LatinAnalyzer {
 }
 
 impl AnalyzerUnit for LatinAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        _seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("LatinAnalyzer::parse()");
         #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
-        if !is_latin(word_lower) {
+        if !is_latin(ctx.word_lower()) {
             return;
         }
-        let shaped = Shaped::latin(word_lower);
+        let shaped = Shaped::latin(ctx.word_lower());
         let score = shaped.score();
-        let lex = Lex::from_stack(morph, StackSource::from(shaped));
-        result.list.push(Parsed::new(lex, score));
+        let lex = Lex::from_stack(ctx.morph(), StackSource::from(shaped));
+        ctx.push(Parsed::new(lex, score));
     }
 }

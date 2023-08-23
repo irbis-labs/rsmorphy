@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 
+use crate::estimator::ProbabilityEstimator;
 use crate::opencorpora::OpencorporaTagReg;
 use crate::prelude::*;
 
@@ -8,12 +9,15 @@ pub struct SingleTagProbabilityEstimator {}
 
 impl SingleTagProbabilityEstimator {
     pub fn prob(self, morph: &MorphAnalyzer, word_lower: &str, tag: &OpencorporaTagReg) -> f64 {
+        // FIXME avoid allocation
         let dawg_key = format!("{}:{}", word_lower, tag.fmt_int);
         f64::from(morph.dict().p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1_000_000.0
     }
+}
 
-    pub fn apply_to_parses(
-        self,
+impl ProbabilityEstimator for SingleTagProbabilityEstimator {
+    fn apply_to_parses(
+        &self,
         morph: &MorphAnalyzer,
         _word: &str,
         word_lower: &str,
@@ -28,14 +32,24 @@ impl SingleTagProbabilityEstimator {
             .map(|p: &Parsed| self.prob(morph, word_lower, p.lex.get_tag(morph)))
             .collect();
 
-        if probs.iter().cloned().sum::<f64>() == 0.0 {
+        let prob_sum: f64 = probs.iter().copied().sum();
+        if prob_sum.abs() < f64::EPSILON {
             // no P(t|w) information is available; return normalized estimate
-            let k = 1.0 / parses.iter().map(|p: &Parsed| p.score.value()).sum::<f64>();
-            for p in parses {
-                p.score = p.score * k;
+            let parses_sum: f64 = parses.iter().map(|p: &Parsed| p.score.value()).sum();
+            if parses_sum.abs() < f64::EPSILON {
+                // never should happen, but just in case
+                let score = Score::Fake(1.0 / parses.len() as f64);
+                for p in parses {
+                    p.score = score;
+                }
+            } else {
+                let k = 1.0 / parses_sum;
+                for p in parses {
+                    p.score = p.score * k;
+                }
             }
         } else {
-            for (ref mut p, prob) in parses.iter_mut().zip(probs.into_iter()) {
+            for (p, prob) in parses.iter_mut().zip(probs.into_iter()) {
                 p.score = Score::Real(prob);
             }
             parses.sort_by(|p1: &Parsed, p2: &Parsed| {
@@ -47,17 +61,18 @@ impl SingleTagProbabilityEstimator {
         }
     }
 
-    pub fn apply_to_tags(
-        self,
+    fn apply_to_tags(
+        &self,
         morph: &MorphAnalyzer,
         _word: &str,
         word_lower: &str,
-        tags: &mut Vec<OpencorporaTagReg>,
+        tags: &mut [OpencorporaTagReg],
     ) {
         if tags.is_empty() {
             return;
         }
 
+        // FIXME avoid double probability calculation.
         tags.sort_by(|t1: &OpencorporaTagReg, t2: &OpencorporaTagReg| {
             self.prob(morph, word_lower, t2)
                 .partial_cmp(&self.prob(morph, word_lower, t1))

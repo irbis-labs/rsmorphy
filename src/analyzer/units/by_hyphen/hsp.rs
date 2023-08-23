@@ -1,15 +1,13 @@
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackParticle;
 use crate::container::HyphenSeparatedParticle;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
-use crate::container::SeenSet;
 
 // TODO move into `Dictionary`
-pub static PARTICLES_AFTER_HYPHEN: [&'static str; 8] =
-    ["-то", "-ка", "-таки", "-де", "-тко", "-тка", "-с", "-ста"];
+pub static PARTICLES_AFTER_HYPHEN: &[&str] =
+    &["-то", "-ка", "-таки", "-де", "-тко", "-тка", "-с", "-ста"];
 
 pub const SCORE_DECAY: f64 = 0.9;
 
@@ -28,20 +26,16 @@ pub const SCORE_DECAY: f64 = 0.9;
 pub struct HyphenSeparatedParticleAnalyzer {}
 
 impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        _seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("HyphenSeparatedParticleAnalyzer::parse()");
         #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
-        for &particle in &PARTICLES_AFTER_HYPHEN {
+        let morph = ctx.morph();
+
+        for &particle in PARTICLES_AFTER_HYPHEN {
+            let word_lower = ctx.word_lower();
             if word_lower.len() <= particle.len() || !word_lower.ends_with(particle) {
                 continue;
             };
@@ -61,10 +55,10 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
                 };
                 let h_stack = lex_stack.stack.clone();
                 let hs_particle = HyphenSeparatedParticle::new(particle);
-                let container = StackParticle::new(h_stack, hs_particle);
-                let lex = Lex::from_stack(morph, container);
+                let stack = StackParticle::new(h_stack, hs_particle);
+                let lex = Lex::from_stack(morph, stack);
                 let score = parsed.score * SCORE_DECAY;
-                result.list.push(Parsed::new(lex, score));
+                ctx.push(Parsed::new(lex, score));
             }
         }
     }

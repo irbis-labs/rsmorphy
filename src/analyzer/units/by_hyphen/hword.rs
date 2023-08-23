@@ -1,7 +1,5 @@
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::analyzer::MorphAnalyzer;
-use crate::container::ParseResult;
-use crate::container::SeenSet;
 
 /// Parse the word by parsing its hyphen-separated parts.
 ///
@@ -14,14 +12,7 @@ use crate::container::SeenSet;
 pub struct HyphenatedWordsAnalyzer {}
 
 impl AnalyzerUnit for HyphenatedWordsAnalyzer {
-    fn parse(
-        &self,
-        _morph: &MorphAnalyzer,
-        _result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        _seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, _ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("HyphenatedWordsAnalyzer::parse()");
         #[cfg(trace_analyzer)]

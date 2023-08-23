@@ -1,16 +1,14 @@
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
 
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::analyzer::MorphAnalyzer;
 use crate::container::stack::StackSource;
 use crate::container::Initials;
 use crate::container::InitialsKind;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
 use crate::container::Score;
-use crate::container::SeenSet;
 use crate::opencorpora::OpencorporaTagReg;
 
 lazy_static::lazy_static! {
@@ -58,14 +56,7 @@ impl Default for InitialsAnalyzer {
 }
 
 impl AnalyzerUnit for InitialsAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        _seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("AbbreviatedFirstNameAnalyzer::parse()");
         #[cfg(trace_analyzer)]
@@ -78,15 +69,15 @@ impl AnalyzerUnit for InitialsAnalyzer {
         #[cfg(trace_analyzer)]
         log::trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
 
-        if let Some(&letter) = LETTERS.get(word) {
+        if let Some(&letter) = LETTERS.get(ctx.word()) {
             for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {
-                let container = Initials {
-                    letter: letter.into(),
+                let source = Initials {
+                    letter,
                     kind,
                     tag_idx: tag_idx as u8,
                 };
-                let lex = Lex::from_stack(morph, StackSource::from(container));
-                result.list.push(Parsed::new(lex, SCORE));
+                let lex = Lex::from_stack(ctx.morph(), StackSource::from(source));
+                ctx.push(Parsed::new(lex, SCORE));
             }
         }
     }

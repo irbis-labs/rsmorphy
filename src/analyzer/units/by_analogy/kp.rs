@@ -1,14 +1,11 @@
+use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 use crate::container::abc::*;
 use crate::container::stack::StackAffix;
 use crate::container::Affix;
-use crate::container::AffixKind;
 use crate::container::Lex;
-use crate::container::ParseResult;
 use crate::container::Parsed;
-use crate::container::SeenSet;
-use crate::util::add_parsed_if_not_seen;
 
 /// Parse the word by checking if it starts with a known prefix
 /// and parsing the reminder.
@@ -31,25 +28,22 @@ impl Default for KnownPrefixAnalyzer {
 }
 
 impl AnalyzerUnit for KnownPrefixAnalyzer {
-    fn parse(
-        &self,
-        morph: &MorphAnalyzer,
-        result: &mut ParseResult,
-        word: &str,
-        word_lower: &str,
-        seen_parses: &mut SeenSet,
-    ) {
+    fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(trace_analyzer)]
         log::trace!("KnownPrefixAnalyzer::parse()");
         #[cfg(trace_analyzer)]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
-        // This analyzer only works on longer words
-        if word_lower.chars().count() < self.min_reminder_length {
+        let word = ctx.word();
+        let word_len = word.chars().count();
+        if word_len <= self.min_reminder_length {
+            // This analyzer works only for longer words.
             return;
         }
+        let limit = word_len - self.min_reminder_length;
+        let morph = ctx.morph();
 
-        for (prefix, unprefixed_word) in self.possible_splits(morph, word_lower) {
+        for (prefix, unprefixed_word) in self.possible_splits(morph, word, limit) {
             'iter_parses: for parsed in morph.parse(unprefixed_word) {
                 let tag = parsed.lex.get_tag(morph);
                 if !tag.is_productive() {
@@ -63,12 +57,9 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
                 {
                     continue;
                 }
-                let affix = Some(Affix {
-                    part: prefix.into(),
-                    kind: AffixKind::KnownPrefix,
-                });
-                let container = StackAffix::new(lex_stack.stack.left.stack, affix);
-                //                let container = match parsed.lex.stack {
+                let affix = Some(Affix::known_prefix(prefix));
+                let stack = StackAffix::new(lex_stack.stack.left.stack, affix);
+                //                let stack = match parsed.lex.stack {
                 //                    Stack::Source(stack) =>
                 //                        StackAffix {
                 //                            stack: stack,
@@ -81,9 +72,9 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
                 ////                    _ => unreachable!(),
                 //                    _ => continue,
                 //                };
-                let lex = Lex::from_stack(morph, container);
+                let lex = Lex::from_stack(morph, stack);
                 let score = parsed.score * self.estimate_decay;
-                add_parsed_if_not_seen(morph, result, seen_parses, Parsed { lex, score });
+                ctx.push_if_not_seen(Parsed::new(lex, score));
             }
         }
     }
@@ -94,11 +85,8 @@ impl KnownPrefixAnalyzer {
         &self,
         morph: &'m MorphAnalyzer,
         word: &'s str,
+        limit: usize,
     ) -> impl Iterator<Item = (&'s str, &'s str)> + 'i {
-        let word_len = word.chars().count();
-        // This is checked in <Self as AnalyzedUnit>::parse
-        debug_assert!(word_len >= self.min_reminder_length);
-        let limit = word_len - self.min_reminder_length;
         let word_prefixes = morph.dict().prediction_prefixes.sorted_prefixes(word);
         #[cfg(trace_analyzer)]
         log::trace!("word_prefixes: {}", word_prefixes.join(", "));

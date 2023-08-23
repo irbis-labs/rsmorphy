@@ -16,6 +16,7 @@ pub struct Affix {
 }
 
 impl Affix {
+    #[inline]
     pub fn new<S>(part: S, kind: AffixKind) -> Self
     where
         S: Into<InlinableString>,
@@ -24,6 +25,7 @@ impl Affix {
         Affix { part, kind }
     }
 
+    #[inline]
     pub fn known_suffix<S>(part: S) -> Self
     where
         S: Into<InlinableString>,
@@ -31,6 +33,7 @@ impl Affix {
         Affix::new(part, KnownSuffix)
     }
 
+    #[inline]
     pub fn known_prefix<S>(part: S) -> Self
     where
         S: Into<InlinableString>,
@@ -38,6 +41,7 @@ impl Affix {
         Affix::new(part, KnownPrefix)
     }
 
+    #[inline]
     pub fn unknown_prefix<S>(part: S) -> Self
     where
         S: Into<InlinableString>,

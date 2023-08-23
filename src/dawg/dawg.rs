@@ -180,7 +180,7 @@ where
             #[cfg(trace_dawg)]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
             let value = V::new_in_place(move |buf| {
-                let decoded = STANDARD.decode_slice(&key, buf).unwrap();
+                let decoded = STANDARD.decode_slice_unchecked(&key, buf).unwrap();
                 #[cfg(trace_dawg)]
                 log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
                 debug_assert_eq!(decoded, buf.len());
