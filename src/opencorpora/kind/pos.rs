@@ -1,3 +1,5 @@
+use self::PartOfSpeech as POS;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum PartOfSpeech {
     /// имя существительное
@@ -66,70 +68,63 @@ impl PartOfSpeech {
     where
         S: AsRef<str>,
     {
-        use self::PartOfSpeech::*;
-
         TAG_RE
             .captures_iter(s.as_ref())
             .next()
             .and_then(|cap| match &cap[1] {
-                "NOUN" => Some(Noun),
-                "ADJF" => Some(AdjectiveFull),
-                "ADJS" => Some(AdjectiveShort),
-                "COMP" => Some(Comparative),
-                "VERB" => Some(Verb),
-                "INFN" => Some(Infinitive),
-                "PRTF" => Some(ParticipleFull),
-                "PRTS" => Some(ParticipleShort),
-                "GRND" => Some(Gerund),
-                "NUMR" => Some(Number),
-                "ADVB" => Some(Adverb),
-                "NPRO" => Some(Pronoun),
-                "PRED" => Some(Predicative),
-                "PREP" => Some(Preposition),
-                "CONJ" => Some(Conjunction),
-                "PRCL" => Some(Particle),
-                "INTJ" => Some(Interjection),
+                "NOUN" => Some(POS::Noun),
+                "ADJF" => Some(POS::AdjectiveFull),
+                "ADJS" => Some(POS::AdjectiveShort),
+                "COMP" => Some(POS::Comparative),
+                "VERB" => Some(POS::Verb),
+                "INFN" => Some(POS::Infinitive),
+                "PRTF" => Some(POS::ParticipleFull),
+                "PRTS" => Some(POS::ParticipleShort),
+                "GRND" => Some(POS::Gerund),
+                "NUMR" => Some(POS::Number),
+                "ADVB" => Some(POS::Adverb),
+                "NPRO" => Some(POS::Pronoun),
+                "PRED" => Some(POS::Predicative),
+                "PREP" => Some(POS::Preposition),
+                "CONJ" => Some(POS::Conjunction),
+                "PRCL" => Some(POS::Particle),
+                "INTJ" => Some(POS::Interjection),
                 _ => None,
             })
     }
 
     pub fn is_productive(self) -> bool {
-        use self::PartOfSpeech::*;
-
         match self {
-            | Conjunction
-            | Number
-            | Pronoun
-            | Predicative
-            | Preposition
-            | Particle
-            | Interjection
-            => false,
+            POS::Conjunction
+            | POS::Number
+            | POS::Pronoun
+            | POS::Predicative
+            | POS::Preposition
+            | POS::Particle
+            | POS::Interjection => false,
             _ => true,
         }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::PartOfSpeech::*;
-
         match self {
-            Noun => "имя существительное",
-            Adjf => "имя прилагательное (полное)",
-            Adjs => "имя прилагательное (краткое)",
-            Comp => "компаратив",
-            Verb => "глагол (личная форма)",
-            Infn => "глагол (инфинитив)",
-            Prtf => "причастие (полное)",
-            Prts => "причастие (краткое)",
-            Grnd => "деепричастие",
-            Numr => "числительное",
-            Advb => "наречие",
-            Npro => "местоимение-существительное",
-            Pred => "предикатив",
-            Prep => "предлог",
-            Conj => "союз",
-            Prcl => "частица",
-            Intj => "междометие",
+            POS::Noun => "имя существительное",
+            POS::AdjectiveFull => "имя прилагательное (полное)",
+            POS::AdjectiveShort => "имя прилагательное (краткое)",
+            POS::Comparative => "компаратив",
+            POS::Verb => "глагол (личная форма)",
+            POS::Infinitive => "глагол (инфинитив)",
+            POS::ParticipleFull => "причастие (полное)",
+            POS::ParticipleShort => "причастие (краткое)",
+            POS::Gerund => "деепричастие",
+            POS::Number => "числительное",
+            POS::Adverb => "наречие",
+            POS::Pronoun => "местоимение-существительное",
+            POS::Predicative => "предикатив",
+            POS::Preposition => "предлог",
+            POS::Conjunction => "союз",
+            POS::Particle => "частица",
+            POS::Interjection => "междометие",
         }
     }
 }
