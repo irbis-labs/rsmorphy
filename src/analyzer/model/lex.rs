@@ -44,7 +44,7 @@ impl Lex {
     }
 
     #[inline(always)]
-    pub fn as_seen<'m>(&'m self, morph: &'m MorphAnalyzer) -> Seen<'m> {
+    pub fn to_seen<'m>(&self, morph: &'m MorphAnalyzer) -> Seen<'m> {
         Seen {
             word: self.get_word(),
             tag: self.get_tag(morph),

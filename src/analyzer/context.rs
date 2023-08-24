@@ -13,7 +13,7 @@ pub struct ParseContext<'m, 's> {
     result: ParseResult,
     word: &'s str,
     word_lower: InlinableString,
-    seen_parses: SeenSet,
+    seen_parses: SeenSet<'m>,
 }
 
 impl<'m, 's> ParseContext<'m, 's> {
@@ -67,13 +67,14 @@ impl<'m, 's> ParseContext<'m, 's> {
 
     #[inline]
     pub fn push_if_not_seen(&mut self, variant: Parsed) {
-        if self.seen_parses.insert(&variant.lex.as_seen(self.morph())) {
+        let morph = self.morph;
+        if self.seen_parses.insert(variant.lex.to_seen(morph)) {
             self.push(variant);
         }
     }
 
     #[inline]
-    pub fn mark_as_seen(&mut self, seen: &Seen) -> bool {
+    pub fn mark_as_seen(&mut self, seen: Seen<'m>) -> bool {
         self.seen_parses.insert(seen)
     }
 

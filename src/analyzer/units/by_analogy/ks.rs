@@ -108,7 +108,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
                         let seen = Seen::new(fixed_word.clone(), tag, para_id);
 
-                        if !ctx.mark_as_seen(&seen) {
+                        if !ctx.mark_as_seen(seen.clone()) {
                             continue 'iter_parses;
                         }
 

@@ -1,6 +1,6 @@
-use std::collections::hash_map::DefaultHasher;
+use std::collections::HashSet;
 use std::hash::Hash;
-use std::hash::Hasher;
+use std::ops;
 
 use inlinable_string::InlinableString;
 
@@ -27,34 +27,30 @@ impl<'a> Seen<'a> {
     }
 }
 
-/// A thin hash set
+// TODO Replace with a SmallVec-like alternative for HashSet.
 #[derive(Default, Debug, Clone)]
-pub struct SeenSet {
-    vec: Vec<u64>,
+pub struct SeenSet<'a> {
+    set: HashSet<Seen<'a>>,
 }
 
-impl SeenSet {
-    pub fn insert(&mut self, s: &Seen) -> bool {
-        let hash = Self::eval_hash(s);
-        if self.vec.contains(&hash) {
-            false
-        } else {
-            self.vec.push(hash);
-            true
+impl<'a> SeenSet<'a> {
+    pub fn new() -> Self {
+        SeenSet {
+            set: HashSet::new(),
         }
     }
+}
 
-    pub fn contains(&self, s: &Seen) -> bool {
-        self.vec.contains(&Self::eval_hash(s))
+impl<'a> ops::Deref for SeenSet<'a> {
+    type Target = HashSet<Seen<'a>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.set
     }
+}
 
-    pub fn is_empty(&self) -> bool {
-        self.vec.is_empty()
-    }
-
-    fn eval_hash(s: &Seen) -> u64 {
-        let mut hasher = DefaultHasher::default();
-        s.hash(&mut hasher);
-        hasher.finish()
+impl<'a> ops::DerefMut for SeenSet<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.set
     }
 }
