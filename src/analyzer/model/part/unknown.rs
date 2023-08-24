@@ -2,12 +2,12 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::decode::*;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::abc::*;
-use crate::container::decode::*;
-use crate::container::stack::StackSource;
-use crate::container::Lex;
-use crate::container::Score;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::OpencorporaTagReg;
 
@@ -17,6 +17,7 @@ pub struct Unknown {
 }
 
 impl Unknown {
+    #[inline(always)]
     pub fn new<W>(word_lower: W) -> Self
     where
         W: Into<InlinableString>,
@@ -25,67 +26,77 @@ impl Unknown {
         Unknown { word_lower }
     }
 
+    #[inline(always)]
+    pub fn word_lower(&self) -> &InlinableString {
+        &self.word_lower
+    }
+
+    #[inline(always)]
+    pub fn into_inner(self) -> InlinableString {
+        self.word_lower
+    }
+
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
         &'s self,
-        morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
-        (0..1).map(move |_| Lex::from_stack(morph, StackSource::from(self.clone())))
+        (0..1).map(move |_| Lex::from_stack(StackSource::from(self.clone())))
     }
 }
 
 impl Source for Unknown {
+    #[inline(always)]
     fn score(&self) -> Score {
         Score::Fake(1.0)
     }
 
+    #[inline(always)]
     fn is_lemma(&self) -> bool {
         // CHECK это ведь то, что мы не смогли выяснить, как оно склоняется?
         // * мы знаем всё о склонении - если не выяснили, значит не склоняется.
         true
     }
 
+    #[inline(always)]
     fn is_known(&self) -> bool {
         false
     }
 
-    fn get_word(&self) -> InlinableString {
-        self.word_lower.clone()
-    }
-
-    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
-        self.word_lower.clone()
-    }
-
+    #[inline(always)]
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
         &morph.units().unknown.tag
     }
 
+    #[inline(always)]
     fn try_get_para_id(&self) -> Option<ParadigmId> {
         None
     }
 
+    #[inline(always)]
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
-        write!(f, "{}", self.word_lower)
+        f.write_str(&self.word_lower)
     }
 
+    #[inline(always)]
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, _morph: &MorphAnalyzer) -> fmt::Result {
-        write!(f, "{}", self.word_lower)
+        f.write_str(&self.word_lower)
     }
 
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
-        self.iter_lexeme(morph).collect()
+    #[inline(always)]
+    fn get_lexeme(&self, _morph: &MorphAnalyzer) -> Vec<Lex> {
+        self.iter_lexeme().collect()
     }
 
-    fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex {
-        self.iter_lexeme(morph).next().unwrap()
+    #[inline(always)]
+    fn get_lemma(&self, _morph: &MorphAnalyzer) -> Lex {
+        self.iter_lexeme().next().unwrap()
     }
 }
 
 impl MorphySerde for Unknown {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
-        write!(f, "u:")?;
+        f.write_str("u:")?;
         for ch in escape(&self.word_lower) {
-            write!(f, "{}", ch)?;
+            f.write_str(ch)?;
         }
         Ok(())
     }
@@ -93,11 +104,7 @@ impl MorphySerde for Unknown {
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
         let s = follow_str(s, "u").map_err(|_| DecodeError::UnknownPartType)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ":")?, ';')?;
-        Ok((
-            s,
-            Unknown {
-                word_lower: unescape(word).collect(),
-            },
-        ))
+        let word_lower = unescape(word).collect();
+        Ok((s, Unknown { word_lower }))
     }
 }

@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::ops;
 
 use crate::opencorpora::grammeme::Grammeme;
 
@@ -17,5 +18,19 @@ impl GrammemeSet {
         GrammemeSet {
             set: SEP.split(s.as_ref()).map(Grammeme::new).collect(),
         }
+    }
+}
+
+impl ops::Deref for GrammemeSet {
+    type Target = HashSet<Grammeme>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.set
+    }
+}
+
+impl ops::DerefMut for GrammemeSet {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.set
     }
 }

@@ -131,38 +131,33 @@ impl OpencorporaTagReg {
         };
 
         let x = match self.pos {
-            | Some(PartOfSpeech::Noun)
+            Some(PartOfSpeech::Noun)
             | Some(PartOfSpeech::AdjectiveFull)
-            | Some(PartOfSpeech::ParticipleFull)
-            => {
-                match self.pos {
-                    Some(PartOfSpeech::Noun)
-                        if self.case != Some(Case::Nomn) && self.case != Some(Case::Accs) =>
-                    {
-                        match self.case {
-                            _ if index == 0 => Some((Number::Sing, self.case)),
-                            _ => Some((Number::Plur, self.case)),
-                        }
+            | Some(PartOfSpeech::ParticipleFull) => match self.pos {
+                Some(PartOfSpeech::Noun)
+                    if self.case != Some(Case::Nomn) && self.case != Some(Case::Accs) =>
+                {
+                    match self.case {
+                        _ if index == 0 => Some((Number::Sing, self.case)),
+                        _ => Some((Number::Plur, self.case)),
                     }
-
-                    _ if index == 0 => match self.case {
-                        Some(Case::Nomn) => Some((Number::Sing, Some(Case::Nomn))),
-                        _ => Some((Number::Sing, Some(Case::Accs))),
-                    },
-
-                    Some(PartOfSpeech::Noun) if index == 1 => {
-                        Some((Number::Sing, Some(Case::Gent)))
-                    }
-
-                    Some(PartOfSpeech::AdjectiveFull) | Some(PartOfSpeech::ParticipleFull)
-                        if index == 1 && self.gender == Some(Gender::Femn) =>
-                    {
-                        Some((Number::Plur, Some(Case::Nomn)))
-                    }
-
-                    _ => Some((Number::Plur, Some(Case::Gent))),
                 }
-            }
+
+                _ if index == 0 => match self.case {
+                    Some(Case::Nomn) => Some((Number::Sing, Some(Case::Nomn))),
+                    _ => Some((Number::Sing, Some(Case::Accs))),
+                },
+
+                Some(PartOfSpeech::Noun) if index == 1 => Some((Number::Sing, Some(Case::Gent))),
+
+                Some(PartOfSpeech::AdjectiveFull) | Some(PartOfSpeech::ParticipleFull)
+                    if index == 1 && self.gender == Some(Gender::Femn) =>
+                {
+                    Some((Number::Plur, Some(Case::Nomn)))
+                }
+
+                _ => Some((Number::Plur, Some(Case::Gent))),
+            },
             _ => None,
         };
 

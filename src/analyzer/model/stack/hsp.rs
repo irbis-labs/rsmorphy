@@ -1,26 +1,25 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::decode::*;
+use crate::analyzer::model::stack::StackAffix;
+use crate::analyzer::model::stack::StackHyphenated;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::HyphenSeparatedParticle;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::abc::*;
-use crate::container::decode::*;
-use crate::container::stack::StackAffix;
-use crate::container::stack::StackHyphenated;
-use crate::container::stack::StackSource;
-use crate::container::HyphenSeparatedParticle;
-use crate::container::Lex;
-use crate::container::Score;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackParticle {
-    pub stack: StackHyphenated,
-    pub particle: Option<HyphenSeparatedParticle>,
+    pub(in crate::analyzer) stack: StackHyphenated,
+    pub(in crate::analyzer) particle: Option<HyphenSeparatedParticle>,
 }
 
 impl StackParticle {
+    #[inline(always)]
     pub fn new<P>(stack: StackHyphenated, particle: P) -> StackParticle
     where
         P: Into<Option<HyphenSeparatedParticle>>,
@@ -29,15 +28,27 @@ impl StackParticle {
         StackParticle { stack, particle }
     }
 
+    #[inline(always)]
+    pub fn stack(&self) -> &StackHyphenated {
+        &self.stack
+    }
+
+    #[inline(always)]
+    pub fn particle(&self) -> Option<&HyphenSeparatedParticle> {
+        self.particle.as_ref()
+    }
+
+    #[inline(always)]
+    pub fn into_parts(self) -> (StackHyphenated, Option<HyphenSeparatedParticle>) {
+        (self.stack, self.particle)
+    }
+
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
         &'s self,
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
         self.stack.iter_lexeme(morph).map(move |lex: Lex| {
-            Lex::from_stack(
-                morph,
-                StackParticle::new(lex.stack.stack, self.particle.clone()),
-            )
+            Lex::from_stack(StackParticle::new(lex.stack.stack, self.particle.clone()))
         })
     }
 }
@@ -64,60 +75,55 @@ impl From<StackSource> for StackParticle {
 }
 
 impl Source for StackParticle {
+    #[inline(always)]
     fn score(&self) -> Score {
         unimplemented!()
     }
 
+    #[inline(always)]
     fn is_lemma(&self) -> bool {
         self.stack.is_lemma()
     }
 
+    #[inline(always)]
     fn is_known(&self) -> bool {
         self.stack.is_known()
     }
 
-    fn get_word(&self) -> InlinableString {
-        match self.particle {
-            None => self.stack.get_word(),
-            Some(ref particle) => self.stack.get_word() + &particle.particle,
-        }
-    }
-
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
-        match self.particle {
-            None => self.stack.get_normal_form(morph),
-            Some(ref particle) => self.stack.get_normal_form(morph) + &particle.particle,
-        }
-    }
-
+    #[inline(always)]
     fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
         self.stack.get_tag(morph)
     }
 
+    #[inline(always)]
     fn try_get_para_id(&self) -> Option<ParadigmId> {
         self.stack.try_get_para_id()
     }
 
+    #[inline(always)]
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         self.stack.write_word(f)?;
         if let Some(ref particle) = self.particle {
-            write!(f, "{}", particle.particle)?;
+            f.write_str(&particle.particle)?;
         }
         Ok(())
     }
 
+    #[inline(always)]
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, morph: &MorphAnalyzer) -> fmt::Result {
         self.stack.write_normal_form(f, morph)?;
         if let Some(ref particle) = self.particle {
-            write!(f, "{}", particle.particle)?;
+            f.write_str(&particle.particle)?;
         }
         Ok(())
     }
 
+    #[inline(always)]
     fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
         self.iter_lexeme(morph).collect()
     }
 
+    #[inline(always)]
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex {
         self.iter_lexeme(morph).next().unwrap()
     }

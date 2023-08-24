@@ -12,7 +12,6 @@
 pub mod macros;
 
 pub mod analyzer;
-pub mod container;
 pub mod dawg;
 pub mod estimator;
 pub mod opencorpora;
@@ -21,13 +20,13 @@ pub mod util;
 
 pub mod prelude;
 
+pub use crate::analyzer::model::abc::MorphySerde;
+pub use crate::analyzer::model::abc::Source;
+pub use crate::analyzer::model::Lex;
+pub use crate::analyzer::model::ParseResult;
+pub use crate::analyzer::model::Parsed;
+pub use crate::analyzer::model::Score;
 pub use crate::analyzer::unit::AnalyzerUnit;
 pub use crate::analyzer::MorphAnalyzer;
-pub use crate::container::abc::MorphySerde;
-pub use crate::container::abc::Source;
-pub use crate::container::Lex;
-pub use crate::container::ParseResult;
-pub use crate::container::Parsed;
-pub use crate::container::Score;
 pub use crate::opencorpora::Grammeme;
 pub use crate::opencorpora::GrammemeSet;

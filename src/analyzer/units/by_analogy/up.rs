@@ -1,12 +1,12 @@
 use inlinable_string::InlinableString;
 
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::stack::StackAffix;
+use crate::analyzer::model::Affix;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::abc::*;
-use crate::container::stack::StackAffix;
-use crate::container::Affix;
-use crate::container::Lex;
-use crate::container::Parsed;
 use crate::util::word_splits;
 
 const MIN_REMINDER_LENGTH: usize = 3;
@@ -52,7 +52,7 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
                 }
                 let stack = parsed.lex.stack.stack.left.stack;
                 let affix = Affix::unknown_prefix(prefix);
-                let lex = Lex::from_stack(morph, StackAffix::new(stack, affix));
+                let lex = Lex::from_stack(StackAffix::new(stack, affix));
                 let score = parsed.score * self.estimate_decay;
                 ctx.push_if_not_seen(Parsed::new(lex, score));
             }

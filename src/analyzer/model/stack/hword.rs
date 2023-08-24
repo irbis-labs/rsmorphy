@@ -1,23 +1,22 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::stack::StackAffix;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::abc::*;
-use crate::container::stack::StackAffix;
-use crate::container::stack::StackSource;
-use crate::container::Lex;
-use crate::container::Score;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackHyphenated {
-    pub left: StackAffix,
-    pub right: Option<StackAffix>,
+    pub(in crate::analyzer) left: StackAffix,
+    pub(in crate::analyzer) right: Option<StackAffix>,
 }
 
 impl StackHyphenated {
+    #[inline(always)]
     pub fn new<R>(left: StackAffix, right: R) -> Self
     where
         R: Into<Option<StackAffix>>,
@@ -26,22 +25,36 @@ impl StackHyphenated {
         StackHyphenated { left, right }
     }
 
+    #[inline(always)]
+    pub fn stack(&self) -> &StackAffix {
+        &self.left
+    }
+
+    #[inline(always)]
+    pub fn right(&self) -> Option<&StackAffix> {
+        self.right.as_ref()
+    }
+
+    #[inline(always)]
+    pub fn into_parts(self) -> (StackAffix, Option<StackAffix>) {
+        (self.left, self.right)
+    }
+
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
         &'s self,
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
         self.left.iter_lexeme(morph).map(move |lex: Lex| {
-            Lex::from_stack(morph, StackHyphenated::new(lex.stack.stack.left, None))
+            Lex::from_stack(
+                StackHyphenated::new(lex.stack.stack().left.clone(), None),
+            )
         })
     }
 }
 
 impl From<StackAffix> for StackHyphenated {
     fn from(stack: StackAffix) -> Self {
-        StackHyphenated {
-            left: stack,
-            right: None,
-        }
+        StackHyphenated::new(stack, None)
     }
 }
 
@@ -52,40 +65,28 @@ impl From<StackSource> for StackHyphenated {
 }
 
 impl Source for StackHyphenated {
+    #[inline(always)]
     fn score(&self) -> Score {
         unimplemented!()
     }
 
+    #[inline(always)]
     fn is_lemma(&self) -> bool {
-        match self.right {
+        match &self.right {
             None => self.left.is_lemma(),
-            Some(ref right) => self.left.is_lemma() && right.is_lemma(),
+            Some(right) => self.left.is_lemma() && right.is_lemma(),
         }
     }
 
+    #[inline(always)]
     fn is_known(&self) -> bool {
-        match self.right {
+        match &self.right {
             None => self.left.is_known(),
-            Some(ref right) => self.left.is_known() && right.is_known(),
+            Some(right) => self.left.is_known() && right.is_known(),
         }
     }
 
-    fn get_word(&self) -> InlinableString {
-        match self.right {
-            None => self.left.get_word(),
-            Some(ref right) => self.left.get_word() + "-" + &right.get_word(),
-        }
-    }
-
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
-        match self.right {
-            None => self.left.get_normal_form(morph),
-            Some(ref right) => {
-                self.left.get_normal_form(morph) + "-" + &right.get_normal_form(morph)
-            }
-        }
-    }
-
+    #[inline(always)]
     fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
         match self.right {
             None => self.left.get_tag(morph),
@@ -93,6 +94,7 @@ impl Source for StackHyphenated {
         }
     }
 
+    #[inline(always)]
     fn try_get_para_id(&self) -> Option<ParadigmId> {
         match self.right {
             None => self.left.try_get_para_id(),
@@ -100,9 +102,11 @@ impl Source for StackHyphenated {
         }
     }
 
+    #[inline(always)]
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         self.left.write_word(f)?;
         if let Some(ref right) = self.right {
+            f.write_str("-")?;
             right.write_word(f)?;
         }
         Ok(())
@@ -111,15 +115,18 @@ impl Source for StackHyphenated {
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, morph: &MorphAnalyzer) -> fmt::Result {
         self.left.write_normal_form(f, morph)?;
         if let Some(ref right) = self.right {
+            f.write_str("-")?;
             right.write_normal_form(f, morph)?;
         }
         Ok(())
     }
 
+    #[inline(always)]
     fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
         self.iter_lexeme(morph).collect()
     }
 
+    #[inline(always)]
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex {
         self.iter_lexeme(morph).next().unwrap()
     }
@@ -129,9 +136,9 @@ impl MorphySerde for StackHyphenated {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match self.right {
             Some(ref right) => {
-                write!(f, "hw:")?;
+                f.write_str("hw:")?;
                 self.left.encode(f)?;
-                write!(f, ";-")?;
+                f.write_str(";-")?;
                 right.encode(f)
             }
             None => self.left.encode(f),

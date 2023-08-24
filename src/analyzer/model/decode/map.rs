@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use num::Num;
 
-use crate::container::decode::error::DecodeError;
+use crate::analyzer::model::decode::error::DecodeError;
 
 pub fn try_parse_int<'s, 'm, T>((s, m): (&'s str, &'m str)) -> Option<(&'s str, T)>
 where

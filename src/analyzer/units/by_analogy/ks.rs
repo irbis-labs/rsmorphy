@@ -1,16 +1,16 @@
 use inlinable_string::InlinableString;
 
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::stack::StackAffix;
+use crate::analyzer::model::Affix;
+use crate::analyzer::model::DictionaryWord;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
+use crate::analyzer::model::Score;
+use crate::analyzer::model::Seen;
+use crate::analyzer::model::WordStruct;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::stack::StackAffix;
-use crate::container::Affix;
-use crate::container::Dictionary;
-use crate::container::Lex;
-use crate::container::Parsed;
-use crate::container::Score;
-use crate::container::Seen;
-use crate::container::WordStruct;
 use crate::opencorpora::dictionary::PredictionSuffixesDawg;
 use crate::opencorpora::dictionary::HHH;
 
@@ -113,11 +113,11 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                         }
 
                         let word_lower = WordStruct::unknown(seen.word);
-                        let source = Dictionary::new(word_lower, para_id, idx);
+                        let source = DictionaryWord::new(word_lower, para_id, idx);
                         let affix = Affix::known_suffix(fixed_suffix.clone());
                         let stack = StackAffix::new(source, affix);
 
-                        subresult.push((cnt, prefix_id, Lex::from_stack(morph, stack)));
+                        subresult.push((cnt, prefix_id, Lex::from_stack(stack)));
                     }
                     if total_counts[prefix_id as usize] > 1 {
                         break 'iter_splits;

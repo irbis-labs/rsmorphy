@@ -1,5 +1,5 @@
-use crate::container::Lex;
-use crate::container::Score;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Parsed {

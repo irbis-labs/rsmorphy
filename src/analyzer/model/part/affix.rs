@@ -11,12 +11,12 @@ pub enum AffixKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Affix {
-    pub part: InlinableString,
-    pub kind: AffixKind,
+    pub(in crate::analyzer) part: InlinableString,
+    pub(in crate::analyzer) kind: AffixKind,
 }
 
 impl Affix {
-    #[inline]
+    #[inline(always)]
     pub fn new<S>(part: S, kind: AffixKind) -> Self
     where
         S: Into<InlinableString>,
@@ -25,7 +25,22 @@ impl Affix {
         Affix { part, kind }
     }
 
-    #[inline]
+    #[inline(always)]
+    pub fn part(&self) -> &str {
+        &self.part
+    }
+
+    #[inline(always)]
+    pub fn kind(&self) -> AffixKind {
+        self.kind
+    }
+
+    #[inline(always)]
+    pub fn into_parts(self) -> (InlinableString, AffixKind) {
+        (self.part, self.kind)
+    }
+
+    #[inline(always)]
     pub fn known_suffix<S>(part: S) -> Self
     where
         S: Into<InlinableString>,
@@ -33,7 +48,7 @@ impl Affix {
         Affix::new(part, KnownSuffix)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn known_prefix<S>(part: S) -> Self
     where
         S: Into<InlinableString>,
@@ -41,7 +56,7 @@ impl Affix {
         Affix::new(part, KnownPrefix)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn unknown_prefix<S>(part: S) -> Self
     where
         S: Into<InlinableString>,
@@ -49,48 +64,37 @@ impl Affix {
         Affix::new(part, UnknownPrefix)
     }
 
+    #[inline(always)]
     pub fn is_known(&self) -> bool {
-        match self.kind {
-            KnownSuffix | KnownPrefix => true,
-            UnknownPrefix => false,
-        }
+        matches!(self.kind, KnownSuffix | KnownPrefix)
     }
 
+    #[inline(always)]
     pub fn is_known_suffix(&self) -> bool {
-        match self.kind {
-            KnownSuffix => true,
-            _ => false,
-        }
+        matches!(self.kind, KnownSuffix)
     }
 
+    #[inline(always)]
     pub fn is_known_prefix(&self) -> bool {
-        match self.kind {
-            KnownPrefix => true,
-            _ => false,
-        }
+        matches!(self.kind, KnownPrefix)
     }
 
+    #[inline(always)]
     pub fn is_unknown_prefix(&self) -> bool {
-        match self.kind {
-            UnknownPrefix => true,
-            _ => false,
-        }
+        matches!(self.kind, UnknownPrefix)
     }
 
+    #[inline(always)]
     pub fn is_prefix(&self) -> bool {
-        match self.kind {
-            KnownPrefix | UnknownPrefix => true,
-            _ => false,
-        }
+        matches!(self.kind, KnownPrefix | UnknownPrefix)
     }
 
+    #[inline(always)]
     pub fn is_suffix(&self) -> bool {
-        match self.kind {
-            KnownPrefix | UnknownPrefix => false,
-            _ => true,
-        }
+        matches!(self.kind, KnownSuffix)
     }
 
+    #[inline(always)]
     pub fn title_rus(&self) -> &'static str {
         match self.kind {
             KnownPrefix => "Известный префикс",

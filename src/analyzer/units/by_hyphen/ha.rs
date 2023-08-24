@@ -1,12 +1,12 @@
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::HyphenAdverb;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
+use crate::analyzer::model::Score;
+use crate::analyzer::model::WordStruct;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::abc::*;
-use crate::container::stack::StackSource;
-use crate::container::HyphenAdverb;
-use crate::container::Lex;
-use crate::container::Parsed;
-use crate::container::Score;
-use crate::container::WordStruct;
 use crate::opencorpora::kind::Case;
 use crate::opencorpora::kind::Number;
 use crate::opencorpora::kind::PartOfSpeech;
@@ -55,13 +55,15 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .filter(|parsed| {
                 let tag = parsed.lex.get_tag(morph);
                 match (tag.pos, tag.number, tag.case) {
-                    (Some(PartOfSpeech::AdjectiveFull), Some(Number::Sing), Some(Case::Datv)) => true,
+                    (Some(PartOfSpeech::AdjectiveFull), Some(Number::Sing), Some(Case::Datv)) => {
+                        true
+                    }
                     _ => false,
                 }
             })
             .for_each(|parsed: Parsed| {
                 let word = WordStruct::new(ctx.word_lower(), parsed.lex.is_known());
-                let lex = Lex::from_stack(morph, StackSource::new(HyphenAdverb::new(word)));
+                let lex = Lex::from_stack(StackSource::new(HyphenAdverb::new(word)));
                 ctx.push(Parsed::new(lex, HA_SCORE));
             });
     }

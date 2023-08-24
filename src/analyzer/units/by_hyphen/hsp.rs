@@ -1,9 +1,9 @@
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::stack::StackParticle;
+use crate::analyzer::model::HyphenSeparatedParticle;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::stack::StackParticle;
-use crate::container::HyphenSeparatedParticle;
-use crate::container::Lex;
-use crate::container::Parsed;
 
 // TODO move into `Dictionary`
 pub static PARTICLES_AFTER_HYPHEN: &[&str] =
@@ -56,7 +56,7 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
                 let h_stack = lex_stack.stack.clone();
                 let hs_particle = HyphenSeparatedParticle::new(particle);
                 let stack = StackParticle::new(h_stack, hs_particle);
-                let lex = Lex::from_stack(morph, stack);
+                let lex = Lex::from_stack(stack);
                 let score = parsed.score * SCORE_DECAY;
                 ctx.push(Parsed::new(lex, score));
             }

@@ -1,30 +1,32 @@
 use std::fmt;
 
+use derive_more::From;
 use inlinable_string::InlinableString;
 
 use self::StackSource::*;
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::DictionaryWord;
+use crate::analyzer::model::HyphenAdverb;
+use crate::analyzer::model::Initial;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
+use crate::analyzer::model::Shaped;
+use crate::analyzer::model::Unknown;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::abc::*;
-use crate::container::Dictionary;
-use crate::container::HyphenAdverb;
-use crate::container::Initials;
-use crate::container::Lex;
-use crate::container::Score;
-use crate::container::Shaped;
-use crate::container::Unknown;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::OpencorporaTagReg;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, From)]
 pub enum StackSource {
-    Dictionary(Dictionary),
+    Dictionary(DictionaryWord),
     HyphenAdverb(HyphenAdverb),
-    Initials(Initials),
+    Initials(Initial),
     Shaped(Shaped),
     Unknown(Unknown),
 }
 
 impl StackSource {
+    #[inline(always)]
     pub fn new<T>(source: T) -> Self
     where
         T: Into<StackSource>,
@@ -32,13 +34,15 @@ impl StackSource {
         source.into()
     }
 
-    pub fn as_dictionary(&self) -> Option<&Dictionary> {
+    #[inline(always)]
+    pub fn as_dictionary(&self) -> Option<&DictionaryWord> {
         match self {
             Dictionary(source) => Some(source),
             _ => None,
         }
     }
 
+    #[inline(always)]
     pub fn as_hyphen_adverb(&self) -> Option<&HyphenAdverb> {
         match self {
             HyphenAdverb(source) => Some(source),
@@ -46,13 +50,15 @@ impl StackSource {
         }
     }
 
-    pub fn as_initials(&self) -> Option<&Initials> {
+    #[inline(always)]
+    pub fn as_initials(&self) -> Option<&Initial> {
         match self {
             Initials(source) => Some(source),
             _ => None,
         }
     }
 
+    #[inline(always)]
     pub fn as_shaped(&self) -> Option<&Shaped> {
         match self {
             Shaped(source) => Some(source),
@@ -60,6 +66,7 @@ impl StackSource {
         }
     }
 
+    #[inline(always)]
     pub fn as_unknown(&self) -> Option<&Unknown> {
         match self {
             Unknown(source) => Some(source),
@@ -73,10 +80,10 @@ impl StackSource {
     ) -> Box<dyn Iterator<Item = Lex> + 'i> {
         match self {
             Dictionary(source) => Box::new(source.iter_lexeme(morph)),
-            HyphenAdverb(source) => Box::new(source.iter_lexeme(morph)),
+            HyphenAdverb(source) => Box::new(source.iter_lexeme()),
             Initials(source) => Box::new(source.iter_lexeme(morph)),
-            Shaped(source) => Box::new(source.iter_lexeme(morph)),
-            Unknown(source) => Box::new(source.iter_lexeme(morph)),
+            Shaped(source) => Box::new(source.iter_lexeme()),
+            Unknown(source) => Box::new(source.iter_lexeme()),
         }
     }
 
@@ -91,36 +98,6 @@ impl StackSource {
             Shaped(_) => "Не слово",
             Unknown(_) => "Неизвестное слово",
         }
-    }
-}
-
-impl From<Dictionary> for StackSource {
-    fn from(source: Dictionary) -> Self {
-        Dictionary(source)
-    }
-}
-
-impl From<HyphenAdverb> for StackSource {
-    fn from(source: HyphenAdverb) -> Self {
-        HyphenAdverb(source)
-    }
-}
-
-impl From<Initials> for StackSource {
-    fn from(source: Initials) -> Self {
-        Initials(source)
-    }
-}
-
-impl From<Shaped> for StackSource {
-    fn from(source: Shaped) -> Self {
-        Shaped(source)
-    }
-}
-
-impl From<Unknown> for StackSource {
-    fn from(source: Unknown) -> Self {
-        Unknown(source)
     }
 }
 
@@ -248,11 +225,11 @@ impl MorphySerde for StackSource {
     }
 
     fn decode(s: &str) -> Result<(&str, Self), DecodeError> {
-        Ok(match try_decode::<Dictionary>(s)? {
+        Ok(match try_decode::<DictionaryWord>(s)? {
             Some(v) => v,
             None => match try_decode::<HyphenAdverb>(s)? {
                 Some(v) => v,
-                None => match try_decode::<Initials>(s)? {
+                None => match try_decode::<Initial>(s)? {
                     Some(v) => v,
                     None => match try_decode::<Shaped>(s)? {
                         Some(v) => v,

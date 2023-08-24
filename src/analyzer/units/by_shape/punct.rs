@@ -1,10 +1,10 @@
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
+use crate::analyzer::model::Shaped;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::abc::*;
-use crate::container::stack::StackSource;
-use crate::container::Lex;
-use crate::container::Parsed;
-use crate::container::Shaped;
 use crate::opencorpora::OpencorporaTagReg;
 use crate::shapes::is_punctuation;
 
@@ -38,7 +38,7 @@ impl AnalyzerUnit for PunctuationAnalyzer {
         }
         let shaped = Shaped::punctuation(word_lower);
         let score = shaped.score();
-        let lex = Lex::from_stack(ctx.morph(), StackSource::from(shaped));
+        let lex = Lex::from_stack(StackSource::from(shaped));
         ctx.push(Parsed::new(lex, score));
     }
 }

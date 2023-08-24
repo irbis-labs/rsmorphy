@@ -23,7 +23,7 @@ fn list(morph: &MorphAnalyzer, s: &str) {
             .map(|parsed| parsed.lex.get_lemma(morph).encoded()),
     );
     for (i, id) in set.into_iter().enumerate() {
-        let lemma = Lex::from_id(morph, id).unwrap();
+        let lemma = Lex::from_id(id).unwrap();
         println!("  === {}. {} ===", i + 1, lemma.get_word());
         print_lexeme(morph, &lemma);
     }

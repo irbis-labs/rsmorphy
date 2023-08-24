@@ -3,10 +3,10 @@ use std::fmt;
 use inlinable_string::InlinableString;
 use inlinable_string::StringExt;
 
+pub use crate::analyzer::model::decode::error::DecodeError;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
-pub use crate::container::decode::error::DecodeError;
-use crate::container::Lex;
-use crate::container::Score;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::OpencorporaTagReg;
 
@@ -15,8 +15,17 @@ pub trait Source {
     fn score(&self) -> Score;
     fn is_lemma(&self) -> bool;
     fn is_known(&self) -> bool;
-    fn get_word(&self) -> InlinableString;
-    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString;
+    fn get_word(&self) -> InlinableString {
+        let mut s = InlinableString::new();
+        self.write_word(&mut s).expect("write_word");
+        s
+    }
+    fn get_normal_form(&self, morph: &MorphAnalyzer) -> InlinableString {
+        let mut s = InlinableString::new();
+        self.write_normal_form(&mut s, morph)
+            .expect("write_normal_form");
+        s
+    }
     fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg;
     fn try_get_para_id(&self) -> Option<ParadigmId>;
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result;

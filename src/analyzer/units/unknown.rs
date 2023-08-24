@@ -1,10 +1,10 @@
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
+use crate::analyzer::model::Score;
+use crate::analyzer::model::Unknown;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::stack::StackSource;
-use crate::container::Lex;
-use crate::container::Parsed;
-use crate::container::Score;
-use crate::container::Unknown;
 use crate::opencorpora::OpencorporaTagReg;
 
 const SCORE: Score = Score::Fake(1.0);
@@ -30,10 +30,7 @@ impl AnalyzerUnit for UnknownAnalyzer {
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         if ctx.seen_parses().is_empty() {
-            let lex = Lex::from_stack(
-                ctx.morph(),
-                StackSource::from(Unknown::new(ctx.word_lower())),
-            );
+            let lex = Lex::from_stack(StackSource::from(Unknown::new(ctx.word_lower())));
             ctx.push(Parsed::new(lex, SCORE));
         }
     }

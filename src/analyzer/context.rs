@@ -1,7 +1,7 @@
 use inlinable_string::InlinableString;
 
-use crate::container::Seen;
-use crate::container::SeenSet;
+use crate::analyzer::model::Seen;
+use crate::analyzer::model::SeenSet;
 use crate::estimator::ProbabilityEstimator;
 use crate::MorphAnalyzer;
 use crate::ParseResult;

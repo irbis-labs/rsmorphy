@@ -10,6 +10,7 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use inlinable_string::InlinableString;
+use lazy_static::lazy_static;
 use maplit::hashset;
 use serde::Deserialize;
 use serde::Serialize;
@@ -27,8 +28,10 @@ use crate::opencorpora::dictionary::Paradigms;
 use crate::opencorpora::dictionary::*;
 use crate::opencorpora::grammeme::Grammeme;
 use crate::opencorpora::grammeme::GrammemeReg;
+use crate::opencorpora::kind::Case;
 use crate::opencorpora::tag::OpencorporaTagReg;
 use crate::util::DumbProfiler;
+use crate::GrammemeSet;
 
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
@@ -169,18 +172,22 @@ impl Dictionary {
             extra_incompatible.extend(grammemes[&gndr].1.children.iter().cloned());
 
             for gram_reg in &gram_regs {
-                let gm = grammemes.get_mut(&gram_reg.name).unwrap();
-                let gm: &mut GrammemeMeta = &mut gm.1;
+                let (_grammeme, grammeme_meta) = grammemes.get_mut(&gram_reg.name).unwrap();
                 if gram_reg.name == plur {
-                    gm.incompatible.extend(
+                    grammeme_meta.incompatible.extend(
                         extra_incompatible
                             .iter()
                             .filter(|&v| *v != gram_reg.name)
                             .cloned(),
                     );
                 }
-                gm.incompatible
-                    .extend(gm.children.iter().filter(|&v| *v != gram_reg.name).cloned());
+                grammeme_meta.incompatible.extend(
+                    grammeme_meta
+                        .children
+                        .iter()
+                        .filter(|&v| *v != gram_reg.name)
+                        .cloned(),
+                );
             }
 
             grammemes
@@ -314,6 +321,37 @@ impl Dictionary {
             let para = self.para().get(id).expect("paradigm");
             let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
             write!(f, "{}{}{}", normal_prefix, stem, normal_suffix)
+        }
+    }
+
+    pub fn update_grammemes(&self, grammemes: &mut GrammemeSet, required: &GrammemeSet) {
+        grammemes.extend(required.iter().cloned());
+        for grammeme in required.iter() {
+            let (_reg, meta) = self.grammemes.get(grammeme).unwrap();
+            for g in &meta.incompatible {
+                grammemes.remove(g);
+            }
+        }
+    }
+
+    pub fn fix_rare_cases(&self, grammemes: &mut GrammemeSet) {
+        // TBD: move to Dictionary itself?
+        lazy_static! {
+            static ref RARE_CASES: [(Grammeme, Grammeme); 6] = [
+                (Case::Gen1.to_grammeme(), Case::Gent.to_grammeme()),
+                (Case::Gen2.to_grammeme(), Case::Gent.to_grammeme()),
+                // (Case::Acc1.to_grammeme(), Case::Accs.to_grammeme()),
+                (Case::Acc2.to_grammeme(), Case::Accs.to_grammeme()),
+                (Case::Loc1.to_grammeme(), Case::Loct.to_grammeme()),
+                (Case::Loc2.to_grammeme(), Case::Loct.to_grammeme()),
+                (Case::Voct.to_grammeme(), Case::Nomn.to_grammeme()),
+            ];
+        }
+
+        for (from, to) in RARE_CASES.iter() {
+            if grammemes.remove(&from) {
+                grammemes.insert(to.clone());
+            }
         }
     }
 }

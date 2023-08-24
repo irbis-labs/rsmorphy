@@ -2,13 +2,13 @@ use std::collections::BTreeSet;
 use std::iter::FromIterator;
 
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::Initial;
+use crate::analyzer::model::InitialsKind;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
+use crate::analyzer::model::Score;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::stack::StackSource;
-use crate::container::Initials;
-use crate::container::InitialsKind;
-use crate::container::Lex;
-use crate::container::Parsed;
-use crate::container::Score;
 use crate::opencorpora::OpencorporaTagReg;
 
 lazy_static::lazy_static! {
@@ -71,12 +71,12 @@ impl AnalyzerUnit for InitialsAnalyzer {
 
         if let Some(&letter) = LETTERS.get(ctx.word()) {
             for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {
-                let source = Initials {
+                let source = Initial {
                     letter,
                     kind,
                     tag_idx: tag_idx as u8,
                 };
-                let lex = Lex::from_stack(ctx.morph(), StackSource::from(source));
+                let lex = Lex::from_stack(StackSource::from(source));
                 ctx.push(Parsed::new(lex, SCORE));
             }
         }

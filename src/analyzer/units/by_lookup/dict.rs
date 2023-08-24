@@ -1,11 +1,11 @@
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::DictionaryWord;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
+use crate::analyzer::model::Score;
+use crate::analyzer::model::WordStruct;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::container::stack::StackSource;
-use crate::container::Dictionary;
-use crate::container::Lex;
-use crate::container::Parsed;
-use crate::container::Score;
-use crate::container::WordStruct;
 use crate::dawg::HH;
 
 const DICT_SCORE: Score = Score::Real(1.0);
@@ -33,8 +33,8 @@ impl AnalyzerUnit for DictionaryAnalyzer {
         for (fixed_word, parses) in para_data {
             for HH(para_id, idx) in parses {
                 let word_lower = WordStruct::known(fixed_word.clone());
-                let container = Dictionary::new(word_lower, para_id, idx);
-                let lex = Lex::from_stack(morph, StackSource::from(container));
+                let container = DictionaryWord::new(word_lower, para_id, idx);
+                let lex = Lex::from_stack(StackSource::from(container));
                 ctx.push(Parsed::new(lex, DICT_SCORE));
             }
         }

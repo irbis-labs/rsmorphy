@@ -2,9 +2,9 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::ParseResult;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::units::*;
-use crate::container::ParseResult;
 use crate::estimator::SingleTagProbabilityEstimator;
 use crate::opencorpora::dictionary::Dictionary;
 

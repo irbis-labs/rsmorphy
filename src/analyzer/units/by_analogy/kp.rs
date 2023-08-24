@@ -1,11 +1,13 @@
 use crate::analyzer::context::ParseContext;
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::stack::StackAffix;
+use crate::analyzer::model::stack::StackHyphenated;
+use crate::analyzer::model::stack::StackParticle;
+use crate::analyzer::model::Affix;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Parsed;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::abc::*;
-use crate::container::stack::StackAffix;
-use crate::container::Affix;
-use crate::container::Lex;
-use crate::container::Parsed;
 
 /// Parse the word by checking if it starts with a known prefix
 /// and parsing the reminder.
@@ -43,36 +45,34 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
         let limit = word_len - self.min_reminder_length;
         let morph = ctx.morph();
 
+        #[cfg(trace_analyzer)]
+        log::trace!("possible_splits for word = {word}, limit = {limit}");
         for (prefix, unprefixed_word) in self.possible_splits(morph, word, limit) {
+            #[cfg(trace_analyzer)]
+            log::trace!("prefix = {prefix:?}, unprefixed_word = {unprefixed_word:?}");
             'iter_parses: for parsed in morph.parse(unprefixed_word) {
                 let tag = parsed.lex.get_tag(morph);
                 if !tag.is_productive() {
                     continue 'iter_parses;
                 }
-                let lex_stack = parsed.lex.stack;
-                // FIXME is it equivalent for `FIXME (ad #3)` below?
-                if lex_stack.particle.is_some()
-                    || lex_stack.stack.right.is_some()
-                    || lex_stack.stack.left.affix.is_some()
-                {
+                let StackParticle {
+                    stack: StackHyphenated { left, right },
+                    particle: hsp,
+                } = parsed.lex.stack;
+                if hsp.is_some() || right.is_some() || left.affix().is_some() {
+                    #[cfg(trace_analyzer)]
+                    log::trace!(
+                        "skipping:  hsp.is_some = {},  right.is_some = {} || left.affix.is_some = {}",
+                        hsp.is_some(),
+                        right.is_some(),
+                        left.affix().is_some()
+                    );
                     continue;
                 }
+                let (stack_source, _left_affix) = left.into_parts();
                 let affix = Some(Affix::known_prefix(prefix));
-                let stack = StackAffix::new(lex_stack.stack.left.stack, affix);
-                //                let stack = match parsed.lex.stack {
-                //                    Stack::Source(stack) =>
-                //                        StackAffix {
-                //                            stack: stack,
-                //                            affix: Some(Affix {
-                //                                part: prefix.to_string(),
-                //                                kind: AffixKind::KnownPrefix,
-                //                            })
-                //                        },
-                //                    // FIXME (ad #3)
-                ////                    _ => unreachable!(),
-                //                    _ => continue,
-                //                };
-                let lex = Lex::from_stack(morph, stack);
+                let stack = StackAffix::new(stack_source, affix);
+                let lex = Lex::from_stack(stack);
                 let score = parsed.score * self.estimate_decay;
                 ctx.push_if_not_seen(Parsed::new(lex, score));
             }

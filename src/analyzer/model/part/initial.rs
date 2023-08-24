@@ -1,14 +1,12 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-
+use crate::analyzer::model::abc::*;
+use crate::analyzer::model::decode::*;
+use crate::analyzer::model::stack::StackSource;
+use crate::analyzer::model::Lex;
+use crate::analyzer::model::Score;
 use crate::analyzer::units::abbr::initials::LETTERS;
 use crate::analyzer::MorphAnalyzer;
-use crate::container::abc::*;
-use crate::container::decode::*;
-use crate::container::stack::StackSource;
-use crate::container::Lex;
-use crate::container::Score;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::OpencorporaTagReg;
 
@@ -19,13 +17,13 @@ pub enum InitialsKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Initials {
-    pub letter: &'static str,
-    pub kind: InitialsKind,
-    pub tag_idx: u8,
+pub struct Initial {
+    pub(in crate::analyzer) letter: &'static str,
+    pub(in crate::analyzer) kind: InitialsKind,
+    pub(in crate::analyzer) tag_idx: u8,
 }
 
-impl Initials {
+impl Initial {
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
         &'s self,
         morph: &'m MorphAnalyzer,
@@ -35,77 +33,88 @@ impl Initials {
             InitialsKind::Patronym => 12,
         };
         (0..morph.units().initials.tags.len() / 2).map(move |tag_idx| {
-            let container = Initials {
+            let container = Initial {
                 tag_idx: base + tag_idx as u8,
-                ..self.clone()
+                ..*self
             };
-            Lex::from_stack(morph, StackSource::from(container))
+            Lex::from_stack(StackSource::from(container))
         })
+    }
+
+    #[inline(always)]
+    pub fn letter(&self) -> &'static str {
+        self.letter
+    }
+
+    #[inline(always)]
+    pub fn kind(&self) -> InitialsKind {
+        self.kind
     }
 }
 
-impl Source for Initials {
+impl Source for Initial {
+    #[inline(always)]
     fn score(&self) -> Score {
         Score::Real(0.1)
     }
 
+    #[inline(always)]
     fn is_lemma(&self) -> bool {
         unimplemented!()
     }
 
+    #[inline(always)]
     fn is_known(&self) -> bool {
         unimplemented!()
     }
 
-    fn get_word(&self) -> InlinableString {
-        self.letter.into()
-    }
-
-    fn get_normal_form(&self, _morph: &MorphAnalyzer) -> InlinableString {
-        self.letter.into()
-    }
-
+    #[inline(always)]
     fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
         &morph.units().initials.tags[self.tag_idx as usize].0
     }
 
+    #[inline(always)]
     fn try_get_para_id(&self) -> Option<ParadigmId> {
         None
     }
 
+    #[inline(always)]
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
-        write!(f, "{}", self.letter)
+        f.write_str(&self.letter)
     }
 
+    #[inline(always)]
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, _morph: &MorphAnalyzer) -> fmt::Result {
-        write!(f, "{}", self.letter)
+        f.write_str(self.letter)
     }
 
+    #[inline(always)]
     fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
         self.iter_lexeme(morph).collect()
     }
 
+    #[inline(always)]
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex {
         self.iter_lexeme(morph).next().unwrap()
     }
 }
 
-impl MorphySerde for Initials {
+impl MorphySerde for Initial {
     fn encode<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         write!(
             f,
-            "i:{}{}{},{}",
-            match self.kind {
+            "i:{kind}{gender}{case},{letter}",
+            kind = match self.kind {
                 InitialsKind::FirstName => "n",
                 InitialsKind::Patronym => "p",
             },
-            match (self.tag_idx / 6) % 2 {
+            gender = match (self.tag_idx / 6) % 2 {
                 0 => "m",
                 1 => "f",
                 _ => unreachable!(),
             },
-            self.tag_idx % 6,
-            self.letter
+            case = self.tag_idx % 6,
+            letter = self.letter
         )
     }
 
@@ -126,7 +135,7 @@ impl MorphySerde for Initials {
         let &letter = LETTERS.get(word).ok_or_else(|| DecodeError::DoesntMatch)?;
         Ok((
             s,
-            Initials {
+            Initial {
                 kind,
                 tag_idx,
                 letter,

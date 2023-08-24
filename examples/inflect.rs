@@ -13,9 +13,9 @@ fn main() {
     //print_row_lex(&morph_ru, 1, &lex.inflect(&morph_ru, &GrammemeSet::from_str("femn,sing,ablt,V-ey")).unwrap());
     //println!();
 
-    let apple = Lex::from_id(&morph_ru, "ru:d:яблоко,22c").unwrap();
-    let bread = Lex::from_id(&morph_ru, "ru:d:хлеб,878").unwrap();
-    // let fish = Lex::from_id(&morph_ru, "ru:d:рыба,35").unwrap();
+    let apple = Lex::from_id("ru:d:яблоко,22c").unwrap();
+    let bread = Lex::from_id("ru:d:хлеб,878").unwrap();
+    let fish = Lex::from_id("ru:d:рыба,35").unwrap();
 
     let ablt_set = GrammemeSet::parse_fmt_int("ablt");
 
@@ -47,18 +47,17 @@ fn main() {
             .unwrap(),
     );
     println!(
-        " ::: накормил {} {}",
+        " ::: накормил {} {} и {} {}",
         2,
         bread
             .inflect(&morph_ru, &ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 2)
             .unwrap(),
+        5,
+        fish.inflect(&morph_ru, &ablt_set)
+            .unwrap()
+            .get_plural(&morph_ru, 5)
+            .unwrap(),
     );
-    // FIXME рыбою => рыбами
-    //println!(
-    //    " ::: накормил {} {} и {} {}",
-    //    2, bread.inflect(&morph_ru, &ablt_set).unwrap().get_plural(&morph_ru, 2).unwrap(),
-    //    5, fish.inflect(&morph_ru, &ablt_set).unwrap().get_plural(&morph_ru, 5).unwrap(),
-    //);
 }
