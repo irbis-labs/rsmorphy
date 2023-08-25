@@ -57,7 +57,7 @@ dict-ru = { version = "0.1", package = "rsmorphy-dict-ru", path = "./dict/ru" }
 
 
 [dev-dependencies]
-rustyline = "6.0"
+rustyline = "12"
 
 
 [profile.dev]
