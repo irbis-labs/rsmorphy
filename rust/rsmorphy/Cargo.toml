@@ -52,8 +52,8 @@ inlinable_string = "0.1"
 string_cache = "0.8"
 unicode_categories = "0.1"
 
-dict-ru = { version = "0.1", package = "rsmorphy-dict-ru", path = "./dict/ru" }
-#dict-uk = { version = "0.1", package = "rsmorphy-dict-uk", path = "./dict/uk" }
+dict-ru = { version = "0.1", package = "rsmorphy-dict-ru", path = "../dict/ru" }
+#dict-uk = { version = "0.1", package = "rsmorphy-dict-uk", path = "../dict/uk" }
 
 
 [dev-dependencies]

@@ -12,7 +12,4 @@ format_code_in_doc_comments = true
 format_macro_matchers = true
 use_try_shorthand = true
 
-#error_on_line_overflow = true
-#error_on_unformatted = true
-
 unstable_features = true

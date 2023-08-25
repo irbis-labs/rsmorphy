@@ -1,5 +1,6 @@
 use std::fs::File;
-use std::io::{self, Write};
+use std::io;
+use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
