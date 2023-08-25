@@ -34,9 +34,9 @@ impl Default for HyphenAdverbAnalyzer {
 
 impl AnalyzerUnit for HyphenAdverbAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("HyphenAdverbAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
 
         let morph = ctx.morph();

@@ -23,9 +23,9 @@ impl Default for RomanAnalyzer {
 
 impl AnalyzerUnit for RomanAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("RomanAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         let word_lower = ctx.word_lower();
         if !is_roman_number(word_lower) {

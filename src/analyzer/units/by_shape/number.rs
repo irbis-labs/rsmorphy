@@ -34,9 +34,9 @@ impl Default for NumberAnalyzer {
 
 impl AnalyzerUnit for NumberAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("NumberAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let word_lower = ctx.word_lower();

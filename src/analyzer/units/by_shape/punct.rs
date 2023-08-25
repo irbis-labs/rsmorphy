@@ -27,9 +27,9 @@ impl Default for PunctuationAnalyzer {
 
 impl AnalyzerUnit for PunctuationAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("PunctuationAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let word_lower = ctx.word_lower();

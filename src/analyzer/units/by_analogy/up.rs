@@ -7,7 +7,7 @@ use crate::analyzer::model::Affix;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::util::word_splits;
+use crate::analyzer::util::word_splits;
 
 const MIN_REMINDER_LENGTH: usize = 3;
 const MAX_PREFIX_LENGTH: usize = 5;
@@ -31,9 +31,9 @@ impl Default for UnknownPrefixAnalyzer {
 
 impl AnalyzerUnit for UnknownPrefixAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("UnknownPrefixAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let morph = ctx.morph();

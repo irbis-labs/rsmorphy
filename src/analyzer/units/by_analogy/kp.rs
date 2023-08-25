@@ -31,9 +31,9 @@ impl Default for KnownPrefixAnalyzer {
 
 impl AnalyzerUnit for KnownPrefixAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("KnownPrefixAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let word = ctx.word();
@@ -45,10 +45,10 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
         let limit = word_len - self.min_reminder_length;
         let morph = ctx.morph();
 
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("possible_splits for word = {word}, limit = {limit}");
         for (prefix, unprefixed_word) in self.possible_splits(morph, word, limit) {
-            #[cfg(trace_analyzer)]
+            #[cfg(feature = "trace_analyzer")]
             log::trace!("prefix = {prefix:?}, unprefixed_word = {unprefixed_word:?}");
             'iter_parses: for parsed in morph.parse(unprefixed_word) {
                 let tag = parsed.lex.get_tag(morph);
@@ -60,7 +60,7 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
                     particle: hsp,
                 } = parsed.lex.stack;
                 if hsp.is_some() || right.is_some() || left.affix().is_some() {
-                    #[cfg(trace_analyzer)]
+                    #[cfg(feature = "trace_analyzer")]
                     log::trace!(
                         "skipping:  hsp.is_some = {},  right.is_some = {} || left.affix.is_some = {}",
                         hsp.is_some(),
@@ -88,7 +88,7 @@ impl KnownPrefixAnalyzer {
         limit: usize,
     ) -> impl Iterator<Item = (&'s str, &'s str)> + 'i {
         let word_prefixes = morph.dict().prediction_prefixes.sorted_prefixes(word);
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("word_prefixes: {}", word_prefixes.join(", "));
         word_prefixes
             .into_iter()

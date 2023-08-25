@@ -57,16 +57,16 @@ impl Default for InitialsAnalyzer {
 
 impl AnalyzerUnit for InitialsAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("AbbreviatedFirstNameAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(
             r#" LETTERS: "{:?}" "#,
             LETTERS.iter().cloned().collect::<Vec<&str>>().join(", ")
         );
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
 
         if let Some(&letter) = LETTERS.get(ctx.word()) {

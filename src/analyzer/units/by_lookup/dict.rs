@@ -15,9 +15,9 @@ pub struct DictionaryAnalyzer {}
 
 impl AnalyzerUnit for DictionaryAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("DictionaryAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         let morph = ctx.morph();
@@ -26,7 +26,7 @@ impl AnalyzerUnit for DictionaryAnalyzer {
             .dict()
             .words
             .similar_items(ctx.word_lower(), &morph.dict().char_substitutes);
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" para_data="{:?}" "#, para_data);
 
         // `fixed_word` is a word with proper substitute (e.g. ё) letters

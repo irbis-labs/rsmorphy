@@ -2,6 +2,7 @@ pub mod dictionary;
 pub mod grammeme;
 pub mod kind;
 pub mod tag;
+pub mod util;
 
 pub use self::dictionary::Dictionary;
 pub use self::grammeme::Grammeme;

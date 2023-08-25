@@ -27,9 +27,9 @@ impl Default for LatinAnalyzer {
 
 impl AnalyzerUnit for LatinAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("LatinAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
         if !is_latin(ctx.word_lower()) {
             return;

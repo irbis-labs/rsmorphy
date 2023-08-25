@@ -30,7 +30,7 @@ use crate::opencorpora::grammeme::Grammeme;
 use crate::opencorpora::grammeme::GrammemeReg;
 use crate::opencorpora::kind::Case;
 use crate::opencorpora::tag::OpencorporaTagReg;
-use crate::util::DumbProfiler;
+use crate::opencorpora::util::SimpleTraceProfiler;
 use crate::GrammemeSet;
 
 pub type WordsDawg = CompletionDawg<HH>;
@@ -80,7 +80,7 @@ impl Dictionary {
     {
         let load = PathLoader::new(p);
 
-        let mut profiler = DumbProfiler::start();
+        let mut profiler = SimpleTraceProfiler::start();
 
         let meta_json = {
             let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");

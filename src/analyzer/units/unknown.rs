@@ -24,9 +24,9 @@ impl Default for UnknownAnalyzer {
 
 impl AnalyzerUnit for UnknownAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("UnknownAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         if ctx.seen_parses().is_empty() {

@@ -27,9 +27,11 @@ profile = []
 trace_all = [
     "trace_analyzer",
     "trace_dawg",
+    "trace_opencorpora",
 ]
 trace_analyzer = []
 trace_dawg = []
+trace_opencorpora = []
 
 
 [dependencies]

@@ -73,7 +73,7 @@ impl<'a> Completer<'a> {
         while !self.dict.has_value(index) {
             let child_label = self.guide.units[index as usize].child;
             index = self.follow(child_label, index)?;
-            #[cfg(trace_dawg)]
+            #[cfg(feature = "trace_dawg")]
             log::trace!(
                 r#"Completer::find_terminal() index: {:8x?}, key: {:?}, stack = {:x?} "#,
                 index,

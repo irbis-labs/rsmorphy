@@ -13,9 +13,9 @@ pub struct HyphenatedWordsAnalyzer {}
 
 impl AnalyzerUnit for HyphenatedWordsAnalyzer {
     fn parse(&self, _ctx: &mut ParseContext) {
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!("HyphenatedWordsAnalyzer::parse()");
-        #[cfg(trace_analyzer)]
+        #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word = "{}", word_lower = "{}" "#, word, word_lower);
 
         // FIXME unimplemented
