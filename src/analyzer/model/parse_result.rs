@@ -4,11 +4,11 @@ use smallvec::SmallVec;
 
 use crate::Parsed;
 
-type ParsedList = SmallVec<[Parsed; 8]>;
+type ParsedList = SmallVec<[Parsed; 16]>;
 
 #[derive(Debug, Default, Clone)]
 pub struct ParseResult {
-    pub(crate) list: ParsedList,
+    pub(in crate::analyzer) list: ParsedList,
 }
 
 impl ops::Deref for ParseResult {
