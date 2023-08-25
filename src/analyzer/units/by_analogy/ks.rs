@@ -11,6 +11,8 @@ use crate::analyzer::model::Seen;
 use crate::analyzer::model::WordStruct;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
+use crate::opencorpora::dictionary::ParadigmId;
+use crate::opencorpora::dictionary::ParadigmIndex;
 use crate::opencorpora::dictionary::PredictionSuffixesDawg;
 use crate::opencorpora::dictionary::HHH;
 
@@ -89,7 +91,10 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                     #[cfg(feature = "trace_analyzer")]
                     log::trace!("parses: {:?}", parses);
                     'iter_parses: for HHH(cnt, para_id, idx) in parses {
-                        let tag = morph.dict().get_tag(para_id.into(), idx.into());
+                        let para_id = ParadigmId::new(para_id);
+                        let idx = ParadigmIndex::new(idx);
+
+                        let tag = morph.dict().get_tag(para_id, idx);
 
                         if !tag.is_productive() {
                             continue 'iter_parses;

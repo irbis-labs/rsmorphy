@@ -16,29 +16,46 @@ pub struct Paradigms {
 impl Paradigms {
     pub fn from_reader<R: Read>(reader: &mut R) -> Self {
         let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
+
         let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
-        let mut data = Vec::new();
+        // Number of entries is greater than paradigms number, but we don't know how much
+        // exactly. So we just reserve space for at least 1 entry per paradigm to reduce
+        // reallocations.
+        let mut data = Vec::with_capacity(paradigms_count as usize);
+        let mut buf = Vec::new();
+
         idx.push(0);
+
         for _ in 0..paradigms_count {
             let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
-            let paradigm = (0..paradigm_len)
-                .map(|_| reader.read_u16::<LittleEndian>().unwrap())
-                .collect::<Vec<u16>>();
-            let paradigm = ParadigmEntry::build(paradigm);
-            idx.push(idx.last().unwrap() + paradigm.len() as u32);
-            data.extend(paradigm.into_iter())
+            for _i in 0..paradigm_len {
+                buf.push(reader.read_u16::<LittleEndian>().unwrap())
+            }
+
+            assert_eq!(buf.len() % 3, 0, "Wrong paradigm length");
+            let paradigm_len = buf.len() / 3;
+            let (prefix, tag) = buf.split_at(paradigm_len);
+            let (tag, suffix) = tag.split_at(paradigm_len);
+
+            #[inline(always)]
+            fn iter(arr: &[u16]) -> impl Iterator<Item = u16> + '_ {
+                arr.iter().copied()
+            }
+            data.extend(iter(prefix).zip(iter(tag)).zip(iter(suffix)).map(
+                |((prefix_id, tag_id), suffix_id)| ParadigmEntry::new(prefix_id, tag_id, suffix_id),
+            ));
+
+            idx.push(data.len() as u32);
+            buf.clear();
         }
         Paradigms { idx, data }
     }
 
     #[inline]
-    pub fn get<Id>(&self, id: Id) -> Option<Paradigm>
-    where
-        Id: Into<ParadigmId>,
-    {
-        let id = id.into().index();
-        if id + 1 < self.idx.len() {
-            let (start, end) = (self.idx[id] as usize, self.idx[id + 1] as usize);
+    pub fn get(&self, id: ParadigmId) -> Option<Paradigm> {
+        let idx = id.index();
+        if idx + 1 < self.idx.len() {
+            let (start, end) = (self.idx[idx] as usize, self.idx[idx + 1] as usize);
             Some(&self.data[start..end])
         } else {
             None
@@ -46,25 +63,36 @@ impl Paradigms {
     }
 }
 
-use std::iter::FromIterator;
-
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone, Copy)]
 pub struct ParadigmEntry {
-    pub prefix_id: u16,
-    pub tag_id: u16,
-    pub suffix_id: u16,
+    pub(crate) prefix_id: u16,
+    pub(crate) tag_id: u16,
+    pub(crate) suffix_id: u16,
 }
 
 impl ParadigmEntry {
-    pub fn build<P: AsRef<[u16]>>(paradigm: P) -> Vec<Self> {
-        let paradigm = paradigm.as_ref();
-        assert_eq!(0, paradigm.len() % 3, "Wrong paradigm length");
-        let paradigm_len = paradigm.len() / 3;
-        Vec::from_iter((0..paradigm_len).map(|idx| ParadigmEntry {
-            suffix_id: paradigm[idx],
-            tag_id: paradigm[paradigm_len + idx],
-            prefix_id: paradigm[paradigm_len * 2 + idx],
-        }))
+    #[inline(always)]
+    fn new(prefix_id: u16, tag_id: u16, suffix_id: u16) -> Self {
+        ParadigmEntry {
+            prefix_id,
+            tag_id,
+            suffix_id,
+        }
+    }
+
+    #[inline(always)]
+    pub fn prefix_id(&self) -> u16 {
+        self.prefix_id
+    }
+
+    #[inline(always)]
+    pub fn tag_id(&self) -> u16 {
+        self.tag_id
+    }
+
+    #[inline(always)]
+    pub fn suffix_id(&self) -> u16 {
+        self.suffix_id
     }
 }
 
@@ -75,134 +103,40 @@ pub struct ParadigmId(u16);
 pub struct ParadigmIndex(u16);
 
 impl ParadigmId {
-    pub fn new<I>(id: I) -> Self
-    where
-        I: Into<u16>,
-    {
+    #[inline(always)]
+    pub fn new(id: u16) -> Self {
         ParadigmId(id.into())
     }
 
-    pub fn new_checked_u<I>(id: I) -> Self
-    where
-        I: Into<u128>,
-    {
-        let id = id.into();
-        assert!(id <= ::std::u16::MAX.into());
-        Self::new(id as u16)
-    }
-
-    #[inline]
+    #[inline(always)]
     pub fn index(self) -> usize {
         self.0 as usize
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn value(self) -> u16 {
         self.0
-    }
-}
-
-impl From<u8> for ParadigmId {
-    fn from(id: u8) -> Self {
-        Self::new(id)
-    }
-}
-
-impl From<u16> for ParadigmId {
-    fn from(id: u16) -> Self {
-        Self::new(id)
-    }
-}
-
-impl From<u32> for ParadigmId {
-    fn from(index: u32) -> Self {
-        Self::new_checked_u(index)
-    }
-}
-
-impl From<u64> for ParadigmId {
-    fn from(index: u64) -> Self {
-        Self::new_checked_u(index)
-    }
-}
-
-impl From<u128> for ParadigmId {
-    fn from(index: u128) -> Self {
-        Self::new_checked_u(index)
-    }
-}
-
-impl From<usize> for ParadigmId {
-    fn from(index: usize) -> Self {
-        Self::new_checked_u(index as u128)
     }
 }
 
 impl ParadigmIndex {
-    pub fn new<I>(index: I) -> Self
-    where
-        I: Into<u16>,
-    {
+    #[inline(always)]
+    pub(crate) fn new(index: u16) -> Self {
         ParadigmIndex(index.into())
     }
 
-    pub fn new_checked_u<I>(id: I) -> Self
-    where
-        I: Into<u128>,
-    {
-        let id = id.into();
-        assert!(id <= ::std::u16::MAX.into());
-        Self::new(id as u16)
-    }
-
-    #[inline]
+    #[inline(always)]
     pub fn index(self) -> usize {
         self.0 as usize
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn value(self) -> u16 {
         self.0
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn is_first(self) -> bool {
         self.0 == 0
-    }
-}
-
-impl From<u8> for ParadigmIndex {
-    fn from(id: u8) -> Self {
-        Self::new(id)
-    }
-}
-
-impl From<u16> for ParadigmIndex {
-    fn from(id: u16) -> Self {
-        Self::new(id)
-    }
-}
-
-impl From<u32> for ParadigmIndex {
-    fn from(index: u32) -> Self {
-        Self::new_checked_u(index)
-    }
-}
-
-impl From<u64> for ParadigmIndex {
-    fn from(index: u64) -> Self {
-        Self::new_checked_u(index)
-    }
-}
-
-impl From<u128> for ParadigmIndex {
-    fn from(index: u128) -> Self {
-        Self::new_checked_u(index)
-    }
-}
-
-impl From<usize> for ParadigmIndex {
-    fn from(index: usize) -> Self {
-        Self::new_checked_u(index as u128)
     }
 }

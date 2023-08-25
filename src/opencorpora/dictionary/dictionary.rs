@@ -246,7 +246,7 @@ impl Dictionary {
     #[inline]
     pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &OpencorporaTagReg {
         let para = self.para().get(id).expect("paradigm");
-        &self.gramtab[para[idx.index()].tag_id as usize]
+        &self.gramtab[para[idx.index()].tag_id() as usize]
     }
 
     /// Return a list of
@@ -263,7 +263,7 @@ impl Dictionary {
         id: ParadigmId,
     ) -> impl Iterator<Item = (&'a str, &'a OpencorporaTagReg, &'a str)> + 'i {
         self.para()
-            .get(id.value())
+            .get(id)
             .expect("paradigm")
             .iter()
             .map(move |entry: &'a ParadigmEntry| self.paradigm_entry_info(*entry))
@@ -275,9 +275,9 @@ impl Dictionary {
     #[inline]
     pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &OpencorporaTagReg, &str) {
         (
-            &self.paradigm_prefixes[entry.prefix_id as usize],
-            &self.gramtab[entry.tag_id as usize],
-            &self.suffixes[entry.suffix_id as usize],
+            &self.paradigm_prefixes[entry.prefix_id() as usize],
+            &self.gramtab[entry.tag_id() as usize],
+            &self.suffixes[entry.suffix_id() as usize],
         )
     }
 

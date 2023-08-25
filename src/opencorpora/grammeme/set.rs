@@ -11,13 +11,9 @@ pub struct GrammemeSet {
 regex!(SEP, r"(,| )");
 
 impl GrammemeSet {
-    pub fn parse_fmt_int<S>(s: S) -> Self
-    where
-        S: AsRef<str>,
-    {
-        GrammemeSet {
-            set: SEP.split(s.as_ref()).map(Grammeme::new).collect(),
-        }
+    pub fn parse_fmt_int(s: &str) -> Self {
+        let set = SEP.split(s.as_ref()).map(Grammeme::new).collect();
+        GrammemeSet { set }
     }
 }
 

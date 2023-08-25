@@ -21,15 +21,12 @@ pub struct DictionaryWord {
 }
 
 impl DictionaryWord {
-    // FIXME rename into `new_unchecked`
     #[inline(always)]
-    pub fn new<ID, IDX>(word_lower: WordStruct, para_id: ID, idx: IDX) -> Self
-    where
-        ID: Into<ParadigmId>,
-        IDX: Into<ParadigmIndex>,
-    {
-        let para_id = para_id.into();
-        let idx = idx.into();
+    pub(in crate::analyzer) fn new(
+        word_lower: WordStruct,
+        para_id: ParadigmId,
+        idx: ParadigmIndex,
+    ) -> Self {
         DictionaryWord {
             word_lower,
             para_id,
@@ -83,7 +80,7 @@ impl DictionaryWord {
                 Lex::from_stack(StackSource::from(DictionaryWord::new(
                     word,
                     self.para_id,
-                    idx,
+                    ParadigmIndex::new(idx as u16),
                 )))
             },
         )
@@ -191,9 +188,9 @@ impl MorphySerde for DictionaryWord {
             .map(|s| take_str_while_char(s, is_hex_digit).and_then(parse_hex_int::<u16>))
             .unwrap_or_else(|| Ok((s, 0)))?;
         // TODO assert `word` is in the lower case
-        Ok((
-            s,
-            DictionaryWord::new(WordStruct::new(word, is_known), para_id, idx),
-        ))
+        let para_id = ParadigmId::new(para_id);
+        let idx = ParadigmIndex::new(idx);
+        let word = DictionaryWord::new(WordStruct::new(word, is_known), para_id, idx);
+        Ok((s, word))
     }
 }
