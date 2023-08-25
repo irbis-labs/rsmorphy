@@ -5,6 +5,7 @@ use inlinable_string::InlinableString;
 
 use self::StackSource::*;
 use crate::analyzer::model::abc::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::DictionaryWord;
 use crate::analyzer::model::HyphenAdverb;
 use crate::analyzer::model::Initial;
@@ -192,7 +193,7 @@ impl Source for StackSource {
         }
     }
 
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme {
         match *self {
             Dictionary(ref source) => source.get_lexeme(morph),
             HyphenAdverb(ref source) => source.get_lexeme(morph),

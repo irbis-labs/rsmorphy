@@ -2,6 +2,7 @@ use std::fmt;
 
 use crate::analyzer::model::abc::*;
 use crate::analyzer::model::decode::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
@@ -79,9 +80,11 @@ impl DictionaryWord {
                     format!("{}{}{}", prefix, stem, suffix),
                     self.word_lower.is_known(),
                 );
-                Lex::from_stack(
-                    StackSource::from(DictionaryWord::new(word, self.para_id, idx)),
-                )
+                Lex::from_stack(StackSource::from(DictionaryWord::new(
+                    word,
+                    self.para_id,
+                    idx,
+                )))
             },
         )
     }
@@ -126,7 +129,7 @@ impl Source for DictionaryWord {
     }
 
     #[inline(always)]
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme {
         self.iter_lexeme(morph).collect()
     }
 

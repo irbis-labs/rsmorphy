@@ -2,6 +2,7 @@ use std::fmt;
 
 use crate::analyzer::model::abc::*;
 use crate::analyzer::model::decode::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackParticle;
 use crate::analyzer::model::Score;
 use crate::analyzer::model::Seen;
@@ -10,11 +11,9 @@ use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::GrammemeSet;
 use crate::opencorpora::OpencorporaTagReg;
 
-pub type Lexeme = Vec<Lex>;
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lex {
-    pub stack: StackParticle,
+    pub(in crate::analyzer) stack: StackParticle,
 }
 
 impl Lex {
@@ -33,6 +32,14 @@ impl Lex {
     {
         let stack = stack.into();
         Lex { stack }
+    }
+
+    pub fn stack(&self) -> &StackParticle {
+        &self.stack
+    }
+
+    pub fn into_inner(self) -> StackParticle {
+        self.stack
     }
 
     #[inline(always)]
@@ -147,7 +154,7 @@ impl Source for Lex {
     }
 
     #[inline(always)]
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme {
         self.stack.get_lexeme(morph)
     }
 

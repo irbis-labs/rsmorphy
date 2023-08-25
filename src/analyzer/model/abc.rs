@@ -4,6 +4,7 @@ use inlinable_string::InlinableString;
 use inlinable_string::StringExt;
 
 pub use crate::analyzer::model::decode::error::DecodeError;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
@@ -30,7 +31,7 @@ pub trait Source {
     fn try_get_para_id(&self) -> Option<ParadigmId>;
     fn write_word<W: fmt::Write>(&self, f: &mut W) -> fmt::Result;
     fn write_normal_form<W: fmt::Write>(&self, f: &mut W, morph: &MorphAnalyzer) -> fmt::Result;
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex>;
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme;
     fn get_lemma(&self, morph: &MorphAnalyzer) -> Lex;
 }
 

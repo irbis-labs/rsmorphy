@@ -2,6 +2,7 @@ use std::fmt;
 
 use crate::analyzer::model::abc::*;
 use crate::analyzer::model::decode::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackAffix;
 use crate::analyzer::model::stack::StackHyphenated;
 use crate::analyzer::model::stack::StackSource;
@@ -119,7 +120,7 @@ impl Source for StackParticle {
     }
 
     #[inline(always)]
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme {
         self.iter_lexeme(morph).collect()
     }
 

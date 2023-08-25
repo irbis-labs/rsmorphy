@@ -119,7 +119,7 @@ pub mod format {
                 lex = lex.get_word(),
                 norm = lex.get_normal_form(morph),
                 tag = lex.get_tag(morph).fmt_int,
-                enc = lex.stack.encoded()
+                enc = lex.stack().encoded()
             )
         }
     }

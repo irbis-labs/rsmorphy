@@ -1,6 +1,7 @@
 use std::fmt;
 
 use crate::analyzer::model::abc::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackAffix;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
@@ -45,9 +46,7 @@ impl StackHyphenated {
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
         self.left.iter_lexeme(morph).map(move |lex: Lex| {
-            Lex::from_stack(
-                StackHyphenated::new(lex.stack.stack().left.clone(), None),
-            )
+            Lex::from_stack(StackHyphenated::new(lex.stack.stack().left.clone(), None))
         })
     }
 }
@@ -122,7 +121,7 @@ impl Source for StackHyphenated {
     }
 
     #[inline(always)]
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme {
         self.iter_lexeme(morph).collect()
     }
 

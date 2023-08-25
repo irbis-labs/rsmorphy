@@ -4,6 +4,7 @@ use crate::analyzer::model::abc::*;
 use crate::analyzer::model::affix::Affix;
 use crate::analyzer::model::affix::AffixKind;
 use crate::analyzer::model::decode::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
@@ -109,7 +110,7 @@ impl Source for StackAffix {
     }
 
     #[inline(always)]
-    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, morph: &MorphAnalyzer) -> Lexeme {
         self.iter_lexeme(morph).collect()
     }
 

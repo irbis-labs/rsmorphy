@@ -4,6 +4,7 @@ pub mod part;
 pub mod stack;
 
 pub mod lex;
+pub mod lexeme;
 pub mod parse_result;
 pub mod parsed;
 pub mod score;

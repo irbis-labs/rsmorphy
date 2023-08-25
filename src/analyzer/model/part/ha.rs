@@ -2,6 +2,7 @@ use std::fmt;
 
 use crate::analyzer::model::abc::*;
 use crate::analyzer::model::decode::*;
+use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
@@ -69,7 +70,7 @@ impl Source for HyphenAdverb {
     }
 
     #[inline(always)]
-    fn get_lexeme(&self, _morph: &MorphAnalyzer) -> Vec<Lex> {
+    fn get_lexeme(&self, _morph: &MorphAnalyzer) -> Lexeme {
         self.iter_lexeme().collect()
     }
 
@@ -80,9 +81,7 @@ impl Source for HyphenAdverb {
 }
 
 impl HyphenAdverb {
-    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
-        &'s self,
-    ) -> impl Iterator<Item = Lex> + 'i {
+    pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(&'s self) -> impl Iterator<Item = Lex> + 'i {
         (0..1).map(move |_| Lex::from_stack(StackSource::from(self.clone())))
     }
 }
