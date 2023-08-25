@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use boolinator::Boolinator;
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 use flate2::read::GzDecoder;
@@ -54,7 +53,10 @@ impl Dictionary {
 
     /// Gets a value from a given index if a given index is related to the end of a key.
     pub fn try_value(&self, index: u32) -> Option<u32> {
-        self.has_value(index).as_some_from(|| self.value(index))
+        match self.has_value(index) {
+            true => Some(self.value(index)),
+            false => None,
+        }
     }
 
     /// Exact matching.

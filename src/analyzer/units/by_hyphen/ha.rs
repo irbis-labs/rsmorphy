@@ -54,12 +54,14 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .into_iter()
             .filter(|parsed| {
                 let tag = parsed.lex.get_tag(morph);
-                match (tag.pos, tag.number, tag.case) {
-                    (Some(PartOfSpeech::AdjectiveFull), Some(Number::Sing), Some(Case::Datv)) => {
-                        true
-                    }
-                    _ => false,
-                }
+                matches!(
+                    (tag.pos, tag.number, tag.case),
+                    (
+                        Some(PartOfSpeech::AdjectiveFull),
+                        Some(Number::Sing),
+                        Some(Case::Datv)
+                    )
+                )
             })
             .for_each(|parsed: Parsed| {
                 let word = WordStruct::new(ctx.word_lower(), parsed.lex.is_known());

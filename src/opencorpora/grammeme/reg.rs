@@ -1,4 +1,3 @@
-use boolinator::Boolinator;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
@@ -19,7 +18,10 @@ impl GrammemeReg {
         assert_eq!(array.len(), 4, "Expected 4 elements in array");
         let mut array = array.into_iter().map(|v| match v {
             Value::Null => None,
-            Value::String(string) => (!string.is_empty()).as_some(string),
+            Value::String(string) => match string.as_str() {
+                "" => None,
+                _ => Some(string),
+            },
             wrong_value => panic!(
                 "Expected null or non-empty string, found: {:?}",
                 wrong_value

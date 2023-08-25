@@ -19,11 +19,9 @@ travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 [features]
 default = []
-profile = []
 
 # Tracing features.
 # Normally, you don't need them.
-
 trace_all = [
     "trace_analyzer",
     "trace_dawg",
@@ -37,7 +35,6 @@ trace_opencorpora = []
 [dependencies]
 base64 = "0.21"
 bincode = "1.2"
-boolinator = "2.4"
 byteorder = "1.3"
 derive_more = { version = "1.0.0-beta.3", features = ["from"] }
 env_logger = "0.10"
