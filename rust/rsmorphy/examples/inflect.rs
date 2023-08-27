@@ -19,6 +19,9 @@ fn main() {
     let bread = Lex::from_id("ru:d:хлеб,878").unwrap();
     let fish = Lex::from_id("ru:d:рыба,35").unwrap();
 
+    let two = Lex::from_id("ru:d:два,4e0").unwrap();
+    let five = Lex::from_id("ru:d:пять,379").unwrap();
+
     let grms = &morph_ru.dict().grammemes;
     let ablt_set = grms.find_gram("ablt").unwrap().as_set();
 
@@ -51,13 +54,17 @@ fn main() {
     );
     println!(
         " ::: накормил {} {} и {} {}",
-        2,
+        two
+            .inflect(&morph_ru, ablt_set)
+            .unwrap(),
         bread
             .inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 2)
             .unwrap(),
-        5,
+        five
+            .inflect(&morph_ru, ablt_set)
+            .unwrap(),
         fish.inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 5)

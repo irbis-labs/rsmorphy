@@ -24,18 +24,18 @@ impl Paradigms {
         // exactly. So we just reserve space for at least 1 entry per paradigm to reduce
         // reallocations.
         let mut data = Vec::with_capacity(paradigms_count as usize);
-        let mut buf = Vec::new();
+        let mut buf = Vec::with_capacity(1024);
 
         idx.push(0);
 
-        for para_num in 0..paradigms_count {
+        for _para_num in 0..paradigms_count {
             debug_assert!(buf.is_empty(), "Buffer must be empty");
 
             let paradigm_len = reader.read_u16::<LittleEndian>().unwrap() as usize;
             #[cfg(feature = "trace_opencorpora")]
             log::trace!(
                 "Paradigm number: {}, paradigm length: {}",
-                para_num + 1,
+                _para_num + 1,
                 paradigm_len
             );
 
