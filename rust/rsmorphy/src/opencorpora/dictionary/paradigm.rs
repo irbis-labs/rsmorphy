@@ -16,6 +16,8 @@ pub struct Paradigms {
 impl Paradigms {
     pub fn from_reader<R: Read>(reader: &mut R) -> Self {
         let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
+        #[cfg(feature = "trace_opencorpora")]
+        log::trace!("Paradigms count: {}", paradigms_count);
 
         let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
         // Number of entries is greater than paradigms number, but we don't know how much
@@ -26,16 +28,37 @@ impl Paradigms {
 
         idx.push(0);
 
-        for _ in 0..paradigms_count {
-            let paradigm_len = reader.read_u16::<LittleEndian>().unwrap();
+        for para_num in 0..paradigms_count {
+            debug_assert!(buf.is_empty(), "Buffer must be empty");
+
+            let paradigm_len = reader.read_u16::<LittleEndian>().unwrap() as usize;
+            #[cfg(feature = "trace_opencorpora")]
+            log::trace!(
+                "Paradigm number: {}, paradigm length: {}",
+                para_num + 1,
+                paradigm_len
+            );
+
             for _i in 0..paradigm_len {
                 buf.push(reader.read_u16::<LittleEndian>().unwrap())
             }
 
-            assert_eq!(buf.len() % 3, 0, "Wrong paradigm length");
-            let paradigm_len = buf.len() / 3;
-            let (prefix, tag) = buf.split_at(paradigm_len);
-            let (tag, suffix) = tag.split_at(paradigm_len);
+            debug_assert_eq!(buf.len(), paradigm_len, "Wrong number of entries read");
+            debug_assert_eq!(
+                paradigm_len % 3,
+                0,
+                "Paradigm length must be divisible by 3"
+            );
+
+            let paradigm_count = paradigm_len / 3;
+            let (suffix, tag) = buf.split_at(paradigm_count);
+            let (tag, prefix) = tag.split_at(paradigm_count);
+
+            debug_assert_eq!(prefix.len(), paradigm_count);
+            debug_assert_eq!(tag.len(), paradigm_count);
+            debug_assert_eq!(suffix.len(), paradigm_count);
+
+            let old_len = data.len();
 
             #[inline(always)]
             fn iter(arr: &[u16]) -> impl Iterator<Item = u16> + '_ {
@@ -44,6 +67,12 @@ impl Paradigms {
             data.extend(iter(prefix).zip(iter(tag)).zip(iter(suffix)).map(
                 |((prefix_id, tag_id), suffix_id)| ParadigmEntry::new(prefix_id, tag_id, suffix_id),
             ));
+
+            debug_assert_eq!(
+                data.len() - old_len,
+                paradigm_count,
+                "Wrong number of entries written"
+            );
 
             idx.push(data.len() as u32);
             buf.clear();
