@@ -6,6 +6,8 @@ pub mod util;
 //use util::print_row_lex;
 
 fn main() {
+    let _ = env_logger::init();
+
     let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
 
     //let lex = Lex::from_id(&morph_ru, "ru:d:стали,388,4").unwrap();
@@ -17,7 +19,8 @@ fn main() {
     let bread = Lex::from_id("ru:d:хлеб,878").unwrap();
     let fish = Lex::from_id("ru:d:рыба,35").unwrap();
 
-    let ablt_set = GrammemeSet::parse_fmt_int("ablt");
+    let grms = &morph_ru.dict().grammemes;
+    let ablt_set = grms.find_gram("ablt").unwrap().as_set();
 
     println!(
         " ::: {} {} + {} {} = {} {}",
@@ -41,7 +44,7 @@ fn main() {
         " ::: {} {} сыт не будешь",
         1,
         apple
-            .inflect(&morph_ru, &ablt_set)
+            .inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 1)
             .unwrap(),
@@ -50,12 +53,12 @@ fn main() {
         " ::: накормил {} {} и {} {}",
         2,
         bread
-            .inflect(&morph_ru, &ablt_set)
+            .inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 2)
             .unwrap(),
         5,
-        fish.inflect(&morph_ru, &ablt_set)
+        fish.inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 5)
             .unwrap(),

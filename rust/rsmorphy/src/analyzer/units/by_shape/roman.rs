@@ -5,19 +5,19 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
 use crate::analyzer::model::Shaped;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::gram::GramRegistry;
+use crate::opencorpora::tag::TagReg;
 use crate::shapes::is_roman_number;
 
 #[derive(Debug, Clone)]
 pub struct RomanAnalyzer {
-    pub tag: OpencorporaTagReg,
+    pub tag: TagReg,
 }
 
-impl Default for RomanAnalyzer {
-    fn default() -> Self {
-        RomanAnalyzer {
-            tag: OpencorporaTagReg::from_fmt_int("ROMN"),
-        }
+impl RomanAnalyzer {
+    pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
+        let tag = TagReg::from_fmt_int(grammemes, "ROMN");
+        RomanAnalyzer { tag }
     }
 }
 

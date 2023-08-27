@@ -1,3 +1,10 @@
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Transitivity {
     /// переходный
@@ -6,38 +13,28 @@ pub enum Transitivity {
     Intr,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         tran
-        |intr
-    )
-"
-);
-
 impl Transitivity {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Transitivity::*;
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "tran" => Some(Tran),
-                "intr" => Some(Intr),
-                _ => None,
-            })
+
+        Some(match id.as_str() {
+            "tran" => Tran,
+            "intr" => Intr,
+            _ => None?,
+        })
+    }
+
+    pub fn gram_int(self) -> &'static str {
+        match self {
+            Transitivity::Tran => "tran",
+            Transitivity::Intr => "intr",
+        }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Transitivity::*;
-
         match self {
-            Tran => "переходный",
-            Intr => "непереходный",
+            Transitivity::Tran => "переходный",
+            Transitivity::Intr => "непереходный",
         }
     }
 }

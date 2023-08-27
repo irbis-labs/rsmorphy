@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::fmt;
 use std::fs::File;
 use std::iter::FromIterator;
@@ -10,8 +9,6 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use inlinable_string::InlinableString;
-use lazy_static::lazy_static;
-use maplit::hashset;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json;
@@ -26,12 +23,13 @@ use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::dictionary::ParadigmIndex;
 use crate::opencorpora::dictionary::Paradigms;
 use crate::opencorpora::dictionary::*;
-use crate::opencorpora::grammeme::Grammeme;
-use crate::opencorpora::grammeme::GrammemeReg;
+use crate::opencorpora::gram::Gram;
+use crate::opencorpora::gram::GramRegistry;
+use crate::opencorpora::gram::GramRow;
+use crate::opencorpora::gram::GramSet;
 use crate::opencorpora::kind::Case;
-use crate::opencorpora::tag::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 use crate::opencorpora::util::SimpleTraceProfiler;
-use crate::GrammemeSet;
 
 pub type WordsDawg = CompletionDawg<HH>;
 pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
@@ -40,8 +38,8 @@ pub type ConditionalProbDistDawg = CompletionDawg<HH>;
 /// Open Corpora dictionary wrapper class.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Dictionary {
-    pub grammemes: HashMap<Grammeme, (GrammemeReg, GrammemeMeta)>,
-    pub gramtab: Vec<OpencorporaTagReg>,
+    pub grammemes: GramRegistry,
+    pub gramtab: Vec<TagReg>,
     pub suffixes: Vec<DefaultAtom>,
     pub paradigms: Paradigms,
     pub words: WordsDawg,
@@ -52,6 +50,7 @@ pub struct Dictionary {
     pub paradigm_prefixes_rev: Vec<(u16, DefaultAtom)>,
     pub max_suffix_length: usize,
     pub char_substitutes: BTreeMap<String, String>,
+    pub rare_cases: [(Gram, Gram); 6],
 }
 
 impl Dictionary {
@@ -124,6 +123,18 @@ impl Dictionary {
         let suffixes = load.json("suffixes.json.gz").expect("array of strings");
         profiler.waypoint("suffixes");
 
+        let grammemes: Vec<GramRow> = load.json("grammemes.json.gz").expect("array of arrays");
+        profiler.waypoint("grammemes");
+
+        let grammemes = {
+            let mut builder = GramRegistry::builder();
+            for row in grammemes {
+                builder.add_grammeme(row, false).unwrap();
+            }
+            builder.finish().unwrap()
+        };
+        profiler.waypoint("grammemes'");
+
         let gramtab: Vec<String> = load
             .json("gramtab-opencorpora-int.json.gz")
             .expect("array of strings");
@@ -131,68 +142,9 @@ impl Dictionary {
         // TODO opencorpora-ext
         let gramtab = gramtab
             .into_iter()
-            .map(OpencorporaTagReg::from_fmt_int)
+            .map(|gram_int| TagReg::from_fmt_int(&grammemes, gram_int))
             .collect();
         profiler.waypoint("gramtab'");
-
-        let grammemes: Vec<Vec<Value>> = load.json("grammemes.json.gz").expect("array of `Value`s");
-        profiler.waypoint("grammemes");
-
-        let grammemes = {
-            let grammemes = grammemes
-                .into_iter()
-                .map(GrammemeReg::from_json)
-                .enumerate()
-                .map(|(index, gr)| {
-                    let gr_meta = GrammemeMeta {
-                        index,
-                        ..GrammemeMeta::default()
-                    };
-                    (gr.name.clone(), (gr, gr_meta))
-                });
-            let mut grammemes = HashMap::from_iter(grammemes);
-
-            let gram_regs: Vec<GrammemeReg> = grammemes.values().map(|v| v.0.clone()).collect();
-            for gram_reg in &gram_regs {
-                if let Some(ref parent) = gram_reg.parent {
-                    grammemes
-                        .get_mut(parent)
-                        .expect("Grammeme parent")
-                        .1
-                        .children
-                        .insert(gram_reg.name.clone());
-                }
-            }
-
-            // Extra incompatible:   'plur': set(['GNdr'])
-            // {u'plur': set([u'GNdr', u'masc', u'femn', u'neut'])}
-            let plur = Grammeme::new("plur");
-            let gndr = Grammeme::new("GNdr");
-            let mut extra_incompatible: HashSet<Grammeme> = hashset! { gndr.clone() };
-            extra_incompatible.extend(grammemes[&gndr].1.children.iter().cloned());
-
-            for gram_reg in &gram_regs {
-                let (_grammeme, grammeme_meta) = grammemes.get_mut(&gram_reg.name).unwrap();
-                if gram_reg.name == plur {
-                    grammeme_meta.incompatible.extend(
-                        extra_incompatible
-                            .iter()
-                            .filter(|&v| *v != gram_reg.name)
-                            .cloned(),
-                    );
-                }
-                grammeme_meta.incompatible.extend(
-                    grammeme_meta
-                        .children
-                        .iter()
-                        .filter(|&v| *v != gram_reg.name)
-                        .cloned(),
-                );
-            }
-
-            grammemes
-        };
-        profiler.waypoint("grammemes'");
 
         let paradigms = Paradigms::from_reader(&mut load.reader("paradigms.array.gz"));
         profiler.waypoint("paradigms");
@@ -217,6 +169,25 @@ impl Dictionary {
         // TODO load char_substitutes
         let char_substitutes = maplit::btreemap! {"е".into() => "ё".into()};
 
+        let rare_cases = {
+            use Case::*;
+
+            let case_gram = |case: Case| -> Gram {
+                // SAFETY: All cases should be in the registry.
+                grammemes.find_gram(case.gram_int()).unwrap()
+            };
+
+            [
+                (case_gram(Gen1), case_gram(Gent)),
+                (case_gram(Gen2), case_gram(Gent)),
+                // (case_gram(Acc1), case_gram(Accs)),
+                (case_gram(Acc2), case_gram(Accs)),
+                (case_gram(Loc1), case_gram(Loct)),
+                (case_gram(Loc2), case_gram(Loct)),
+                (case_gram(Voct), case_gram(Nomn)),
+            ]
+        };
+
         Dictionary {
             grammemes,
             gramtab,
@@ -230,6 +201,7 @@ impl Dictionary {
             paradigm_prefixes_rev,
             max_suffix_length,
             char_substitutes,
+            rare_cases,
         }
     }
 
@@ -244,7 +216,7 @@ impl Dictionary {
 
     /// Return tag as a string
     #[inline]
-    pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &OpencorporaTagReg {
+    pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &TagReg {
         let para = self.para().get(id).expect("paradigm");
         &self.gramtab[para[idx.index()].tag_id() as usize]
     }
@@ -253,7 +225,7 @@ impl Dictionary {
     ///     (prefix, tag, suffix)
     /// tuples representing the paradigm.
     #[inline]
-    pub fn build_paradigm_info(&self, id: ParadigmId) -> Vec<(&str, &OpencorporaTagReg, &str)> {
+    pub fn build_paradigm_info(&self, id: ParadigmId) -> Vec<(&str, &TagReg, &str)> {
         Vec::from_iter(self.iter_paradigm_info(id))
     }
 
@@ -261,7 +233,7 @@ impl Dictionary {
     pub fn iter_paradigm_info<'a: 'i, 'i>(
         &'a self,
         id: ParadigmId,
-    ) -> impl Iterator<Item = (&'a str, &'a OpencorporaTagReg, &'a str)> + 'i {
+    ) -> impl Iterator<Item = (&'a str, &'a TagReg, &'a str)> + 'i {
         self.para()
             .get(id)
             .expect("paradigm")
@@ -273,7 +245,7 @@ impl Dictionary {
     ///     (prefix, tag, suffix)
     /// tuples representing the paradigm entry.
     #[inline]
-    pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &OpencorporaTagReg, &str) {
+    pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &TagReg, &str) {
         (
             &self.paradigm_prefixes[entry.prefix_id() as usize],
             &self.gramtab[entry.tag_id() as usize],
@@ -324,34 +296,21 @@ impl Dictionary {
         }
     }
 
-    pub fn update_grammemes(&self, grammemes: &mut GrammemeSet, required: &GrammemeSet) {
-        grammemes.extend(required.iter().cloned());
-        for grammeme in required.iter() {
-            let (_reg, meta) = self.grammemes.get(grammeme).unwrap();
-            for g in &meta.incompatible {
-                grammemes.remove(g);
-            }
-        }
+    pub fn update_grammemes(&self, grammemes: GramSet, required: GramSet) -> GramSet {
+        required
+            .iter()
+            .fold(grammemes | required, |grammemes, gram| {
+                grammemes - self.grammemes.get_reg_by_gram(gram).incompatible
+            })
     }
 
-    pub fn fix_rare_cases(&self, grammemes: &mut GrammemeSet) {
-        // TBD: move to Dictionary itself?
-        lazy_static! {
-            static ref RARE_CASES: [(Grammeme, Grammeme); 6] = [
-                (Case::Gen1.to_grammeme(), Case::Gent.to_grammeme()),
-                (Case::Gen2.to_grammeme(), Case::Gent.to_grammeme()),
-                // (Case::Acc1.to_grammeme(), Case::Accs.to_grammeme()),
-                (Case::Acc2.to_grammeme(), Case::Accs.to_grammeme()),
-                (Case::Loc1.to_grammeme(), Case::Loct.to_grammeme()),
-                (Case::Loc2.to_grammeme(), Case::Loct.to_grammeme()),
-                (Case::Voct.to_grammeme(), Case::Nomn.to_grammeme()),
-            ];
-        }
-
-        for (from, to) in RARE_CASES.iter() {
-            if grammemes.remove(&from) {
-                grammemes.insert(to.clone());
+    pub fn fix_rare_cases(&self, mut grammemes: GramSet) -> GramSet {
+        for (from, to) in self.rare_cases {
+            if grammemes.contains(from) {
+                grammemes.remove(from);
+                grammemes.insert(to);
             }
         }
+        grammemes
     }
 }

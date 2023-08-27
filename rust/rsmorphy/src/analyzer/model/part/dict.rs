@@ -11,7 +11,7 @@ use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmEntry;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::dictionary::ParadigmIndex;
-use crate::opencorpora::tag::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DictionaryWord {
@@ -104,7 +104,7 @@ impl Source for DictionaryWord {
     }
 
     #[inline(always)]
-    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
+    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m TagReg {
         morph.dict().get_tag(self.para_id, self.idx)
     }
 

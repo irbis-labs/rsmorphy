@@ -10,7 +10,7 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::tag::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Unknown {
@@ -61,7 +61,7 @@ impl Source for Unknown {
     }
 
     #[inline(always)]
-    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
+    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a TagReg {
         &morph.units().unknown.tag
     }
 

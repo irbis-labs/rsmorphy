@@ -1,4 +1,7 @@
-pub mod reg;
-pub mod tag;
+mod error;
+mod reg;
+mod set;
 
-pub use self::reg::OpencorporaTagReg;
+pub use self::error::EitherError;
+pub use self::reg::TagReg;
+pub use self::set::TagSet;

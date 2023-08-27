@@ -1,5 +1,11 @@
-use self::PartOfSpeech as POS;
+use serde::Deserialize;
+use serde::Serialize;
 
+use self::PartOfSpeech as POS;
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum PartOfSpeech {
     /// имя существительное
@@ -38,59 +44,52 @@ pub enum PartOfSpeech {
     Interjection,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         NOUN
-        |ADJF
-        |ADJS
-        |COMP
-        |VERB
-        |INFN
-        |PRTF
-        |PRTS
-        |GRND
-        |NUMR
-        |ADVB
-        |NPRO
-        |PRED
-        |PREP
-        |CONJ
-        |PRCL
-        |INTJ
-    )
-"
-);
-
 impl PartOfSpeech {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "NOUN" => Some(POS::Noun),
-                "ADJF" => Some(POS::AdjectiveFull),
-                "ADJS" => Some(POS::AdjectiveShort),
-                "COMP" => Some(POS::Comparative),
-                "VERB" => Some(POS::Verb),
-                "INFN" => Some(POS::Infinitive),
-                "PRTF" => Some(POS::ParticipleFull),
-                "PRTS" => Some(POS::ParticipleShort),
-                "GRND" => Some(POS::Gerund),
-                "NUMR" => Some(POS::Number),
-                "ADVB" => Some(POS::Adverb),
-                "NPRO" => Some(POS::Pronoun),
-                "PRED" => Some(POS::Predicative),
-                "PREP" => Some(POS::Preposition),
-                "CONJ" => Some(POS::Conjunction),
-                "PRCL" => Some(POS::Particle),
-                "INTJ" => Some(POS::Interjection),
-                _ => None,
-            })
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
+        use self::PartOfSpeech::*;
+
+        Some(match id.as_str() {
+            "NOUN" => Noun,
+            "ADJF" => AdjectiveFull,
+            "ADJS" => AdjectiveShort,
+            "COMP" => Comparative,
+            "VERB" => Verb,
+            "INFN" => Infinitive,
+            "PRTF" => ParticipleFull,
+            "PRTS" => ParticipleShort,
+            "GRND" => Gerund,
+            "NUMR" => Number,
+            "ADVB" => Adverb,
+            "NPRO" => Pronoun,
+            "PRED" => Predicative,
+            "PREP" => Preposition,
+            "CONJ" => Conjunction,
+            "PRCL" => Particle,
+            "INTJ" => Interjection,
+            _ => None?,
+        })
+    }
+
+    pub fn gram_int(self) -> &'static str {
+        match self {
+            POS::Noun => "NOUN",
+            POS::AdjectiveFull => "ADJF",
+            POS::AdjectiveShort => "ADJS",
+            POS::Comparative => "COMP",
+            POS::Verb => "VERB",
+            POS::Infinitive => "INFN",
+            POS::ParticipleFull => "PRTF",
+            POS::ParticipleShort => "PRTS",
+            POS::Gerund => "GRND",
+            POS::Number => "NUMR",
+            POS::Adverb => "ADVB",
+            POS::Pronoun => "NPRO",
+            POS::Predicative => "PRED",
+            POS::Preposition => "PREP",
+            POS::Conjunction => "CONJ",
+            POS::Particle => "PRCL",
+            POS::Interjection => "INTJ",
+        }
     }
 
     pub fn is_productive(self) -> bool {
@@ -137,12 +136,11 @@ mod tests {
     fn try_from_str() {
         assert_eq!(
             Some(PartOfSpeech::Noun),
-            PartOfSpeech::try_from_fmt_int("NOUN")
+            PartOfSpeech::from_gram_id(GramId::from_str("NOUN").unwrap())
         );
         assert_eq!(
-            Some(PartOfSpeech::Noun),
-            PartOfSpeech::try_from_fmt_int("NOUN,anim,masc,Fixd,Abbr sing,nomn")
+            None,
+            PartOfSpeech::from_gram_id(GramId::from_str("UNKN").unwrap())
         );
-        assert_eq!(None, PartOfSpeech::try_from_fmt_int("UNKN"));
     }
 }

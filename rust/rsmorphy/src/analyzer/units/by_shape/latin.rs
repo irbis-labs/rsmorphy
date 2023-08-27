@@ -5,7 +5,8 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
 use crate::analyzer::model::Shaped;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::gram::GramRegistry;
+use crate::opencorpora::tag::TagReg;
 use crate::shapes::is_latin;
 
 /// This analyzer marks latin words with "LATN" tag.
@@ -14,14 +15,13 @@ use crate::shapes::is_latin;
 
 #[derive(Debug, Clone)]
 pub struct LatinAnalyzer {
-    pub tag: OpencorporaTagReg,
+    pub tag: TagReg,
 }
 
-impl Default for LatinAnalyzer {
-    fn default() -> Self {
-        LatinAnalyzer {
-            tag: OpencorporaTagReg::from_fmt_int("LATN"),
-        }
+impl LatinAnalyzer {
+    pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
+        let tag = TagReg::from_fmt_int(grammemes, "LATN");
+        LatinAnalyzer { tag }
     }
 }
 

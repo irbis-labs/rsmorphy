@@ -1,7 +1,7 @@
 pub use crate::analyzer::model::abc::*;
 pub use crate::analyzer::unit::*;
-pub use crate::Grammeme;
-pub use crate::GrammemeSet;
+pub use crate::Gram;
+pub use crate::GramSet;
 pub use crate::Lex;
 pub use crate::MorphAnalyzer;
 pub use crate::ParseResult;

@@ -1,3 +1,10 @@
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Tense {
     /// настоящее время
@@ -8,41 +15,31 @@ pub enum Tense {
     Futr,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         pres
-        |past
-        |futr
-    )
-"
-);
-
 impl Tense {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Tense::*;
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "pres" => Some(Pres),
-                "past" => Some(Past),
-                "futr" => Some(Futr),
-                _ => None,
-            })
+
+        Some(match id.as_str() {
+            "pres" => Pres,
+            "past" => Past,
+            "futr" => Futr,
+            _ => None?,
+        })
+    }
+
+    pub fn gram_int(self) -> &'static str {
+        match self {
+            Tense::Pres => "pres",
+            Tense::Past => "past",
+            Tense::Futr => "futr",
+        }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Tense::*;
-
         match self {
-            Pres => "настоящее время",
-            Past => "прошедшее время",
-            Futr => "будущее время",
+            Tense::Pres => "настоящее время",
+            Tense::Past => "прошедшее время",
+            Tense::Futr => "будущее время",
         }
     }
 }

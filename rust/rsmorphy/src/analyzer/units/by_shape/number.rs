@@ -7,7 +7,8 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
 use crate::analyzer::model::Shaped;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::gram::GramRegistry;
+use crate::opencorpora::tag::TagReg;
 
 /// This analyzer marks integer numbers with "NUMB,int" or "NUMB,real" tags.
 ///
@@ -19,15 +20,15 @@ use crate::opencorpora::OpencorporaTagReg;
 
 #[derive(Debug, Clone)]
 pub struct NumberAnalyzer {
-    pub tag_int: OpencorporaTagReg,
-    pub tag_real: OpencorporaTagReg,
+    pub tag_int: TagReg,
+    pub tag_real: TagReg,
 }
 
-impl Default for NumberAnalyzer {
-    fn default() -> Self {
+impl NumberAnalyzer {
+    pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
         NumberAnalyzer {
-            tag_int: OpencorporaTagReg::from_fmt_int("NUMB,intg"),
-            tag_real: OpencorporaTagReg::from_fmt_int("NUMB,real"),
+            tag_int: TagReg::from_fmt_int(grammemes, "NUMB,intg"),
+            tag_real: TagReg::from_fmt_int(grammemes, "NUMB,real"),
         }
     }
 }

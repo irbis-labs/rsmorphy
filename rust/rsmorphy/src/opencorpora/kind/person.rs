@@ -1,3 +1,10 @@
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Person {
     /// 1 лицо
@@ -8,41 +15,31 @@ pub enum Person {
     Per3,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         1per
-        |2per
-        |3per
-    )
-"
-);
-
 impl Person {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Person::*;
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "1per" => Some(Per1),
-                "2per" => Some(Per2),
-                "3per" => Some(Per3),
-                _ => None,
-            })
+
+        Some(match id.as_str() {
+            "1per" => Per1,
+            "2per" => Per2,
+            "3per" => Per3,
+            _ => None?,
+        })
+    }
+
+    pub fn gram_int(self) -> &'static str {
+        match self {
+            Person::Per1 => "1per",
+            Person::Per2 => "2per",
+            Person::Per3 => "3per",
+        }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Person::*;
-
         match self {
-            Per1 => "1 лицо",
-            Per2 => "2 лицо",
-            Per3 => "3 лицо",
+            Person::Per1 => "1 лицо",
+            Person::Per2 => "2 лицо",
+            Person::Per3 => "3 лицо",
         }
     }
 }

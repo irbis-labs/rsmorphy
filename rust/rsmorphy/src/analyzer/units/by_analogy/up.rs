@@ -11,6 +11,7 @@ use crate::analyzer::util::word_splits;
 
 const MIN_REMINDER_LENGTH: usize = 3;
 const MAX_PREFIX_LENGTH: usize = 5;
+const ESTIMATE_DECAY: f64 = 0.5;
 
 /// Parses the word by parsing only the word suffix
 /// (with restrictions on prefix & suffix lengths).
@@ -21,11 +22,10 @@ pub struct UnknownPrefixAnalyzer {
     estimate_decay: f64,
 }
 
-impl Default for UnknownPrefixAnalyzer {
-    fn default() -> Self {
-        UnknownPrefixAnalyzer {
-            estimate_decay: 0.5,
-        }
+impl UnknownPrefixAnalyzer {
+    pub(in crate::analyzer) fn new() -> Self {
+        let estimate_decay = ESTIMATE_DECAY;
+        UnknownPrefixAnalyzer { estimate_decay }
     }
 }
 
@@ -46,8 +46,8 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
             morph.units().dictionary.parse(&mut subresult);
 
             'iter_parses: for parsed in subresult.finish() {
-                let tag = parsed.lex.get_tag(morph);
-                if !tag.is_productive() {
+                let tag_reg = parsed.lex.get_tag(morph);
+                if !tag_reg.tags.is_productive() {
                     continue 'iter_parses;
                 }
                 let stack = parsed.lex.stack.stack.left.stack;

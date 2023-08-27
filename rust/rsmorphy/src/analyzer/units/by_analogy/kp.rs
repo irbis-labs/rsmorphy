@@ -9,6 +9,9 @@ use crate::analyzer::model::Parsed;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 
+const MIN_REMINDER_LENGTH: usize = 3;
+const ESTIMATE_DECAY: f64 = 0.75;
+
 /// Parse the word by checking if it starts with a known prefix
 /// and parsing the reminder.
 ///
@@ -20,11 +23,11 @@ pub struct KnownPrefixAnalyzer {
     estimate_decay: f64,
 }
 
-impl Default for KnownPrefixAnalyzer {
-    fn default() -> Self {
+impl KnownPrefixAnalyzer {
+    pub(in crate::analyzer) fn new() -> Self {
         KnownPrefixAnalyzer {
-            min_reminder_length: 3,
-            estimate_decay: 0.75,
+            min_reminder_length: MIN_REMINDER_LENGTH,
+            estimate_decay: ESTIMATE_DECAY,
         }
     }
 }
@@ -51,8 +54,8 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
             #[cfg(feature = "trace_analyzer")]
             log::trace!("prefix = {prefix:?}, unprefixed_word = {unprefixed_word:?}");
             'iter_parses: for parsed in morph.parse(unprefixed_word) {
-                let tag = parsed.lex.get_tag(morph);
-                if !tag.is_productive() {
+                let tag_reg = parsed.lex.get_tag(morph);
+                if !tag_reg.tags.is_productive() {
                     continue 'iter_parses;
                 }
                 let StackParticle {

@@ -1,5 +1,10 @@
-use crate::opencorpora::Grammeme;
+use serde::Deserialize;
+use serde::Serialize;
 
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 /// Падеж
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Case {
@@ -29,87 +34,58 @@ pub enum Case {
     Loc2,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         nomn
-        |gent
-        |datv
-        |accs
-        |ablt
-        |loct
-        |voct
-        |gen1
-        |gen2
-        |acc2
-        |loc1
-        |loc2
-    )
-"
-);
-
 impl Case {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Case::*;
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "nomn" => Some(Nomn),
-                "gent" => Some(Gent),
-                "datv" => Some(Datv),
-                "accs" => Some(Accs),
-                "ablt" => Some(Ablt),
-                "loct" => Some(Loct),
-                "voct" => Some(Voct),
-                "gen1" => Some(Gen1),
-                "gen2" => Some(Gen2),
-                "acc2" => Some(Acc2),
-                "loc1" => Some(Loc1),
-                "loc2" => Some(Loc2),
-                _ => None,
-            })
+
+        Some(match id.as_str() {
+            "nomn" => Nomn,
+            "gent" => Gent,
+            "datv" => Datv,
+            "accs" => Accs,
+            "ablt" => Ablt,
+            "loct" => Loct,
+            "voct" => Voct,
+            "gen1" => Gen1,
+            "gen2" => Gen2,
+            "acc2" => Acc2,
+            "loc1" => Loc1,
+            "loc2" => Loc2,
+            _ => None?,
+        })
     }
 
-    pub fn to_grammeme(self) -> Grammeme {
-        use self::Case::*;
-
+    pub fn gram_int(self) -> &'static str {
         match self {
-            Nomn => Grammeme::new("nomn"),
-            Gent => Grammeme::new("gent"),
-            Datv => Grammeme::new("datv"),
-            Accs => Grammeme::new("accs"),
-            Ablt => Grammeme::new("ablt"),
-            Loct => Grammeme::new("loct"),
-            Voct => Grammeme::new("voct"),
-            Gen1 => Grammeme::new("gen1"),
-            Gen2 => Grammeme::new("gen2"),
-            Acc2 => Grammeme::new("acc2"),
-            Loc1 => Grammeme::new("loc1"),
-            Loc2 => Grammeme::new("loc2"),
+            Case::Nomn => "nomn",
+            Case::Gent => "gent",
+            Case::Datv => "datv",
+            Case::Accs => "accs",
+            Case::Ablt => "ablt",
+            Case::Loct => "loct",
+            Case::Voct => "voct",
+            Case::Gen1 => "gen1",
+            Case::Gen2 => "gen2",
+            Case::Acc2 => "acc2",
+            Case::Loc1 => "loc1",
+            Case::Loc2 => "loc2",
         }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Case::*;
-
         match self {
-            Nomn => "именительный падеж",
-            Gent => "родительный падеж",
-            Datv => "дательный падеж",
-            Accs => "винительный падеж",
-            Ablt => "творительный падеж",
-            Loct => "предложный падеж",
-            Voct => "звательный падеж",
-            Gen1 => "первый родительный падеж",
-            Gen2 => "второй родительный (частичный) падеж",
-            Acc2 => "второй винительный падеж",
-            Loc1 => "первый предложный падеж",
-            Loc2 => "второй предложный (местный) падеж",
+            Case::Nomn => "именительный падеж",
+            Case::Gent => "родительный падеж",
+            Case::Datv => "дательный падеж",
+            Case::Accs => "винительный падеж",
+            Case::Ablt => "творительный падеж",
+            Case::Loct => "предложный падеж",
+            Case::Voct => "звательный падеж",
+            Case::Gen1 => "первый родительный падеж",
+            Case::Gen2 => "второй родительный (частичный) падеж",
+            Case::Acc2 => "второй винительный падеж",
+            Case::Loc1 => "первый предложный падеж",
+            Case::Loc2 => "второй предложный (местный) падеж",
         }
     }
 }

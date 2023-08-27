@@ -8,8 +8,8 @@ use crate::analyzer::model::Score;
 use crate::analyzer::model::Seen;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::GrammemeSet;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::gram::GramSet;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lex {
@@ -59,55 +59,54 @@ impl Lex {
         }
     }
 
+    /// The number should be passed similar to `(number.abs() % 100) as u8`.
     #[inline(always)]
-    pub fn get_plural(&self, morph: &MorphAnalyzer, num: usize) -> Option<Lex> {
-        self.inflect(morph, &self.get_tag(morph).numeral_agreement_grammemes(num))
+    pub fn get_plural(&self, morph: &MorphAnalyzer, num: u8) -> Option<Lex> {
+        self.inflect(
+            morph,
+            self.get_tag(morph).numeral_agreement_grammemes(morph, num),
+        )
     }
 
-    pub fn inflect(&self, morph: &MorphAnalyzer, required_grammemes: &GrammemeSet) -> Option<Lex> {
+    pub fn inflect(&self, morph: &MorphAnalyzer, mut required: GramSet) -> Option<Lex> {
         let mut possible_results_iter = self
             .iter_lexeme(morph)
-            .filter(|lex| lex.get_tag(morph).grammemes.is_superset(required_grammemes))
+            .filter(|lex| lex.get_tag(morph).grammemes.is_superset(required))
             .peekable();
 
         if possible_results_iter.peek().is_some() {
-            return self.complete_inflect(morph, required_grammemes, &mut possible_results_iter);
+            return self.complete_inflect(morph, required, &mut possible_results_iter);
         }
 
-        let mut required_grammemes = required_grammemes.clone();
-        morph.dict().fix_rare_cases(&mut required_grammemes);
+        required = morph.dict().fix_rare_cases(required);
 
-        let mut possible_results_iter = self.iter_lexeme(morph).filter(|lex| {
-            lex.get_tag(morph)
-                .grammemes
-                .is_superset(&required_grammemes)
-        });
+        let mut possible_results_iter = self
+            .iter_lexeme(morph)
+            .filter(|lex| lex.get_tag(morph).grammemes.is_superset(required));
 
-        self.complete_inflect(morph, &required_grammemes, &mut possible_results_iter)
+        self.complete_inflect(morph, required, &mut possible_results_iter)
     }
 
     fn complete_inflect(
         &self,
         morph: &MorphAnalyzer,
-        required_grammemes: &GrammemeSet,
+        required: GramSet,
         lexeme_iter: &mut dyn Iterator<Item = Lex>,
     ) -> Option<Lex> {
-        fn similarity(morph: &MorphAnalyzer, grammemes: &GrammemeSet, lex: &Lex) -> i32 {
+        fn similarity(morph: &MorphAnalyzer, grammemes: GramSet, lex: &Lex) -> i32 {
             let tag = lex.get_tag(morph);
-            let intersect_count = grammemes.intersection(&tag.grammemes).count() as i32;
-            let sym_diff_count = grammemes.symmetric_difference(&tag.grammemes).count() as i32;
+            let intersect_count = (grammemes & tag.grammemes).len() as i32;
+            let sym_diff_count = (grammemes ^ tag.grammemes).len() as i32;
             intersect_count * 10 - sym_diff_count
         }
 
-        let mut grammemes = self.get_tag(morph).grammemes.clone();
-        morph
-            .dict()
-            .update_grammemes(&mut grammemes, required_grammemes);
+        let mut grammemes = self.get_tag(morph).grammemes;
+        grammemes = morph.dict().update_grammemes(grammemes, required);
 
         let mut best_result = None;
         let mut best_score = i32::MIN;
         for lex in lexeme_iter {
-            let score = similarity(morph, &grammemes, &lex);
+            let score = similarity(morph, grammemes, &lex);
             if score > best_score {
                 best_result = Some(lex);
                 best_score = score;
@@ -134,7 +133,7 @@ impl Source for Lex {
     }
 
     #[inline(always)]
-    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
+    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m TagReg {
         self.stack.get_tag(morph)
     }
 

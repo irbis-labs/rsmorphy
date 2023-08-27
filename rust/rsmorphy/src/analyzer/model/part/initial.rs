@@ -6,21 +6,16 @@ use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
-use crate::analyzer::units::abbr::initials::LETTERS;
+use crate::analyzer::units::abbr::initial::LETTERS;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::tag::OpencorporaTagReg;
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum InitialsKind {
-    FirstName,
-    Patronym,
-}
+use crate::opencorpora::kind::InitialKind;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Initial {
     pub(in crate::analyzer) letter: &'static str,
-    pub(in crate::analyzer) kind: InitialsKind,
+    pub(in crate::analyzer) kind: InitialKind,
     pub(in crate::analyzer) tag_idx: u8,
 }
 
@@ -30,10 +25,10 @@ impl Initial {
         morph: &'m MorphAnalyzer,
     ) -> impl Iterator<Item = Lex> + 'i {
         let base: u8 = match self.kind {
-            InitialsKind::FirstName => 0,
-            InitialsKind::Patronym => 12,
+            InitialKind::FirstName => 0,
+            InitialKind::Patronym => 12,
         };
-        (0..morph.units().initials.tags.len() / 2).map(move |tag_idx| {
+        (0..morph.units().initial.tags.len() / 2).map(move |tag_idx| {
             let container = Initial {
                 tag_idx: base + tag_idx as u8,
                 ..*self
@@ -48,7 +43,7 @@ impl Initial {
     }
 
     #[inline(always)]
-    pub fn kind(&self) -> InitialsKind {
+    pub fn kind(&self) -> InitialKind {
         self.kind
     }
 }
@@ -70,8 +65,8 @@ impl Source for Initial {
     }
 
     #[inline(always)]
-    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
-        &morph.units().initials.tags[self.tag_idx as usize].0
+    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a TagReg {
+        &morph.units().initial.tags[self.tag_idx as usize].0
     }
 
     #[inline(always)]
@@ -106,8 +101,8 @@ impl MorphySerde for Initial {
             f,
             "i:{kind}{gender}{case},{letter}",
             kind = match self.kind {
-                InitialsKind::FirstName => "n",
-                InitialsKind::Patronym => "p",
+                InitialKind::FirstName => "n",
+                InitialKind::Patronym => "p",
             },
             gender = match (self.tag_idx / 6) % 2 {
                 0 => "m",
@@ -128,8 +123,8 @@ impl MorphySerde for Initial {
         let (s, word) = take_str_until_char_is(follow_str(s, ",")?, ';')?;
         let tag_idx = decode_tag_idx(kind, gender, case)?;
         let kind = match kind {
-            'n' => InitialsKind::FirstName,
-            'p' => InitialsKind::Patronym,
+            'n' => InitialKind::FirstName,
+            'p' => InitialKind::Patronym,
             // FIXME is it proper error?
             _ => Err(DecodeError::UnknownPartType)?,
         };

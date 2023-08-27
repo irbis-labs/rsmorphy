@@ -13,7 +13,6 @@ pub use self::dict::DictionaryWord;
 pub use self::ha::HyphenAdverb;
 pub use self::hyphen::HyphenSeparatedParticle;
 pub use self::initial::Initial;
-pub use self::initial::InitialsKind;
 pub use self::shape::ShapeKind;
 pub use self::shape::Shaped;
 pub use self::unknown::Unknown;

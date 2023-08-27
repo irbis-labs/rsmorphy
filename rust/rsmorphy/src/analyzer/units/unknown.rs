@@ -5,20 +5,20 @@ use crate::analyzer::model::Parsed;
 use crate::analyzer::model::Score;
 use crate::analyzer::model::Unknown;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::gram::GramRegistry;
+use crate::opencorpora::tag::TagReg;
 
 const SCORE: Score = Score::Fake(1.0);
 
 #[derive(Debug, Clone)]
 pub struct UnknownAnalyzer {
-    pub tag: OpencorporaTagReg,
+    pub tag: TagReg,
 }
 
-impl Default for UnknownAnalyzer {
-    fn default() -> Self {
-        UnknownAnalyzer {
-            tag: OpencorporaTagReg::from_fmt_int("UNKN"),
-        }
+impl UnknownAnalyzer {
+    pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
+        let tag = TagReg::from_fmt_int(grammemes, "UNKN");
+        UnknownAnalyzer { tag }
     }
 }
 

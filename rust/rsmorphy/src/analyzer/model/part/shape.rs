@@ -11,7 +11,7 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 const NUMBER_SCORE: Score = Score::Real(1.0);
 const DECAYED_SCORE: Score = Score::Fake(0.9);
@@ -112,7 +112,7 @@ impl Source for Shaped {
     }
 
     #[inline(always)]
-    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
+    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a TagReg {
         let units = morph.units();
         match self.kind {
             SK::Latin => &units.latin.tag,

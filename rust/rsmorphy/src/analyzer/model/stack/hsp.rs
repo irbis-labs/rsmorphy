@@ -11,7 +11,7 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackParticle {
@@ -92,7 +92,7 @@ impl Source for StackParticle {
     }
 
     #[inline(always)]
-    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
+    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m TagReg {
         self.stack.get_tag(morph)
     }
 

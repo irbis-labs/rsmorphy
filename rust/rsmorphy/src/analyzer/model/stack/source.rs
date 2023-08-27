@@ -15,7 +15,7 @@ use crate::analyzer::model::Shaped;
 use crate::analyzer::model::Unknown;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq, From)]
 pub enum StackSource {
@@ -153,7 +153,7 @@ impl Source for StackSource {
         }
     }
 
-    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
+    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m TagReg {
         match *self {
             Dictionary(ref source) => source.get_tag(morph),
             HyphenAdverb(ref source) => source.get_tag(morph),

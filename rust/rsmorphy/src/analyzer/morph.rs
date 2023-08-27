@@ -8,23 +8,6 @@ use crate::analyzer::units::*;
 use crate::estimator::SingleTagProbabilityEstimator;
 use crate::opencorpora::dictionary::Dictionary;
 
-#[derive(Debug, Default, Clone)]
-pub struct Units {
-    pub dictionary: DictionaryAnalyzer,
-    pub initials: InitialsAnalyzer,
-    pub latin: LatinAnalyzer,
-    pub number: NumberAnalyzer,
-    pub roman: RomanAnalyzer,
-    pub punct: PunctuationAnalyzer,
-    pub ha: HyphenAdverbAnalyzer,
-    pub hsp: HyphenSeparatedParticleAnalyzer,
-    pub hword: HyphenatedWordsAnalyzer,
-    pub kp: KnownPrefixAnalyzer,
-    pub ks: KnownSuffixAnalyzer,
-    pub up: UnknownPrefixAnalyzer,
-    pub unknown: UnknownAnalyzer,
-}
-
 #[derive(Debug, Clone)]
 pub struct MorphAnalyzer {
     inner: Arc<Inner>,
@@ -41,7 +24,7 @@ impl MorphAnalyzer {
     /// Creates `MorphAnalyzer` with preloaded dict
     pub fn new(dict: Dictionary) -> Self {
         let estimator = SingleTagProbabilityEstimator {};
-        let units = Units::default();
+        let units = Units::new(&dict.grammemes);
         let inner = Arc::new(Inner {
             dict,
             estimator,
@@ -90,7 +73,7 @@ impl MorphAnalyzer {
             );
 
         look_in!(dictionary);
-        look_in!(initials, stop_if_found);
+        look_in!(initial, stop_if_found);
 
         look_in!(number, stop_if_found);
 

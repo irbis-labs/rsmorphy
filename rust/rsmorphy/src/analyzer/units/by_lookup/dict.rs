@@ -12,8 +12,14 @@ use crate::opencorpora::dictionary::ParadigmIndex;
 
 const DICT_SCORE: Score = Score::Real(1.0);
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct DictionaryAnalyzer {}
+
+impl DictionaryAnalyzer {
+    pub(in crate::analyzer) fn new() -> Self {
+        DictionaryAnalyzer {}
+    }
+}
 
 impl AnalyzerUnit for DictionaryAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {

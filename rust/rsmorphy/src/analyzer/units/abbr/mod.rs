@@ -1,1 +1,1 @@
-pub mod initials;
+pub mod initial;

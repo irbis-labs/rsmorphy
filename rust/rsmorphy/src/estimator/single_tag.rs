@@ -1,14 +1,14 @@
 use std::cmp::Ordering;
 
 use crate::estimator::ProbabilityEstimator;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 use crate::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct SingleTagProbabilityEstimator {}
 
 impl SingleTagProbabilityEstimator {
-    pub fn prob(self, morph: &MorphAnalyzer, word_lower: &str, tag: &OpencorporaTagReg) -> f64 {
+    pub fn prob(self, morph: &MorphAnalyzer, word_lower: &str, tag: &TagReg) -> f64 {
         // FIXME avoid allocation
         let dawg_key = format!("{}:{}", word_lower, tag.fmt_int);
         f64::from(morph.dict().p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1_000_000.0
@@ -66,14 +66,14 @@ impl ProbabilityEstimator for SingleTagProbabilityEstimator {
         morph: &MorphAnalyzer,
         _word: &str,
         word_lower: &str,
-        tags: &mut [OpencorporaTagReg],
+        tags: &mut [TagReg],
     ) {
         if tags.is_empty() {
             return;
         }
 
         // FIXME avoid double probability calculation.
-        tags.sort_by(|t1: &OpencorporaTagReg, t2: &OpencorporaTagReg| {
+        tags.sort_by(|t1: &TagReg, t2: &TagReg| {
             self.prob(morph, word_lower, t2)
                 .partial_cmp(&self.prob(morph, word_lower, t1))
                 .unwrap_or(Ordering::Equal)

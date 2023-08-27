@@ -8,8 +8,14 @@ use crate::analyzer::unit::AnalyzerUnit;
 /// * интернет-магазин -> "интернет-" + магазин
 /// * человек-гора -> человек + гора
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct HyphenatedWordsAnalyzer {}
+
+impl HyphenatedWordsAnalyzer {
+    pub(in crate::analyzer) fn new() -> Self {
+        HyphenatedWordsAnalyzer {}
+    }
+}
 
 impl AnalyzerUnit for HyphenatedWordsAnalyzer {
     fn parse(&self, _ctx: &mut ParseContext) {

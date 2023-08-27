@@ -9,7 +9,7 @@ use crate::analyzer::model::Score;
 use crate::analyzer::model::WordStruct;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::tag::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HyphenAdverb {
@@ -50,7 +50,7 @@ impl Source for HyphenAdverb {
     }
 
     #[inline(always)]
-    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a OpencorporaTagReg {
+    fn get_tag<'a>(&self, morph: &'a MorphAnalyzer) -> &'a TagReg {
         &morph.units().ha.tag
     }
 

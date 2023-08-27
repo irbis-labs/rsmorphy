@@ -8,7 +8,7 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct StackHyphenated {
@@ -86,7 +86,7 @@ impl Source for StackHyphenated {
     }
 
     #[inline(always)]
-    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m OpencorporaTagReg {
+    fn get_tag<'m>(&self, morph: &'m MorphAnalyzer) -> &'m TagReg {
         match self.right {
             None => self.left.get_tag(morph),
             Some(_) => unimplemented!(),

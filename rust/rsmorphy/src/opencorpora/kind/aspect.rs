@@ -1,3 +1,10 @@
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Aspect {
     /// совершенный вид
@@ -6,39 +13,28 @@ pub enum Aspect {
     Impf,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         perf
-        |impf
-    )
-"
-);
-
 impl Aspect {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Aspect::*;
 
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "perf" => Some(Perf),
-                "impf" => Some(Impf),
-                _ => None,
-            })
+        Some(match id.as_str() {
+            "perf" => Perf,
+            "impf" => Impf,
+            _ => None?,
+        })
+    }
+
+    pub fn gram_int(self) -> &'static str {
+        match self {
+            Aspect::Perf => "perf",
+            Aspect::Impf => "impf",
+        }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Aspect::*;
-
         match self {
-            Perf => "совершенный вид",
-            Impf => "несовершенный вид",
+            Aspect::Perf => "совершенный вид",
+            Aspect::Impf => "несовершенный вид",
         }
     }
 }

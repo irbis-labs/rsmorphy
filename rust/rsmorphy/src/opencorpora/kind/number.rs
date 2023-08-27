@@ -1,5 +1,10 @@
-use crate::opencorpora::Grammeme;
+use serde::Deserialize;
+use serde::Serialize;
 
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 /// Число
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Number {
@@ -9,46 +14,28 @@ pub enum Number {
     Plur,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         sing
-        |plur
-    )
-"
-);
-
 impl Number {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Number::*;
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "sing" => Some(Sing),
-                "plur" => Some(Plur),
-                _ => None,
-            })
+
+        Some(match id.as_str() {
+            "sing" => Sing,
+            "plur" => Plur,
+            _ => None?,
+        })
     }
 
-    pub fn to_grammeme(self) -> Grammeme {
-        use self::Number::*;
+    pub fn gram_int(self) -> &'static str {
         match self {
-            Sing => Grammeme::new("sing"),
-            Plur => Grammeme::new("plur"),
+            Number::Sing => "sing",
+            Number::Plur => "plur",
         }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Number::*;
-
         match self {
-            Sing => "единственное число",
-            Plur => "множественное число",
+            Number::Sing => "единственное число",
+            Number::Plur => "множественное число",
         }
     }
 }

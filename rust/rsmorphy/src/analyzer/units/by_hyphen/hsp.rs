@@ -22,8 +22,14 @@ pub const SCORE_DECAY: f64 = 0.9;
 /// so for normalization you may need to handle
 /// particles at tokenization level.
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct HyphenSeparatedParticleAnalyzer {}
+
+impl HyphenSeparatedParticleAnalyzer {
+    pub(in crate::analyzer) fn new() -> Self {
+        HyphenSeparatedParticleAnalyzer {}
+    }
+}
 
 impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {

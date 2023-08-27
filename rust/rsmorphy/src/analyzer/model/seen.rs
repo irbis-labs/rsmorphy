@@ -5,17 +5,17 @@ use std::ops;
 use inlinable_string::InlinableString;
 
 use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {
     pub word: InlinableString,
-    pub tag: &'a OpencorporaTagReg,
+    pub tag: &'a TagReg,
     pub para_id: Option<ParadigmId>,
 }
 
 impl<'a> Seen<'a> {
-    pub fn new<W, P, PID>(word: W, tag: &'a OpencorporaTagReg, para_id: P) -> Self
+    pub fn new<W, P, PID>(word: W, tag: &'a TagReg, para_id: P) -> Self
     where
         W: Into<InlinableString>,
         P: Into<Option<PID>>,

@@ -1,4 +1,4 @@
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 use crate::MorphAnalyzer;
 use crate::Parsed;
 
@@ -20,7 +20,7 @@ pub trait ProbabilityEstimator {
         morph: &MorphAnalyzer,
         word: &str,
         word_lower: &str,
-        tags: &mut [OpencorporaTagReg],
+        tags: &mut [TagReg],
     );
 }
 
@@ -43,7 +43,7 @@ where
         morph: &MorphAnalyzer,
         word: &str,
         word_lower: &str,
-        tags: &mut [OpencorporaTagReg],
+        tags: &mut [TagReg],
     ) {
         (*self).apply_to_tags(morph, word, word_lower, tags)
     }

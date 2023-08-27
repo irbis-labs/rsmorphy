@@ -16,6 +16,9 @@ use crate::opencorpora::dictionary::ParadigmIndex;
 use crate::opencorpora::dictionary::PredictionSuffixesDawg;
 use crate::opencorpora::dictionary::HHH;
 
+const MIN_WORD_LENGTH: usize = 4;
+const ESTIMATE_DECAY: f64 = 0.5;
+
 /// Parse the word by checking how the words with similar suffixes
 /// are parsed.
 ///
@@ -23,15 +26,15 @@ use crate::opencorpora::dictionary::HHH;
 
 #[derive(Debug, Clone, Copy)]
 pub struct KnownSuffixAnalyzer {
-    pub min_word_length: usize,
-    pub estimate_decay: f64,
+    min_word_length: usize,
+    estimate_decay: f64,
 }
 
-impl Default for KnownSuffixAnalyzer {
-    fn default() -> Self {
+impl KnownSuffixAnalyzer {
+    pub(in crate::analyzer) fn new() -> Self {
         KnownSuffixAnalyzer {
-            min_word_length: 4,
-            estimate_decay: 0.5,
+            min_word_length: MIN_WORD_LENGTH,
+            estimate_decay: ESTIMATE_DECAY,
         }
     }
 }
@@ -94,9 +97,8 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                         let para_id = ParadigmId::new(para_id);
                         let idx = ParadigmIndex::new(idx);
 
-                        let tag = morph.dict().get_tag(para_id, idx);
-
-                        if !tag.is_productive() {
+                        let tag_reg = morph.dict().get_tag(para_id, idx);
+                        if !tag_reg.tags.is_productive() {
                             continue 'iter_parses;
                         }
 
@@ -111,7 +113,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                         );
                         total_counts[prefix_id as usize] += cnt as u32;
 
-                        let seen = Seen::new(fixed_word.clone(), tag, para_id);
+                        let seen = Seen::new(fixed_word.clone(), tag_reg, para_id);
 
                         if !ctx.mark_as_seen(seen.clone()) {
                             continue 'iter_parses;
@@ -181,7 +183,7 @@ mod tests {
         init_logger();
 
         let mut ctx = ParseContext::new(&RU, "существующой");
-        let ks_analyzer = KnownSuffixAnalyzer::default();
+        let ks_analyzer = KnownSuffixAnalyzer::new();
 
         let tm = std::time::Instant::now();
         ks_analyzer.parse(&mut ctx);

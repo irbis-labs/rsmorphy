@@ -7,10 +7,11 @@ use crate::analyzer::model::Parsed;
 use crate::analyzer::model::Score;
 use crate::analyzer::model::WordStruct;
 use crate::analyzer::unit::AnalyzerUnit;
+use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::kind::Case;
 use crate::opencorpora::kind::Number;
 use crate::opencorpora::kind::PartOfSpeech;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::tag::TagReg;
 
 const HA_PREFIX: &str = "по-";
 const HA_SCORE: Score = Score::Fake(0.7);
@@ -21,14 +22,13 @@ const HA_SCORE: Score = Score::Fake(0.7);
 
 #[derive(Debug, Clone)]
 pub struct HyphenAdverbAnalyzer {
-    pub tag: OpencorporaTagReg,
+    pub tag: TagReg,
 }
 
-impl Default for HyphenAdverbAnalyzer {
-    fn default() -> Self {
-        HyphenAdverbAnalyzer {
-            tag: OpencorporaTagReg::from_fmt_int("ADVB"),
-        }
+impl HyphenAdverbAnalyzer {
+    pub fn new(grammemes: &GramRegistry) -> Self {
+        let tag = TagReg::from_fmt_int(grammemes, "ADVB");
+        HyphenAdverbAnalyzer { tag }
     }
 }
 
@@ -53,9 +53,9 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .parse(remnant)
             .into_iter()
             .filter(|parsed| {
-                let tag = parsed.lex.get_tag(morph);
+                let tags = &parsed.lex.get_tag(morph).tags;
                 matches!(
-                    (tag.pos, tag.number, tag.case),
+                    (tags.pos, tags.number, tags.case),
                     (
                         Some(PartOfSpeech::AdjectiveFull),
                         Some(Number::Sing),

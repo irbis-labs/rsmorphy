@@ -5,7 +5,8 @@ use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
 use crate::analyzer::model::Shaped;
 use crate::analyzer::unit::AnalyzerUnit;
-use crate::opencorpora::OpencorporaTagReg;
+use crate::opencorpora::gram::GramRegistry;
+use crate::opencorpora::tag::TagReg;
 use crate::shapes::is_punctuation;
 
 /// This analyzer tags punctuation marks as "PNCT".
@@ -14,14 +15,13 @@ use crate::shapes::is_punctuation;
 
 #[derive(Debug, Clone)]
 pub struct PunctuationAnalyzer {
-    pub tag: OpencorporaTagReg,
+    pub tag: TagReg,
 }
 
-impl Default for PunctuationAnalyzer {
-    fn default() -> Self {
-        PunctuationAnalyzer {
-            tag: OpencorporaTagReg::from_fmt_int("PNCT"),
-        }
+impl PunctuationAnalyzer {
+    pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
+        let tag = TagReg::from_fmt_int(grammemes, "PNCT");
+        PunctuationAnalyzer { tag }
     }
 }
 

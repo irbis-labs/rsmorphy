@@ -1,3 +1,10 @@
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::opencorpora::gram::GramId;
+
+#[derive(Serialize, Deserialize)]
+//
 /// Род
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Gender {
@@ -9,41 +16,31 @@ pub enum Gender {
     Neut,
 }
 
-regex!(
-    TAG_RE,
-    r"(?x)
-    (
-         masc
-        |femn
-        |neut
-    )
-"
-);
-
 impl Gender {
-    pub fn try_from_fmt_int<S>(s: S) -> Option<Self>
-    where
-        S: AsRef<str>,
-    {
+    pub fn from_gram_id(id: GramId) -> Option<Self> {
         use self::Gender::*;
-        TAG_RE
-            .captures_iter(s.as_ref())
-            .next()
-            .and_then(|cap| match &cap[1] {
-                "masc" => Some(Masc),
-                "femn" => Some(Femn),
-                "neut" => Some(Neut),
-                _ => None,
-            })
+
+        Some(match id.as_str() {
+            "masc" => Masc,
+            "femn" => Femn,
+            "neut" => Neut,
+            _ => None?,
+        })
+    }
+
+    pub fn gram_int(self) -> &'static str {
+        match self {
+            Gender::Masc => "masc",
+            Gender::Femn => "femn",
+            Gender::Neut => "neut",
+        }
     }
 
     pub fn title_rus(self) -> &'static str {
-        use self::Gender::*;
-
         match self {
-            Masc => "мужской род",
-            Femn => "женский род",
-            Neut => "средний род",
+            Gender::Masc => "мужской род",
+            Gender::Femn => "женский род",
+            Gender::Neut => "средний род",
         }
     }
 }
