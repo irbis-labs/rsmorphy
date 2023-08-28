@@ -11,10 +11,8 @@ use crate::analyzer::model::Seen;
 use crate::analyzer::model::WordStruct;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
-use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::dictionary::ParadigmIndex;
+use crate::opencorpora::dictionary::PredictionSuffixValue;
 use crate::opencorpora::dictionary::PredictionSuffixesDawg;
-use crate::opencorpora::dictionary::HHH;
 
 const MIN_WORD_LENGTH: usize = 4;
 const ESTIMATE_DECAY: f64 = 0.5;
@@ -76,8 +74,9 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                 #[cfg(feature = "trace_analyzer")]
                 log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
-                let para_data =
-                    suffixes_dawg.similar_items(word_end, &morph.dict().char_substitutes);
+                let para_data = suffixes_dawg
+                    .similar_items(word_end, &morph.dict().char_substitutes)
+                    .unwrap();
                 for (fixed_suffix, parses) in para_data {
                     let fixed_word = if fixed_suffix == word_end {
                         InlinableString::from(ctx.word_lower())
@@ -93,10 +92,12 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 
                     #[cfg(feature = "trace_analyzer")]
                     log::trace!("parses: {:?}", parses);
-                    'iter_parses: for HHH(cnt, para_id, idx) in parses {
-                        let para_id = ParadigmId::new(para_id);
-                        let idx = ParadigmIndex::new(idx);
-
+                    'iter_parses: for PredictionSuffixValue {
+                        count,
+                        para_id,
+                        idx,
+                    } in parses
+                    {
                         let tag_reg = morph.dict().get_tag(para_id, idx);
                         if !tag_reg.tags.is_productive() {
                             continue 'iter_parses;
@@ -109,9 +110,9 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                             "prefix_id: {:?}, tc[prefix_id]: {:?}, cnt: {:?}",
                             prefix_id,
                             total_counts[prefix_id as usize],
-                            cnt
+                            count
                         );
-                        total_counts[prefix_id as usize] += cnt as u32;
+                        total_counts[prefix_id as usize] += count as u32;
 
                         let seen = Seen::new(fixed_word.clone(), tag_reg, para_id);
 
@@ -124,7 +125,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
                         let affix = Affix::known_suffix(fixed_suffix.clone());
                         let stack = StackAffix::new(source, affix);
 
-                        subresult.push((cnt, prefix_id, Lex::from_stack(stack)));
+                        subresult.push((count, prefix_id, Lex::from_stack(stack)));
                     }
                     if total_counts[prefix_id as usize] > 1 {
                         break 'iter_splits;
@@ -150,7 +151,7 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
 }
 
 impl KnownSuffixAnalyzer {
-    pub fn possible_prefixes<'m: 'i, 's: 'i, 'i>(
+    fn possible_prefixes<'m: 'i, 's: 'i, 'i>(
         &self,
         morph: &'m MorphAnalyzer,
         word: &'s str,

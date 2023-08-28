@@ -19,6 +19,7 @@ use crate::dawg::CompletionDawg;
 use crate::dawg::Dawg;
 pub use crate::dawg::HH;
 pub use crate::dawg::HHH;
+use crate::opencorpora::dictionary::value::WordValue;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::dictionary::ParadigmIndex;
 use crate::opencorpora::dictionary::Paradigms;
@@ -31,9 +32,7 @@ use crate::opencorpora::kind::Case;
 use crate::opencorpora::tag::TagReg;
 use crate::opencorpora::util::SimpleTraceProfiler;
 
-pub type WordsDawg = CompletionDawg<HH>;
-pub type PredictionSuffixesDawg = CompletionDawg<HHH>;
-pub type ConditionalProbDistDawg = CompletionDawg<HH>;
+pub type PredictionSuffixesDawg = CompletionDawg<PredictionSuffixValue>;
 
 /// Open Corpora dictionary wrapper class.
 #[derive(Deserialize, Serialize, Debug)]
@@ -42,8 +41,8 @@ pub struct Dictionary {
     pub gramtab: Vec<TagReg>,
     pub suffixes: Vec<DefaultAtom>,
     pub paradigms: Paradigms,
-    pub words: WordsDawg,
-    pub p_t_given_w: ConditionalProbDistDawg,
+    pub words: CompletionDawg<WordValue>,
+    pub p_t_given_w: CompletionDawg<HH>,
     pub prediction_prefixes: Dawg,
     pub prediction_suffixes_dawgs: Vec<PredictionSuffixesDawg>,
     pub paradigm_prefixes: Vec<DefaultAtom>,

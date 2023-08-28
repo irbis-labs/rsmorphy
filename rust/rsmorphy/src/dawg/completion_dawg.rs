@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
+use std::io;
 use std::io::Read;
 use std::marker::PhantomData;
 use std::path::Path;
@@ -58,10 +59,10 @@ where
         &self,
         key: &str,
         replaces: &HashMap<InlinableString, InlinableString>,
-    ) -> SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]> {
+    ) -> io::Result<SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]>> {
         let mut result = SmallVec::new();
-        self.similar_items_(&mut result, "", key, self.dawg.dict.root, replaces);
-        result
+        self.similar_items_(&mut result, "", key, self.dawg.dict.root, replaces)?;
+        Ok(result)
     }
 
     fn similar_items_(
@@ -71,7 +72,7 @@ where
         key: &str,
         mut index: u32,
         replace_chars: &HashMap<InlinableString, InlinableString>,
-    ) {
+    ) -> io::Result<()> {
         #[cfg(feature = "trace_dawg")]
         log::trace!(r#"DAWG::similar_items_() index: {}"#, index);
 
@@ -99,29 +100,32 @@ where
                     prefix.push_str(current_prefix);
                     prefix.push_str(&key[start_pos..word_pos]);
                     prefix.push_str(replace_char);
-                    self.similar_items_(result, &prefix, key, next_index, replace_chars);
+                    self.similar_items_(result, &prefix, key, next_index, replace_chars)?;
                 };
             }
             index = match self.dawg.dict.follow_bytes(b_step, index) {
                 Some(v) => v,
-                None => return,
+                None => return Ok(()),
             };
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" index: {}"#, index);
             word_pos += b_step.len()
         }
+
         if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" index: {}"#, index);
             let found_key = InlinableString::from(current_prefix) + subkey;
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" found_key: {}"#, found_key);
-            let value = self.value_for_index_(index);
+            let value = self.value_for_index_(index)?;
             result.insert(0, (found_key, value));
         }
+
+        Ok(())
     }
 
-    fn value_for_index_(&self, index: u32) -> SmallVec<[V; 8]> {
+    fn value_for_index_(&self, index: u32) -> io::Result<SmallVec<[V; 8]>> {
         #[cfg(feature = "trace_dawg")]
         log::trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
         let mut result = SmallVec::new();
@@ -130,14 +134,17 @@ where
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
             let value = V::new_in_place(move |buf| {
-                let decoded = STANDARD.decode_slice_unchecked(&key, buf).unwrap();
+                let decoded = STANDARD
+                    .decode_slice_unchecked(&key, buf)
+                    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
                 #[cfg(feature = "trace_dawg")]
                 log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
                 debug_assert_eq!(decoded, buf.len());
+                Ok(())
             });
-            result.push(value);
+            result.push(value?);
         }
-        result
+        Ok(result)
     }
 
     pub fn prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {

@@ -11,7 +11,8 @@ impl SingleTagProbabilityEstimator {
     pub fn prob(self, morph: &MorphAnalyzer, word_lower: &str, tag: &TagReg) -> f64 {
         // FIXME avoid allocation
         let dawg_key = format!("{}:{}", word_lower, tag.fmt_int);
-        f64::from(morph.dict().p_t_given_w.find(&dawg_key).unwrap_or(0)) / 1_000_000.0
+        let v = morph.dict().p_t_given_w.find(&dawg_key).unwrap_or(0);
+        f64::from(v) / 1_000_000.0
     }
 }
 
