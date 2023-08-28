@@ -3,7 +3,7 @@ pub mod test {
     use crate::MorphAnalyzer;
 
     lazy_static::lazy_static! {
-        pub static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
+        pub static ref RU: MorphAnalyzer = MorphAnalyzer::from_file(dict_ru::DICT_PATH).unwrap();
     }
 
     pub fn init_logger() {

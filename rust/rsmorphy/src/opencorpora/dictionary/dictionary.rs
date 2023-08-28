@@ -1,9 +1,9 @@
-use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::fmt;
 use std::fs::File;
 use std::iter::FromIterator;
 use std::path::Path;
+use std::path::PathBuf;
 
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -49,23 +49,17 @@ pub struct Dictionary {
     pub paradigm_prefixes: Vec<DefaultAtom>,
     pub paradigm_prefixes_rev: Vec<(u16, DefaultAtom)>,
     pub max_suffix_length: usize,
-    pub char_substitutes: BTreeMap<String, String>,
+    pub char_substitutes: HashMap<InlinableString, InlinableString>,
     pub rare_cases: [(Gram, Gram); 6],
 }
 
 impl Dictionary {
-    pub fn from_bin<P>(path: P) -> bincode::Result<Self>
-    where
-        P: AsRef<Path>,
-    {
+    pub fn from_bin(path: impl AsRef<Path>) -> bincode::Result<Self> {
         log::debug!("Load bin dict file {:?}", path.as_ref());
         bincode::deserialize_from(GzDecoder::new(File::open(path)?))
     }
 
-    pub fn save_bin<P>(&self, path: P) -> bincode::Result<()>
-    where
-        P: AsRef<Path>,
-    {
+    pub fn save_bin(&self, path: impl AsRef<Path>) -> bincode::Result<()> {
         log::debug!("Save bin dict file {:?}", path.as_ref());
         bincode::serialize_into(
             GzEncoder::new(File::create(path)?, Compression::best()),
@@ -73,10 +67,7 @@ impl Dictionary {
         )
     }
 
-    pub fn from_file<P>(p: P) -> Self
-    where
-        P: AsRef<Path>,
-    {
+    pub fn from_file(p: impl Into<PathBuf>) -> Result<Self, LoadError> {
         let load = PathLoader::new(p);
 
         let mut profiler = SimpleTraceProfiler::start();
@@ -146,28 +137,29 @@ impl Dictionary {
             .collect();
         profiler.waypoint("gramtab'");
 
-        let paradigms = Paradigms::from_reader(&mut load.reader("paradigms.array.gz"));
+        let paradigms = Paradigms::from_reader(load.reader("paradigms.array.gz")?)?;
         profiler.waypoint("paradigms");
 
-        let words = CompletionDawg::from_reader(&mut load.reader("words.dawg.gz"));
+        let words = CompletionDawg::from_reader(load.reader("words.dawg.gz")?)?;
         profiler.waypoint("words");
 
-        let p_t_given_w = CompletionDawg::from_reader(&mut load.reader("p_t_given_w.intdawg.gz"));
+        let p_t_given_w = CompletionDawg::from_reader(load.reader("p_t_given_w.intdawg.gz")?)?;
         profiler.waypoint("p_t_given_w");
 
-        let prediction_prefixes =
-            Dawg::from_reader(&mut load.reader("prediction-prefixes.dawg.gz"));
+        let prediction_prefixes = Dawg::from_reader(load.reader("prediction-prefixes.dawg.gz")?)?;
         profiler.waypoint("prediction_prefixes");
 
-        let prediction_suffixes_dawgs = Vec::from_iter((0..paradigm_prefixes.len()).map(|i| {
-            CompletionDawg::from_reader(
-                &mut load.reader(format!("prediction-suffixes-{}.dawg.gz", i)),
-            )
-        }));
+        let prediction_suffixes_dawgs = (0..paradigm_prefixes.len())
+            .map(|i| {
+                CompletionDawg::from_reader(
+                    load.reader(format!("prediction-suffixes-{}.dawg.gz", i))?,
+                )
+            })
+            .collect::<Result<_, LoadError>>()?;
         profiler.waypoint("prediction_suffixes_dawgs");
 
         // TODO load char_substitutes
-        let char_substitutes = maplit::btreemap! {"е".into() => "ё".into()};
+        let char_substitutes = Some(("е".into(), "ё".into())).into_iter().collect();
 
         let rare_cases = {
             use Case::*;
@@ -188,7 +180,7 @@ impl Dictionary {
             ]
         };
 
-        Dictionary {
+        Ok(Dictionary {
             grammemes,
             gramtab,
             suffixes,
@@ -202,7 +194,7 @@ impl Dictionary {
             max_suffix_length,
             char_substitutes,
             rare_cases,
-        }
+        })
     }
 
     pub fn prediction_splits(&self, word_len: usize) -> impl Iterator<Item = usize> {
@@ -221,14 +213,6 @@ impl Dictionary {
         &self.gramtab[para[idx.index()].tag_id() as usize]
     }
 
-    /// Return a list of
-    ///     (prefix, tag, suffix)
-    /// tuples representing the paradigm.
-    #[inline]
-    pub fn build_paradigm_info(&self, id: ParadigmId) -> Vec<(&str, &TagReg, &str)> {
-        Vec::from_iter(self.iter_paradigm_info(id))
-    }
-
     #[inline]
     pub fn iter_paradigm_info<'a: 'i, 'i>(
         &'a self,
@@ -245,7 +229,7 @@ impl Dictionary {
     ///     (prefix, tag, suffix)
     /// tuples representing the paradigm entry.
     #[inline]
-    pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &TagReg, &str) {
+    fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &TagReg, &str) {
         (
             &self.paradigm_prefixes[entry.prefix_id() as usize],
             &self.gramtab[entry.tag_id() as usize],
@@ -255,45 +239,39 @@ impl Dictionary {
 
     /// Return word stem (given a word, paradigm and the word index).
     #[inline]
-    pub fn get_stem<'a>(&self, id: ParadigmId, idx: ParadigmIndex, fixed_word: &'a str) -> &'a str {
-        let para = self.para().get(id).expect("paradigm");
-        let (prefix, _, suffix) = self.paradigm_entry_info(para[idx.index()]);
-        &fixed_word[prefix.len()..fixed_word.len() - suffix.len()]
-    }
-
-    /// Build the normal form.
-    pub fn build_normal_form(
+    pub(crate) fn get_stem<'a>(
         &self,
-        id: ParadigmId,
-        idx: ParadigmIndex,
-        fixed_word: &str,
-    ) -> InlinableString {
-        if idx.is_first() {
-            fixed_word.into()
-        } else {
-            let stem = self.get_stem(id, idx, fixed_word);
-            let para = self.para().get(id).expect("paradigm");
-            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
-            InlinableString::from(normal_prefix) + stem + normal_suffix
-        }
-    }
-
-    /// Write the normal form.
-    pub fn write_normal_form<'a, W: fmt::Write>(
-        &self,
-        f: &mut W,
         id: ParadigmId,
         idx: ParadigmIndex,
         fixed_word: &'a str,
+    ) -> &'a str {
+        let paradigm = self.para().get(id).expect("paradigm");
+        let para_entry = paradigm[idx.index()];
+        let (prefix, _, suffix) = self.paradigm_entry_info(para_entry);
+        let begin = prefix.len();
+        let end = fixed_word.len() - suffix.len();
+        &fixed_word[begin..end]
+    }
+
+    /// Write the normal form.
+    pub fn write_normal_form(
+        &self,
+        mut f: impl fmt::Write,
+        id: ParadigmId,
+        idx: ParadigmIndex,
+        fixed_word: &str,
     ) -> fmt::Result {
         if idx.is_first() {
-            write!(f, "{}", fixed_word)
+            f.write_str(fixed_word)?;
         } else {
             let stem = self.get_stem(id, idx, fixed_word);
             let para = self.para().get(id).expect("paradigm");
             let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
-            write!(f, "{}{}{}", normal_prefix, stem, normal_suffix)
+            f.write_str(normal_prefix)?;
+            f.write_str(stem)?;
+            f.write_str(normal_suffix)?;
         }
+        Ok(())
     }
 
     pub fn update_grammemes(&self, grammemes: GramSet, required: GramSet) -> GramSet {

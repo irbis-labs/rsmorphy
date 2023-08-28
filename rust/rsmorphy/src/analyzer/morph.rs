@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::analyzer::context::ParseContext;
@@ -7,6 +7,7 @@ use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::units::*;
 use crate::estimator::SingleTagProbabilityEstimator;
 use crate::opencorpora::dictionary::Dictionary;
+use crate::opencorpora::dictionary::LoadError;
 
 #[derive(Debug, Clone)]
 pub struct MorphAnalyzer {
@@ -34,12 +35,9 @@ impl MorphAnalyzer {
     }
 
     /// Loads `Dictionary` from disk and creates `MorphAnalyzer`
-    pub fn from_file<P>(p: P) -> Self
-    where
-        P: AsRef<Path>,
-    {
-        let dict = Dictionary::from_file(p);
-        MorphAnalyzer::new(dict)
+    pub fn from_file(p: impl Into<PathBuf>) -> Result<Self, LoadError> {
+        let dict = Dictionary::from_file(p)?;
+        Ok(MorphAnalyzer::new(dict))
     }
 
     #[inline]

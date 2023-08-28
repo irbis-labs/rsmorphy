@@ -5,40 +5,32 @@ use std::path::PathBuf;
 
 use flate2::read::GzDecoder;
 
+use crate::opencorpora::dictionary::LoadError;
+
 pub struct PathLoader {
     dict_path: PathBuf,
 }
 
 impl PathLoader {
-    pub fn new<P>(p: P) -> Self
-    where
-        P: AsRef<Path>,
-    {
-        let dict_path = p.as_ref().into();
+    pub fn new(p: impl Into<PathBuf>) -> Self {
+        let dict_path = p.into();
         PathLoader { dict_path }
     }
 
-    pub fn path<S>(&self, name: S) -> PathBuf
-    where
-        S: AsRef<Path>,
-    {
+    pub fn path(&self, name: impl AsRef<Path>) -> PathBuf {
         self.dict_path.join(name)
     }
 
-    pub fn reader<S>(&self, name: S) -> impl Read
-    where
-        S: AsRef<Path>,
-    {
+    pub fn reader(&self, name: impl AsRef<Path>) -> Result<impl Read, LoadError> {
         let path = self.path(name);
         log::debug!("Open dict file {:?}", path);
-        GzDecoder::new(File::open(&path).unwrap())
+        Ok(GzDecoder::new(File::open(&path)?))
     }
 
-    pub fn json<S, T>(&self, name: S) -> serde_json::Result<T>
+    pub fn json<T>(&self, name: impl AsRef<Path>) -> Result<T, LoadError>
     where
-        S: AsRef<Path>,
         for<'de> T: ::serde::Deserialize<'de>,
     {
-        serde_json::from_reader(self.reader(name))
+        Ok(serde_json::from_reader(self.reader(name)?)?)
     }
 }

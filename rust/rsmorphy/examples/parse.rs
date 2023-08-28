@@ -15,7 +15,7 @@ fn table(morph: &MorphAnalyzer, s: &str) {
 fn main() {
     let _ = env_logger::init();
 
-    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
+    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH).unwrap();
 
     input_loop(|word| table(&morph_ru, word))
 }

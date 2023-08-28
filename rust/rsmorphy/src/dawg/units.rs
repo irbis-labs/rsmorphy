@@ -1,26 +1,31 @@
 pub const PRECISION_MASK: u32 = 0xFFFF_FFFF;
 
+#[allow(dead_code)]
 pub const OFFSET_MAX: u32 = 0x0020_0000; // 1 << 21
 pub const IS_LEAF_BIT: u32 = 0x8000_0000; // 1 << 31
 pub const HAS_LEAF_BIT: u32 = 0x0000_0100; // 1 << 8
 pub const EXTENSION_BIT: u32 = 0x0000_0200; // 1 << 9
 
 /// Check if a unit has a leaf as a child or not.
+#[inline(always)]
 pub fn has_leaf(base: u32) -> bool {
     base & HAS_LEAF_BIT != 0
 }
 
 /// Check if a unit corresponds to a leaf or not.
+#[inline(always)]
 pub fn value(base: u32) -> u32 {
     base & (IS_LEAF_BIT ^ PRECISION_MASK)
 }
 
 /// Read a label with a leaf flag from a non-leaf unit.
+#[inline(always)]
 pub fn label(base: u32) -> u32 {
     base & (IS_LEAF_BIT | 0x0000_00FF)
 }
 
 /// Read an offset to child units from a non-leaf unit.
+#[inline(always)]
 pub fn offset(base: u32) -> u32 {
     (base >> 10) << ((base & EXTENSION_BIT) >> 6)
 }

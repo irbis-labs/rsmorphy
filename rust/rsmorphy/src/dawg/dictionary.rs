@@ -1,10 +1,8 @@
-use std::fs::File;
+use std::io;
 use std::io::Read;
-use std::path::Path;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
-use flate2::read::GzDecoder;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -19,24 +17,16 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
-    /// Reads a dictionary from a file.
-    pub fn from_file(p: &Path) -> Self {
-        Self::from_reader(&mut GzDecoder::new(File::open(p).unwrap()))
-    }
-
     /// Reads a dictionary from an input stream.
-    pub fn from_reader<T>(reader: &mut T) -> Self
-    where
-        T: Read,
-    {
-        let size = reader.read_u32::<LittleEndian>().unwrap();
-        let units = (0..size)
-            .map(|_| reader.read_u32::<LittleEndian>().unwrap())
-            .collect();
-
+    pub fn from_reader(mut reader: impl Read) -> io::Result<Self> {
         let root = 0;
 
-        Dictionary { root, units }
+        let size = reader.read_u32::<LittleEndian>()?;
+        let units = (0..size)
+            .map(|_| reader.read_u32::<LittleEndian>())
+            .collect::<io::Result<_>>()?;
+
+        Ok(Dictionary { root, units })
     }
 
     /// Checks if a given index is related to the end of a key.
@@ -60,6 +50,7 @@ impl Dictionary {
     }
 
     /// Exact matching.
+    #[allow(dead_code)]
     pub fn contains(&self, key: &str) -> bool {
         self.follow_bytes(key, self.root)
             .map(|index| self.has_value(index))

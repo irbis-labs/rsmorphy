@@ -1,11 +1,13 @@
-pub mod completer;
-pub mod dawg;
-pub mod dictionary;
-pub mod guide;
-pub mod units;
-pub mod value;
+mod completer;
+mod completion_dawg;
+mod dawg;
+mod dictionary;
+mod guide;
+mod guide_entry;
+mod units;
+mod value;
 
-pub use self::dawg::CompletionDawg;
+pub use self::completion_dawg::CompletionDawg;
 pub use self::dawg::Dawg;
 pub use self::value::DawgValue;
 pub use self::value::HH;

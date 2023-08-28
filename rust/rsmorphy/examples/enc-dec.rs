@@ -20,7 +20,7 @@ fn table(morph: &MorphAnalyzer, s: &str) {
 }
 
 fn main() {
-    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
+    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH).unwrap();
 
     //    table(&morph_ru, "яблоко");
     //    table(&morph_ru, "хлеб");

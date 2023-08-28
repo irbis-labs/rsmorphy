@@ -1,3 +1,7 @@
+use std::str::from_utf8_unchecked;
+
+use smallvec::SmallVec;
+
 use crate::dawg::dictionary::Dictionary;
 use crate::dawg::guide::Guide;
 
@@ -5,23 +9,16 @@ use crate::dawg::guide::Guide;
 pub struct Completer<'a> {
     dict: &'a Dictionary,
     guide: &'a Guide,
+    key: SmallVec<[u8; 64]>,
+    index_stack: SmallVec<[u32; 64]>,
     last_index: u32,
-    key: Vec<u8>,
-    index_stack: Vec<u32>,
 }
 
 impl<'a> Completer<'a> {
-    pub fn new<Prefix>(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: Prefix) -> Self
-    where
-        Prefix: Into<Vec<u8>>,
-    {
-        let key = prefix.into();
-        let (index_stack, last_index) = if guide.units.is_empty() {
-            // FIXME unimplemented in the PyMorphy2; should it be removed?
-            unimplemented!()
-        } else {
-            (vec![index], dict.root)
-        };
+    pub(super) fn new(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: &str) -> Self {
+        let key = prefix.as_bytes().into();
+        let index_stack = [index].iter().copied().collect();
+        let last_index = index;
 
         Completer {
             dict,
@@ -32,6 +29,8 @@ impl<'a> Completer<'a> {
         }
     }
 
+    #[allow(dead_code)]
+    #[inline(always)]
     pub fn value(&self) -> u32 {
         self.dict.value(self.last_index)
     }
@@ -41,14 +40,14 @@ impl<'a> Completer<'a> {
         let mut last_index = *self.index_stack.last()?;
 
         if self.last_index != self.dict.root {
-            let entry = self.guide.units[last_index as usize];
-            let (child_label, mut sibling_label) = (entry.child, entry.sibling);
+            let child_label = self.child(last_index);
             if child_label != 0 {
                 // Follows a transition to the first child.
                 last_index = self.follow(child_label, last_index)?;
             } else {
+                let mut sibling_label = 0;
                 while sibling_label == 0 {
-                    sibling_label = self.guide.units[last_index as usize].sibling;
+                    sibling_label = self.sibling(last_index);
                     // Moves to the previous node.
                     self.key.pop();
                     self.index_stack.pop();
@@ -71,7 +70,7 @@ impl<'a> Completer<'a> {
 
     fn find_terminal(&mut self, mut index: u32) -> Option<&str> {
         while !self.dict.has_value(index) {
-            let child_label = self.guide.units[index as usize].child;
+            let child_label = self.child(index);
             index = self.follow(child_label, index)?;
             #[cfg(feature = "trace_dawg")]
             log::trace!(
@@ -86,6 +85,16 @@ impl<'a> Completer<'a> {
     }
 
     pub fn key(&self) -> &str {
-        unsafe { ::std::str::from_utf8_unchecked(&self.key) }.trim_end()
+        unsafe { from_utf8_unchecked(&self.key) }.trim_end()
+    }
+
+    #[inline(always)]
+    fn child(&self, index: u32) -> u8 {
+        self.guide.unit(index).child
+    }
+
+    #[inline(always)]
+    fn sibling(&self, index: u32) -> u8 {
+        self.guide.unit(index).sibling
     }
 }

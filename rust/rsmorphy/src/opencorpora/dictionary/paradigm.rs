@@ -1,3 +1,4 @@
+use std::io;
 use std::io::Read;
 
 use byteorder::LittleEndian;
@@ -14,8 +15,8 @@ pub struct Paradigms {
 }
 
 impl Paradigms {
-    pub fn from_reader<R: Read>(reader: &mut R) -> Self {
-        let paradigms_count = reader.read_u16::<LittleEndian>().unwrap();
+    pub fn from_reader(mut reader: impl Read) -> io::Result<Self> {
+        let paradigms_count = reader.read_u16::<LittleEndian>()?;
         #[cfg(feature = "trace_opencorpora")]
         log::trace!("Paradigms count: {}", paradigms_count);
 
@@ -31,7 +32,7 @@ impl Paradigms {
         for _para_num in 0..paradigms_count {
             debug_assert!(buf.is_empty(), "Buffer must be empty");
 
-            let paradigm_len = reader.read_u16::<LittleEndian>().unwrap() as usize;
+            let paradigm_len = reader.read_u16::<LittleEndian>()? as usize;
             #[cfg(feature = "trace_opencorpora")]
             log::trace!(
                 "Paradigm number: {}, paradigm length: {}",
@@ -40,7 +41,7 @@ impl Paradigms {
             );
 
             for _i in 0..paradigm_len {
-                buf.push(reader.read_u16::<LittleEndian>().unwrap())
+                buf.push(reader.read_u16::<LittleEndian>()?)
             }
 
             debug_assert_eq!(buf.len(), paradigm_len, "Wrong number of entries read");
@@ -77,7 +78,7 @@ impl Paradigms {
             idx.push(data.len() as u32);
             buf.clear();
         }
-        Paradigms { idx, data }
+        Ok(Paradigms { idx, data })
     }
 
     #[inline]

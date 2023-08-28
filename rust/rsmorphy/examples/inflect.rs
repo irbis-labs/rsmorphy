@@ -8,8 +8,7 @@ pub mod util;
 fn main() {
     let _ = env_logger::init();
 
-    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH);
-
+    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH).unwrap();
     //let lex = Lex::from_id(&morph_ru, "ru:d:стали,388,4").unwrap();
     //print_row_lex(&morph_ru, 0, &lex.inflect(&morph_ru, &GrammemeSet::from_str("plur,ablt")).unwrap());
     //print_row_lex(&morph_ru, 1, &lex.inflect(&morph_ru, &GrammemeSet::from_str("femn,sing,ablt,V-ey")).unwrap());
@@ -54,17 +53,13 @@ fn main() {
     );
     println!(
         " ::: накормил {} {} и {} {}",
-        two
-            .inflect(&morph_ru, ablt_set)
-            .unwrap(),
+        two.inflect(&morph_ru, ablt_set).unwrap(),
         bread
             .inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 2)
             .unwrap(),
-        five
-            .inflect(&morph_ru, ablt_set)
-            .unwrap(),
+        five.inflect(&morph_ru, ablt_set).unwrap(),
         fish.inflect(&morph_ru, ablt_set)
             .unwrap()
             .get_plural(&morph_ru, 5)
