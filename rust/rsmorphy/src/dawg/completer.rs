@@ -17,7 +17,7 @@ pub struct Completer<'a> {
 impl<'a> Completer<'a> {
     pub(super) fn new(dict: &'a Dictionary, guide: &'a Guide, index: u32, prefix: &str) -> Self {
         let key = prefix.as_bytes().into();
-        let index_stack = [index].iter().copied().collect();
+        let index_stack = [index].into_iter().collect();
         let last_index = index;
 
         Completer {

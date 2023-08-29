@@ -61,13 +61,9 @@ impl Paradigms {
 
             let old_len = data.len();
 
-            #[inline(always)]
-            fn iter(arr: &[u16]) -> impl Iterator<Item = u16> + '_ {
-                arr.iter().copied()
+            for i in 0..paradigm_count {
+                data.push(ParadigmEntry::new(prefix[i], tag[i], suffix[i]));
             }
-            data.extend(iter(prefix).zip(iter(tag)).zip(iter(suffix)).map(
-                |((prefix_id, tag_id), suffix_id)| ParadigmEntry::new(prefix_id, tag_id, suffix_id),
-            ));
 
             debug_assert_eq!(
                 data.len() - old_len,

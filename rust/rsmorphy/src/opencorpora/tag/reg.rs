@@ -141,8 +141,7 @@ impl TagReg {
             }
         };
         grams
-            .iter()
-            .copied()
+            .into_iter()
             // SAFETY: all tags represented by enum variants should be present in the registry.
             .map(|gram_int| registry.find_gram(gram_int).unwrap())
             .collect()

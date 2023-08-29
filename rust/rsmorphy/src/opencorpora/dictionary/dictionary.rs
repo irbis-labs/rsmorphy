@@ -158,7 +158,7 @@ impl Dictionary {
         profiler.waypoint("prediction_suffixes_dawgs");
 
         // TODO load char_substitutes
-        let char_substitutes = Some(("е".into(), "ё".into())).into_iter().collect();
+        let char_substitutes = [("е".into(), "ё".into())].into_iter().collect();
 
         let rare_cases = {
             use Case::*;

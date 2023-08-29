@@ -70,7 +70,7 @@ impl InitialsAnalyzer {
             None?
         }
 
-        let index = RU_LETTERS.iter().copied().position(|c| c == letter)?;
+        let index = RU_LETTERS.into_iter().position(|c| c == letter)?;
 
         Some(RU_LETTERS_STR[index])
     }

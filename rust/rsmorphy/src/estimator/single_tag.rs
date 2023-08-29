@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+use smallvec::SmallVec;
+
 use crate::estimator::ProbabilityEstimator;
 use crate::opencorpora::tag::TagReg;
 use crate::prelude::*;
@@ -28,7 +30,7 @@ impl ProbabilityEstimator for SingleTagProbabilityEstimator {
             return;
         }
 
-        let probs: Vec<f64> = parses
+        let probs: SmallVec<[f64; 128]> = parses
             .iter()
             .map(|p: &Parsed| self.prob(morph, word_lower, p.lex.get_tag(morph)))
             .collect();
