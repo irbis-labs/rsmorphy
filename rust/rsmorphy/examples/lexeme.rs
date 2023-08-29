@@ -1,4 +1,3 @@
-use std::collections::BTreeSet;
 use std::iter::FromIterator;
 
 use dict_ru;
@@ -16,14 +15,13 @@ fn print_lexeme(morph: &MorphAnalyzer, lex: &Lex) {
 }
 
 fn list(morph: &MorphAnalyzer, s: &str) {
-    let set = BTreeSet::from_iter(
-        morph
-            .parse(s)
-            .into_iter()
-            .map(|parsed| parsed.lex.get_lemma(morph).encoded()),
-    );
-    for (i, id) in set.into_iter().enumerate() {
-        let lemma = Lex::from_id(id).unwrap();
+    let mut lst = Vec::from_iter(morph.parse(s).into_iter().map(|parsed| {
+        let lemma = parsed.lex.get_lemma(morph);
+        (lemma.encoded(), lemma)
+    }));
+    lst.sort_by(|a, b| a.0.cmp(&b.0));
+    lst.dedup_by(|a, b| a.0 == b.0);
+    for (i, (_id, lemma)) in lst.into_iter().enumerate() {
         println!("  === {}. {} ===", i + 1, lemma.get_word());
         print_lexeme(morph, &lemma);
     }
