@@ -4,7 +4,6 @@ use crate::analyzer::model::abc::*;
 use crate::analyzer::model::decode::*;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackParticle;
-use crate::analyzer::model::Score;
 use crate::analyzer::model::Seen;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
@@ -117,11 +116,6 @@ impl Lex {
 }
 
 impl Source for Lex {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        self.stack.score()
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         self.stack.is_lemma()

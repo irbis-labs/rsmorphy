@@ -10,7 +10,6 @@ use crate::analyzer::model::DictionaryWord;
 use crate::analyzer::model::HyphenAdverb;
 use crate::analyzer::model::Initial;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::model::Shaped;
 use crate::analyzer::model::Unknown;
 use crate::analyzer::MorphAnalyzer;
@@ -103,16 +102,6 @@ impl StackSource {
 }
 
 impl Source for StackSource {
-    fn score(&self) -> Score {
-        match *self {
-            Dictionary(ref source) => source.score(),
-            HyphenAdverb(ref source) => source.score(),
-            Initials(ref source) => source.score(),
-            Shaped(ref source) => source.score(),
-            Unknown(ref source) => source.score(),
-        }
-    }
-
     fn is_lemma(&self) -> bool {
         match *self {
             Dictionary(ref source) => source.is_lemma(),

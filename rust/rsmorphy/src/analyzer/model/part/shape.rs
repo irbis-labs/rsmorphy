@@ -8,13 +8,9 @@ use crate::analyzer::model::decode::*;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::TagReg;
-
-const NUMBER_SCORE: Score = Score::Real(1.0);
-const DECAYED_SCORE: Score = Score::Fake(0.9);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ShapeKind {
@@ -93,14 +89,6 @@ impl Shaped {
 }
 
 impl Source for Shaped {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        match self.kind {
-            ShapeKind::Number { .. } => NUMBER_SCORE,
-            _ => DECAYED_SCORE,
-        }
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         true

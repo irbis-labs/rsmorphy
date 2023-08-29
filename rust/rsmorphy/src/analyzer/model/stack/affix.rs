@@ -7,7 +7,6 @@ use crate::analyzer::model::decode::*;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::TagReg;
@@ -53,17 +52,6 @@ impl From<StackSource> for StackAffix {
 }
 
 impl Source for StackAffix {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        match &self.affix {
-            None => self.stack.score(),
-            Some(_affix) => {
-                // self.stack.score();
-                unimplemented!()
-            }
-        }
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         match &self.affix {

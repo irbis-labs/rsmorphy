@@ -8,7 +8,6 @@ use crate::analyzer::model::stack::StackHyphenated;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::HyphenSeparatedParticle;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::TagReg;
@@ -76,11 +75,6 @@ impl From<StackSource> for StackParticle {
 }
 
 impl Source for StackParticle {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        unimplemented!()
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         self.stack.is_lemma()

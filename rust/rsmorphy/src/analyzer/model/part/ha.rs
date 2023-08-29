@@ -5,7 +5,6 @@ use crate::analyzer::model::decode::*;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::model::WordStruct;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
@@ -34,11 +33,6 @@ impl HyphenAdverb {
 }
 
 impl Source for HyphenAdverb {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        Score::Fake(0.7)
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         true

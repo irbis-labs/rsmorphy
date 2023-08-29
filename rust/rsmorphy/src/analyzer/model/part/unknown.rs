@@ -7,7 +7,6 @@ use crate::analyzer::model::decode::*;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::TagReg;
@@ -43,11 +42,6 @@ impl Unknown {
 }
 
 impl Source for Unknown {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        Score::Fake(1.0)
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         // CHECK это ведь то, что мы не смогли выяснить, как оно склоняется?

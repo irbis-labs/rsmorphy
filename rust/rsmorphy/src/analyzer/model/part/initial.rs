@@ -5,7 +5,6 @@ use crate::analyzer::model::decode::*;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::units::InitialsAnalyzer;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
@@ -57,11 +56,6 @@ impl Initial {
 }
 
 impl Source for Initial {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        Score::Real(0.1)
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         unimplemented!()

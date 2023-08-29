@@ -6,14 +6,11 @@ use inlinable_string::StringExt;
 pub use crate::analyzer::model::decode::error::DecodeError;
 use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::TagReg;
 
 pub trait Source {
-    // TODO move out `score` from a word container
-    fn score(&self) -> Score;
     fn is_lemma(&self) -> bool;
     fn is_known(&self) -> bool;
     fn get_word(&self) -> InlinableString {

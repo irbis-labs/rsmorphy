@@ -5,7 +5,6 @@ use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackAffix;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
-use crate::analyzer::model::Score;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::tag::TagReg;
@@ -64,11 +63,6 @@ impl From<StackSource> for StackHyphenated {
 }
 
 impl Source for StackHyphenated {
-    #[inline(always)]
-    fn score(&self) -> Score {
-        unimplemented!()
-    }
-
     #[inline(always)]
     fn is_lemma(&self) -> bool {
         match &self.right {
