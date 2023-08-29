@@ -197,7 +197,7 @@ impl Dictionary {
     }
 
     pub fn prediction_splits(&self, word_len: usize) -> impl Iterator<Item = usize> {
-        (1..=self.max_suffix_length.min(word_len)).rev()
+        (1..=self.max_suffix_length.min(word_len - 1)).rev()
     }
 
     #[inline]

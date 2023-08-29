@@ -1,6 +1,8 @@
 use crate::analyzer::context::ParseContext;
 use crate::analyzer::unit::AnalyzerUnit;
 
+const SCORE_MULTIPLIER: f64 = 0.75;
+
 /// Parse the word by parsing its hyphen-separated parts.
 ///
 /// Examples:
@@ -9,11 +11,16 @@ use crate::analyzer::unit::AnalyzerUnit;
 /// * человек-гора -> человек + гора
 
 #[derive(Debug, Clone, Copy)]
-pub struct HyphenatedWordsAnalyzer {}
+pub struct HyphenatedWordsAnalyzer {
+    #[allow(dead_code)]
+    score_multiplier: f64,
+}
 
 impl HyphenatedWordsAnalyzer {
     pub(in crate::analyzer) fn new() -> Self {
-        HyphenatedWordsAnalyzer {}
+        HyphenatedWordsAnalyzer {
+            score_multiplier: SCORE_MULTIPLIER,
+        }
     }
 }
 

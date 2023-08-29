@@ -1,5 +1,4 @@
 use crate::analyzer::context::ParseContext;
-use crate::analyzer::model::abc::*;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
@@ -8,6 +7,9 @@ use crate::analyzer::unit::AnalyzerUnit;
 use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::tag::TagReg;
 use crate::shapes::is_punctuation;
+use crate::Score;
+
+const SCORE: Score = Score::Fake(0.9);
 
 /// This analyzer tags punctuation marks as "PNCT".
 ///
@@ -16,12 +18,15 @@ use crate::shapes::is_punctuation;
 #[derive(Debug, Clone)]
 pub struct PunctuationAnalyzer {
     pub tag: TagReg,
+    score: Score,
 }
 
 impl PunctuationAnalyzer {
     pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
-        let tag = TagReg::from_fmt_int(grammemes, "PNCT");
-        PunctuationAnalyzer { tag }
+        PunctuationAnalyzer {
+            tag: TagReg::from_fmt_int(grammemes, "PNCT"),
+            score: SCORE,
+        }
     }
 }
 
@@ -37,8 +42,7 @@ impl AnalyzerUnit for PunctuationAnalyzer {
             return;
         }
         let shaped = Shaped::punctuation(word_lower);
-        let score = shaped.score();
         let lex = Lex::from_stack(StackSource::from(shaped));
-        ctx.push(Parsed::new(lex, score));
+        ctx.push(Parsed::new(lex, self.score));
     }
 }

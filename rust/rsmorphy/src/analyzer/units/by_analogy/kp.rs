@@ -10,7 +10,7 @@ use crate::analyzer::unit::AnalyzerUnit;
 use crate::analyzer::MorphAnalyzer;
 
 const MIN_REMINDER_LENGTH: usize = 3;
-const ESTIMATE_DECAY: f64 = 0.75;
+const SCORE_MULTIPLIER: f64 = 0.75;
 
 /// Parse the word by checking if it starts with a known prefix
 /// and parsing the reminder.
@@ -20,14 +20,14 @@ const ESTIMATE_DECAY: f64 = 0.75;
 #[derive(Debug, Clone, Copy)]
 pub struct KnownPrefixAnalyzer {
     min_reminder_length: usize,
-    estimate_decay: f64,
+    score_multiplier: f64,
 }
 
 impl KnownPrefixAnalyzer {
     pub(in crate::analyzer) fn new() -> Self {
         KnownPrefixAnalyzer {
             min_reminder_length: MIN_REMINDER_LENGTH,
-            estimate_decay: ESTIMATE_DECAY,
+            score_multiplier: SCORE_MULTIPLIER,
         }
     }
 }
@@ -76,7 +76,7 @@ impl AnalyzerUnit for KnownPrefixAnalyzer {
                 let affix = Some(Affix::known_prefix(prefix));
                 let stack = StackAffix::new(stack_source, affix);
                 let lex = Lex::from_stack(stack);
-                let score = parsed.score * self.estimate_decay;
+                let score = parsed.score * self.score_multiplier;
                 ctx.push_if_not_seen(Parsed::new(lex, score));
             }
         }

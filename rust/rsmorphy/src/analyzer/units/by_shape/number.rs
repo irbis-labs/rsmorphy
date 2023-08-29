@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use crate::analyzer::context::ParseContext;
-use crate::analyzer::model::abc::*;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
@@ -9,6 +8,9 @@ use crate::analyzer::model::Shaped;
 use crate::analyzer::unit::AnalyzerUnit;
 use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::tag::TagReg;
+use crate::Score;
+
+const SCORE: Score = Score::Fake(0.9);
 
 /// This analyzer marks integer numbers with "NUMB,int" or "NUMB,real" tags.
 ///
@@ -22,6 +24,7 @@ use crate::opencorpora::tag::TagReg;
 pub struct NumberAnalyzer {
     pub tag_int: TagReg,
     pub tag_real: TagReg,
+    score: Score,
 }
 
 impl NumberAnalyzer {
@@ -29,6 +32,7 @@ impl NumberAnalyzer {
         NumberAnalyzer {
             tag_int: TagReg::from_fmt_int(grammemes, "NUMB,intg"),
             tag_real: TagReg::from_fmt_int(grammemes, "NUMB,real"),
+            score: SCORE,
         }
     }
 }
@@ -50,8 +54,7 @@ impl AnalyzerUnit for NumberAnalyzer {
         } else {
             return;
         };
-        let score = shaped.score();
         let lex = Lex::from_stack(StackSource::from(shaped));
-        ctx.push(Parsed::new(lex, score));
+        ctx.push(Parsed::new(lex, self.score));
     }
 }

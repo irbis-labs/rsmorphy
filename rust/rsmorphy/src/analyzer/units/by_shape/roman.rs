@@ -1,5 +1,4 @@
 use crate::analyzer::context::ParseContext;
-use crate::analyzer::model::abc::*;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
@@ -8,16 +7,22 @@ use crate::analyzer::unit::AnalyzerUnit;
 use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::tag::TagReg;
 use crate::shapes::is_roman_number;
+use crate::Score;
+
+const SCORE: Score = Score::Fake(0.9);
 
 #[derive(Debug, Clone)]
 pub struct RomanAnalyzer {
     pub tag: TagReg,
+    score: Score,
 }
 
 impl RomanAnalyzer {
     pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
-        let tag = TagReg::from_fmt_int(grammemes, "ROMN");
-        RomanAnalyzer { tag }
+        RomanAnalyzer {
+            tag: TagReg::from_fmt_int(grammemes, "ROMN"),
+            score: SCORE,
+        }
     }
 }
 
@@ -32,8 +37,7 @@ impl AnalyzerUnit for RomanAnalyzer {
             return;
         }
         let shaped = Shaped::roman_number(word_lower);
-        let score = shaped.score();
         let lex = Lex::from_stack(StackSource::from(shaped));
-        ctx.push(Parsed::new(lex, score));
+        ctx.push(Parsed::new(lex, self.score));
     }
 }

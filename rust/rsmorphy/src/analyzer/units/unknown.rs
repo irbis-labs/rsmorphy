@@ -13,12 +13,15 @@ const SCORE: Score = Score::Fake(1.0);
 #[derive(Debug, Clone)]
 pub struct UnknownAnalyzer {
     pub tag: TagReg,
+    score: Score,
 }
 
 impl UnknownAnalyzer {
     pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
-        let tag = TagReg::from_fmt_int(grammemes, "UNKN");
-        UnknownAnalyzer { tag }
+        UnknownAnalyzer {
+            tag: TagReg::from_fmt_int(grammemes, "UNKN"),
+            score: SCORE,
+        }
     }
 }
 
@@ -31,7 +34,7 @@ impl AnalyzerUnit for UnknownAnalyzer {
 
         if ctx.seen_parses().is_empty() {
             let lex = Lex::from_stack(StackSource::from(Unknown::new(ctx.word_lower())));
-            ctx.push(Parsed::new(lex, SCORE));
+            ctx.push(Parsed::new(lex, self.score));
         }
     }
 }

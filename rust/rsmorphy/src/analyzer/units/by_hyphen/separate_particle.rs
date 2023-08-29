@@ -6,10 +6,10 @@ use crate::analyzer::model::Parsed;
 use crate::analyzer::unit::AnalyzerUnit;
 
 // TODO move into `Dictionary`
-pub static PARTICLES_AFTER_HYPHEN: &[&str] =
+pub static RU_PARTICLES_AFTER_HYPHEN: &[&str] =
     &["-то", "-ка", "-таки", "-де", "-тко", "-тка", "-с", "-ста"];
 
-pub const SCORE_DECAY: f64 = 0.9;
+pub const SCORE_MULTIPLIER: f64 = 0.9;
 
 /// Parse the word by analyzing it without
 /// a particle after a hyphen.
@@ -23,11 +23,17 @@ pub const SCORE_DECAY: f64 = 0.9;
 /// particles at tokenization level.
 
 #[derive(Debug, Clone, Copy)]
-pub struct HyphenSeparatedParticleAnalyzer {}
+pub struct HyphenSeparatedParticleAnalyzer {
+    particles_after_hyphen: &'static [&'static str],
+    score_multiplier: f64,
+}
 
 impl HyphenSeparatedParticleAnalyzer {
     pub(in crate::analyzer) fn new() -> Self {
-        HyphenSeparatedParticleAnalyzer {}
+        HyphenSeparatedParticleAnalyzer {
+            particles_after_hyphen: RU_PARTICLES_AFTER_HYPHEN,
+            score_multiplier: SCORE_MULTIPLIER,
+        }
     }
 }
 
@@ -40,7 +46,7 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
 
         let morph = ctx.morph();
 
-        for &particle in PARTICLES_AFTER_HYPHEN {
+        for &particle in self.particles_after_hyphen {
             let word_lower = ctx.word_lower();
             if word_lower.len() <= particle.len() || !word_lower.ends_with(particle) {
                 continue;
@@ -63,7 +69,7 @@ impl AnalyzerUnit for HyphenSeparatedParticleAnalyzer {
                 let hs_particle = HyphenSeparatedParticle::new(particle);
                 let stack = StackParticle::new(h_stack, hs_particle);
                 let lex = Lex::from_stack(stack);
-                let score = parsed.score * SCORE_DECAY;
+                let score = parsed.score * self.score_multiplier;
                 ctx.push(Parsed::new(lex, score));
             }
         }

@@ -1,5 +1,4 @@
 use crate::analyzer::context::ParseContext;
-use crate::analyzer::model::abc::*;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Parsed;
@@ -8,6 +7,9 @@ use crate::analyzer::unit::AnalyzerUnit;
 use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::tag::TagReg;
 use crate::shapes::is_latin;
+use crate::Score;
+
+const SCORE: Score = Score::Fake(0.9);
 
 /// This analyzer marks latin words with "LATN" tag.
 ///
@@ -16,12 +18,15 @@ use crate::shapes::is_latin;
 #[derive(Debug, Clone)]
 pub struct LatinAnalyzer {
     pub tag: TagReg,
+    score: Score,
 }
 
 impl LatinAnalyzer {
     pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
-        let tag = TagReg::from_fmt_int(grammemes, "LATN");
-        LatinAnalyzer { tag }
+        LatinAnalyzer {
+            tag: TagReg::from_fmt_int(grammemes, "LATN"),
+            score: SCORE,
+        }
     }
 }
 
@@ -35,8 +40,7 @@ impl AnalyzerUnit for LatinAnalyzer {
             return;
         }
         let shaped = Shaped::latin(ctx.word_lower());
-        let score = shaped.score();
         let lex = Lex::from_stack(StackSource::from(shaped));
-        ctx.push(Parsed::new(lex, score));
+        ctx.push(Parsed::new(lex, self.score));
     }
 }

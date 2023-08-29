@@ -1,4 +1,8 @@
+use std::cmp::Ordering;
+use std::iter;
+
 use inlinable_string::InlinableString;
+use smallvec::SmallVec;
 
 use crate::analyzer::context::ParseContext;
 use crate::analyzer::model::stack::StackAffix;
@@ -15,7 +19,7 @@ use crate::opencorpora::dictionary::PredictionSuffixValue;
 use crate::opencorpora::dictionary::PredictionSuffixesDawg;
 
 const MIN_WORD_LENGTH: usize = 4;
-const ESTIMATE_DECAY: f64 = 0.5;
+const SCORE_MULTIPLIER: f64 = 0.5;
 
 /// Parse the word by checking how the words with similar suffixes
 /// are parsed.
@@ -25,14 +29,14 @@ const ESTIMATE_DECAY: f64 = 0.5;
 #[derive(Debug, Clone, Copy)]
 pub struct KnownSuffixAnalyzer {
     min_word_length: usize,
-    estimate_decay: f64,
+    score_multiplier: f64,
 }
 
 impl KnownSuffixAnalyzer {
     pub(in crate::analyzer) fn new() -> Self {
         KnownSuffixAnalyzer {
             min_word_length: MIN_WORD_LENGTH,
-            estimate_decay: ESTIMATE_DECAY,
+            score_multiplier: SCORE_MULTIPLIER,
         }
     }
 }
@@ -52,16 +56,18 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
         let morph = ctx.morph();
         let word_lower = InlinableString::from(ctx.word_lower());
 
-        let mut subresult: Vec<(u16, u16, Lex)> = Vec::new();
+        let mut subresult: SmallVec<[(u16, u16, Lex); 16]> = SmallVec::new();
 
-        let mut total_counts: Vec<u32> = vec![1; morph.dict().paradigm_prefixes.len()];
+        let mut total_counts: SmallVec<[u32; 4]> = iter::repeat(1)
+            .take(morph.dict().paradigm_prefixes.len())
+            .collect();
 
         #[allow(unused_variables)]
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, &word_lower) {
             #[cfg(feature = "trace_analyzer")]
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
-            'iter_splits: for i in morph.dict().prediction_splits(chars_count - 1) {
+            'iter_splits: for i in morph.dict().prediction_splits(chars_count) {
                 let pos = word_lower
                     .chars()
                     .take(chars_count - i)
@@ -134,18 +140,23 @@ impl AnalyzerUnit for KnownSuffixAnalyzer {
             }
         }
 
-        let mut subresult: Vec<Parsed> = subresult
+        let mut subresult: SmallVec<[Parsed; 16]> = subresult
             .into_iter()
             .map(|(cnt, prefix_id, lex)| {
                 let score = Score::Fake(
-                    self.estimate_decay * f64::from(cnt)
+                    self.score_multiplier * f64::from(cnt)
                         / f64::from(total_counts[prefix_id as usize]),
                 );
                 Parsed { lex, score }
             })
             .collect();
 
-        subresult.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap().reverse());
+        subresult.sort_by(|a, b| {
+            a.score
+                .partial_cmp(&b.score)
+                .unwrap_or(Ordering::Equal)
+                .reverse()
+        });
         ctx.extend(subresult);
     }
 }

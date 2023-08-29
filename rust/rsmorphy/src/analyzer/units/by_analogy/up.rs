@@ -11,7 +11,7 @@ use crate::analyzer::util::word_splits;
 
 const MIN_REMINDER_LENGTH: usize = 3;
 const MAX_PREFIX_LENGTH: usize = 5;
-const ESTIMATE_DECAY: f64 = 0.5;
+const SCORE_MULTIPLIER: f64 = 0.5;
 
 /// Parses the word by parsing only the word suffix
 /// (with restrictions on prefix & suffix lengths).
@@ -19,13 +19,18 @@ const ESTIMATE_DECAY: f64 = 0.5;
 /// Example: байткод -> (байт) + код
 #[derive(Debug, Clone, Copy)]
 pub struct UnknownPrefixAnalyzer {
-    estimate_decay: f64,
+    min_reminder_length: usize,
+    max_prefix_length: usize,
+    score_multiplier: f64,
 }
 
 impl UnknownPrefixAnalyzer {
     pub(in crate::analyzer) fn new() -> Self {
-        let estimate_decay = ESTIMATE_DECAY;
-        UnknownPrefixAnalyzer { estimate_decay }
+        UnknownPrefixAnalyzer {
+            min_reminder_length: MIN_REMINDER_LENGTH,
+            max_prefix_length: MAX_PREFIX_LENGTH,
+            score_multiplier: SCORE_MULTIPLIER,
+        }
     }
 }
 
@@ -39,9 +44,11 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
         let morph = ctx.morph();
         let word_lower = InlinableString::from(ctx.word_lower());
 
-        for (prefix, unprefixed_word) in
-            word_splits(&word_lower, MIN_REMINDER_LENGTH, MAX_PREFIX_LENGTH)
-        {
+        for (prefix, unprefixed_word) in word_splits(
+            &word_lower,
+            self.min_reminder_length,
+            self.max_prefix_length,
+        ) {
             let mut subresult = ParseContext::new(morph, unprefixed_word);
             morph.units().dictionary.parse(&mut subresult);
 
@@ -53,7 +60,7 @@ impl AnalyzerUnit for UnknownPrefixAnalyzer {
                 let stack = parsed.lex.stack.stack.left.stack;
                 let affix = Affix::unknown_prefix(prefix);
                 let lex = Lex::from_stack(StackAffix::new(stack, affix));
-                let score = parsed.score * self.estimate_decay;
+                let score = parsed.score * self.score_multiplier;
                 ctx.push_if_not_seen(Parsed::new(lex, score));
             }
         }

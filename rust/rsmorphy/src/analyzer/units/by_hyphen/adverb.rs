@@ -13,8 +13,11 @@ use crate::opencorpora::kind::Number;
 use crate::opencorpora::kind::PartOfSpeech;
 use crate::opencorpora::tag::TagReg;
 
-const HA_PREFIX: &str = "по-";
-const HA_SCORE: Score = Score::Fake(0.7);
+const RU_HA_PREFIX: &str = "по-";
+const RU_HA_PREFIX_LEN: usize = 3;
+const RU_MIN_WORD_LEN: usize = 5;
+const RU_MIN_REMNANT_LEN: usize = RU_MIN_WORD_LEN - RU_HA_PREFIX_LEN;
+const SCORE_MULTIPLIER: f64 = 0.7;
 
 /// Detect adverbs that starts with "по-".
 ///
@@ -23,12 +26,15 @@ const HA_SCORE: Score = Score::Fake(0.7);
 #[derive(Debug, Clone)]
 pub struct HyphenAdverbAnalyzer {
     pub tag: TagReg,
+    score_multiplier: f64,
 }
 
 impl HyphenAdverbAnalyzer {
     pub fn new(grammemes: &GramRegistry) -> Self {
-        let tag = TagReg::from_fmt_int(grammemes, "ADVB");
-        HyphenAdverbAnalyzer { tag }
+        HyphenAdverbAnalyzer {
+            tag: TagReg::from_fmt_int(grammemes, "ADVB"),
+            score_multiplier: SCORE_MULTIPLIER,
+        }
     }
 }
 
@@ -41,14 +47,15 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
 
         let morph = ctx.morph();
         let word = ctx.word();
-        if !word.starts_with(HA_PREFIX) || word.chars().count() < 5 {
+        if !word.starts_with(RU_HA_PREFIX) {
             return;
         }
-        let remnant = &word[HA_PREFIX.len()..];
-        if remnant.chars().count() < 2 {
+        let remnant = &word[RU_HA_PREFIX.len()..];
+        if remnant.chars().count() < RU_MIN_REMNANT_LEN {
             return;
         }
 
+        // TODO simplify (e.g., avoid estimation)
         morph
             .parse(remnant)
             .into_iter()
@@ -66,7 +73,7 @@ impl AnalyzerUnit for HyphenAdverbAnalyzer {
             .for_each(|parsed: Parsed| {
                 let word = WordStruct::new(ctx.word_lower(), parsed.lex.is_known());
                 let lex = Lex::from_stack(StackSource::new(HyphenAdverb::new(word)));
-                ctx.push(Parsed::new(lex, HA_SCORE));
+                ctx.push(Parsed::new(lex, Score::Fake(self.score_multiplier)));
             });
     }
 }
