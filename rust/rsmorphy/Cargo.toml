@@ -10,7 +10,7 @@ readme = "README.md"
 homepage = "https://github.com/irbis-labs/rsmorphy"
 repository = "https://github.com/irbis-labs/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
-edition = "2018"
+edition = "2021"
 publish = true
 
 [badges]

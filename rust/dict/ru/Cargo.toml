@@ -9,6 +9,7 @@ categories = ["text-processing", "value-formatting"]
 homepage = "https://github.com/alexander-irbis/rsmorphy"
 repository = "https://github.com/alexander-irbis/rsmorphy"
 documentation = "https://docs.rs/rsmorphy/"
+edition = "2021"
 publish = true
 
 

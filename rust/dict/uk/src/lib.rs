@@ -1,6 +1,6 @@
 pub mod release;
 
-pub use release::DICT_PATH;
+pub use crate::release::DICT_PATH;
 
 
 #[cfg(test)]
