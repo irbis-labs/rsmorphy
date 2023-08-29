@@ -1,6 +1,3 @@
-use std::collections::BTreeSet;
-use std::iter::FromIterator;
-
 use crate::analyzer::context::ParseContext;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Initial;
@@ -12,24 +9,37 @@ use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::kind::InitialKind;
 use crate::opencorpora::tag::TagReg;
 
-lazy_static::lazy_static! {
-    #[derive(Debug)]
-    pub static ref LETTERS: BTreeSet<&'static str> = {
-        let set = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ".split("").filter(|v| !v.is_empty());
-        BTreeSet::from_iter(set)
-    };
-}
+pub static RU_LETTERS: [char; 30] = [
+    'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С',
+    'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Э', 'Ю', 'Я',
+];
+
+pub static RU_LETTERS_STR: [&str; 30] = [
+    "А", "Б", "В", "Г", "Д", "Е", "Ё", "Ж", "З", "И", "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С",
+    "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я",
+];
 
 const SCORE: Score = Score::Fake(0.1);
 
 #[derive(Debug, Clone)]
 pub struct InitialsAnalyzer {
-    pub tags: Vec<(TagReg, InitialKind)>,
+    pub(crate) tags: Vec<(TagReg, InitialKind)>,
 }
 
 impl InitialsAnalyzer {
     pub(in crate::analyzer) fn new(grammemes: &GramRegistry) -> Self {
         use InitialKind::*;
+
+        if cfg!(debug_assertions) {
+            assert_eq!(RU_LETTERS.len(), RU_LETTERS_STR.len());
+
+            RU_LETTERS
+                .iter()
+                .zip(RU_LETTERS_STR.iter())
+                .for_each(|(c, s)| {
+                    assert_eq!(*c, s.chars().next().unwrap());
+                });
+        }
 
         let mut tags: Vec<_> = Vec::new();
         for kind in [FirstName, Patronym] {
@@ -50,29 +60,39 @@ impl InitialsAnalyzer {
         }
         InitialsAnalyzer { tags }
     }
+
+    pub(in crate::analyzer) fn find_letter(letter: &str) -> Option<&'static str> {
+        let mut it = letter.chars();
+
+        let Some(letter) = it.next() else { None? };
+
+        if it.next().is_some() {
+            None?
+        }
+
+        let index = RU_LETTERS.iter().copied().position(|c| c == letter)?;
+
+        Some(RU_LETTERS_STR[index])
+    }
 }
 
 impl AnalyzerUnit for InitialsAnalyzer {
     fn parse(&self, ctx: &mut ParseContext) {
         #[cfg(feature = "trace_analyzer")]
-        log::trace!("AbbreviatedFirstNameAnalyzer::parse()");
+        log::trace!("InitialsAnalyzer::parse()");
         #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" word: "{}", word_lower: "{}" "#, word, word_lower);
         #[cfg(feature = "trace_analyzer")]
-        log::trace!(
-            r#" LETTERS: "{:?}" "#,
-            LETTERS.iter().cloned().collect::<Vec<&str>>().join(", ")
-        );
-        #[cfg(feature = "trace_analyzer")]
-        log::trace!(r#" LETTERS contains word: "{}" "#, LETTERS.contains(word));
+        log::trace!(r#" RU_LETTERS: "{:?}" "#, RU_LETTERS);
 
-        if let Some(&letter) = LETTERS.get(ctx.word()) {
+        let letter = Self::find_letter(ctx.word());
+
+        #[cfg(feature = "trace_analyzer")]
+        log::trace!(r#" RU_LETTERS contains word: {:?} "#, letter);
+
+        if let Some(letter) = letter {
             for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {
-                let source = Initial {
-                    letter,
-                    kind,
-                    tag_idx: tag_idx as u8,
-                };
+                let source = Initial::new(letter, kind, tag_idx as u8);
                 let lex = Lex::from_stack(StackSource::from(source));
                 ctx.push(Parsed::new(lex, SCORE));
             }

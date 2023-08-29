@@ -6,7 +6,7 @@ use crate::analyzer::model::lexeme::Lexeme;
 use crate::analyzer::model::stack::StackSource;
 use crate::analyzer::model::Lex;
 use crate::analyzer::model::Score;
-use crate::analyzer::units::abbr::initial::LETTERS;
+use crate::analyzer::units::InitialsAnalyzer;
 use crate::analyzer::MorphAnalyzer;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::kind::InitialKind;
@@ -20,6 +20,14 @@ pub struct Initial {
 }
 
 impl Initial {
+    pub(in crate::analyzer) fn new(letter: &'static str, kind: InitialKind, tag_idx: u8) -> Self {
+        Initial {
+            letter,
+            kind,
+            tag_idx,
+        }
+    }
+
     pub fn iter_lexeme<'s: 'i, 'm: 'i, 'i>(
         &'s self,
         morph: &'m MorphAnalyzer,
@@ -121,14 +129,14 @@ impl MorphySerde for Initial {
         let (s, gender) = take_1_char(s)?;
         let (s, case) = take_1_char(s)?;
         let (s, word) = take_str_until_char_is(follow_str(s, ",")?, ';')?;
+
         let tag_idx = decode_tag_idx(kind, gender, case)?;
         let kind = match kind {
             'n' => InitialKind::FirstName,
             'p' => InitialKind::Patronym,
-            // FIXME is it proper error?
-            _ => Err(DecodeError::UnknownPartType)?,
+            _ => Err(DecodeError::DoesntMatch)?,
         };
-        let &letter = LETTERS.get(word).ok_or_else(|| DecodeError::DoesntMatch)?;
+        let letter = InitialsAnalyzer::find_letter(word).ok_or(DecodeError::DoesntMatch)?;
         Ok((
             s,
             Initial {
