@@ -1,6 +1,7 @@
 mod dictionary;
 mod error;
 mod loader;
+mod numeral_agreement;
 mod paradigm;
 mod value;
 

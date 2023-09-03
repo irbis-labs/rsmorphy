@@ -1,5 +1,5 @@
-pub mod release {
-    include!(concat!(env!("OUT_DIR"), "/release.rs"));
+pub mod meta {
+    include!(concat!(env!("OUT_DIR"), "/meta.rs"));
 }
 
-pub use crate::release::DICT_PATH;
+pub use crate::meta::DICT_PATH;

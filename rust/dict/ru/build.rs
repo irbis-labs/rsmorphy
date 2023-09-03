@@ -7,7 +7,7 @@ use std::path::Path;
 fn main() -> io::Result<()> {
     let dict_path = Path::new("./data").canonicalize()?;
 
-    let release_path = &Path::new(&env::var("OUT_DIR").unwrap()).join("release.rs");
+    let release_path = &Path::new(&env::var("OUT_DIR").unwrap()).join("meta.rs");
     let mut f = File::create(release_path).expect("Can't create a file");
 
     writeln!(f, r"pub const DICT_PATH: &str = {:?};", dict_path)?;

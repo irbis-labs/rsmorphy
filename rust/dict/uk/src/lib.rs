@@ -1,11 +1,5 @@
-pub mod release;
-
-pub use crate::release::DICT_PATH;
-
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-    }
+pub mod meta {
+    include!(concat!(env!("OUT_DIR"), "/meta.rs"));
 }
+
+pub use crate::meta::DICT_PATH;

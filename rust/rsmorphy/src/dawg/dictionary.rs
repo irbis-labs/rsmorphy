@@ -3,13 +3,11 @@ use std::io::Read;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
-use serde::Deserialize;
-use serde::Serialize;
 
 use crate::dawg::units;
 
 /// Dictionary class for retrieval and binary I/O.
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Dictionary {
     /// Root index
     pub root: u32,

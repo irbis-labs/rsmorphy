@@ -1,12 +1,7 @@
 use std::num::NonZeroU8;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::opencorpora::gram::set::GramSet;
 
-#[derive(Serialize, Deserialize)]
-//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub struct Gram {
     id: NonZeroU8,

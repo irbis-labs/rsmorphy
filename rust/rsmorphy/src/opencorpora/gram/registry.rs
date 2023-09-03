@@ -1,14 +1,11 @@
 use std::collections::HashMap;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use super::Gram;
 use super::GramId;
 use super::GramReg;
 use crate::opencorpora::gram::registry_builder::GramRegistryBuilder;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct GramRegistry {
     reg_map: Vec<GramReg>,
     lat_map: HashMap<GramId, Gram>,

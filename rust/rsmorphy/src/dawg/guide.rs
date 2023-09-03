@@ -3,14 +3,13 @@ use std::io::Read;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
-use serde::Deserialize;
-use serde::Serialize;
 
 use super::guide_entry::GuideEntry;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Guide {
     /// Root index
+    #[allow(dead_code)]
     root: u32,
     units: Vec<GuideEntry>,
 }
@@ -21,9 +20,9 @@ impl Guide {
         let root = 0;
 
         let units_count = reader.read_u32::<LittleEndian>()?;
-        if units_count == 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "Guide is empty"));
-        }
+        // if units_count == 0 {
+        //     return Err(io::Error::new(io::ErrorKind::InvalidData, "Guide is empty"));
+        // }
 
         let units = (0..units_count)
             .map(|_| Ok(GuideEntry::new(reader.read_u8()?, reader.read_u8()?)))

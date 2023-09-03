@@ -1,21 +1,25 @@
+use std::fmt;
 use std::iter::FromIterator;
 use std::ops;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::opencorpora::gram::gram::Gram;
 
-#[derive(Serialize, Deserialize)]
-//
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash)]
+#[derive(Default, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub struct GramSet {
     set: u128,
 }
 
+impl fmt::Debug for GramSet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("GramSet")
+            .field("set", &format_args!("{:#b}", self.set))
+            .finish()
+    }
+}
+
 impl GramSet {
     #[inline(always)]
-    pub fn new() -> Self {
+    pub fn empty() -> Self {
         Self::default()
     }
 
@@ -62,7 +66,13 @@ impl GramSet {
     /// for an empty intersection.
     #[inline(always)]
     pub fn is_disjoint(self, other: Self) -> bool {
-        self & other == Self::new()
+        (self & other).is_empty()
+    }
+
+    /// Returns true if the set has at least one element in common with other.
+    #[inline(always)]
+    pub fn is_intersect(self, other: Self) -> bool {
+        !(self & other).is_empty()
     }
 
     /// Returns true if the set is a subset of another, i.e., other contains at least
@@ -111,7 +121,7 @@ impl From<Gram> for GramSet {
 impl FromIterator<Gram> for GramSet {
     #[inline(always)]
     fn from_iter<T: IntoIterator<Item = Gram>>(iter: T) -> Self {
-        let mut set = GramSet::new();
+        let mut set = GramSet::empty();
         for gram in iter {
             set.insert(gram);
         }

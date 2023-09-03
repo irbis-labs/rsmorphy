@@ -1,6 +1,3 @@
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::opencorpora::gram::GramId;
 use crate::opencorpora::kind::Animacy;
 use crate::opencorpora::kind::Aspect;
@@ -16,8 +13,6 @@ use crate::opencorpora::kind::Transitivity;
 use crate::opencorpora::kind::Voice;
 use crate::opencorpora::tag::EitherError;
 
-#[derive(Serialize, Deserialize)]
-//
 #[derive(Debug, Default, Clone, Copy)]
 pub struct TagSet {
     pub pos: Option<PartOfSpeech>,

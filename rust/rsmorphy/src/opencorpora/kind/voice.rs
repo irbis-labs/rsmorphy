@@ -1,10 +1,5 @@
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::opencorpora::gram::GramId;
 
-#[derive(Serialize, Deserialize)]
-//
 /// Залог
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Voice {

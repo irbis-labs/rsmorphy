@@ -4,12 +4,10 @@ use std::io::Read;
 use std::path::Path;
 
 use flate2::read::GzDecoder;
-use serde::Deserialize;
-use serde::Serialize;
 
 use crate::dawg::dictionary::Dictionary;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Dawg {
     pub(super) dict: Dictionary,
 }

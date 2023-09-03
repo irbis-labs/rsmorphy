@@ -1,4 +1,4 @@
-use roman;
+use roman_ii::Roman;
 use unicode_categories::UnicodeCategories;
 
 #[inline]
@@ -55,13 +55,14 @@ pub fn is_punctuation(token: &str) -> bool {
     ```
     use rsmorphy::shapes::is_roman_number;
 
-    assert!(is_roman_number("II"));
+    assert!(is_roman_number("mmxxiii"));
     assert!(is_roman_number("IX"));
+    assert!(is_roman_number("Ii"));
 
     assert!(!is_roman_number("XIIIII"));
     assert!(!is_roman_number(""));
     ```
 */
 pub fn is_roman_number(token: &str) -> bool {
-    roman::from(token).is_some()
+    Roman::from_str_strict(token).is_some()
 }

@@ -1,24 +1,19 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::fs::File;
+use std::io;
 use std::iter::FromIterator;
-use std::path::Path;
 use std::path::PathBuf;
 
-use flate2::read::GzDecoder;
-use flate2::write::GzEncoder;
-use flate2::Compression;
 use inlinable_string::InlinableString;
-use serde::Deserialize;
-use serde::Serialize;
 use serde_json;
 use serde_json::Value;
+use smallvec::SmallVec;
 use string_cache::DefaultAtom;
 
 use crate::dawg::CompletionDawg;
-use crate::dawg::Dawg;
 pub use crate::dawg::HH;
 pub use crate::dawg::HHH;
+use crate::opencorpora::dictionary::numeral_agreement::NumeralGrammemes;
 use crate::opencorpora::dictionary::value::WordValue;
 use crate::opencorpora::dictionary::ParadigmId;
 use crate::opencorpora::dictionary::ParadigmIndex;
@@ -28,51 +23,38 @@ use crate::opencorpora::gram::Gram;
 use crate::opencorpora::gram::GramRegistry;
 use crate::opencorpora::gram::GramRow;
 use crate::opencorpora::gram::GramSet;
-use crate::opencorpora::kind::Case;
 use crate::opencorpora::tag::TagReg;
 use crate::opencorpora::util::SimpleTraceProfiler;
 
 pub type PredictionSuffixesDawg = CompletionDawg<PredictionSuffixValue>;
 
 /// Open Corpora dictionary wrapper class.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Debug)]
 pub struct Dictionary {
     pub grammemes: GramRegistry,
     pub gramtab: Vec<TagReg>,
     pub suffixes: Vec<DefaultAtom>,
     pub paradigms: Paradigms,
     pub words: CompletionDawg<WordValue>,
-    pub p_t_given_w: CompletionDawg<HH>,
-    pub prediction_prefixes: Dawg,
+    pub p_t_given_w: Option<CompletionDawg<HH>>,
     pub prediction_suffixes_dawgs: Vec<PredictionSuffixesDawg>,
     pub paradigm_prefixes: Vec<DefaultAtom>,
     pub paradigm_prefixes_rev: Vec<(u16, DefaultAtom)>,
     pub max_suffix_length: usize,
     pub char_substitutes: HashMap<InlinableString, InlinableString>,
-    pub rare_cases: [(Gram, Gram); 6],
+    pub rare_cases: SmallVec<[(Gram, Gram); 8]>,
+    pub non_productive: GramSet,
+    pub numeral_grammemes: NumeralGrammemes,
 }
 
 impl Dictionary {
-    pub fn from_bin(path: impl AsRef<Path>) -> bincode::Result<Self> {
-        log::debug!("Load bin dict file {:?}", path.as_ref());
-        bincode::deserialize_from(GzDecoder::new(File::open(path)?))
-    }
-
-    pub fn save_bin(&self, path: impl AsRef<Path>) -> bincode::Result<()> {
-        log::debug!("Save bin dict file {:?}", path.as_ref());
-        bincode::serialize_into(
-            GzEncoder::new(File::create(path)?, Compression::best()),
-            &self,
-        )
-    }
-
-    pub fn from_file(p: impl Into<PathBuf>) -> Result<Self, LoadError> {
+    pub fn load_pymorphy2(p: impl Into<PathBuf>) -> Result<Self, LoadError> {
         let load = PathLoader::new(p);
 
         let mut profiler = SimpleTraceProfiler::start();
 
         let meta_json = {
-            let meta: Vec<(String, Value)> = load.json("meta.json.gz").expect("object of `Value`s");
+            let meta: Vec<(String, Value)> = load.json("meta.json").expect("object of `Value`s");
             HashMap::<String, Value>::from_iter(meta.into_iter())
         };
         profiler.waypoint("meta");
@@ -110,10 +92,10 @@ impl Dictionary {
             .collect();
         profiler.waypoint("paradigm_prefixes_rev");
 
-        let suffixes = load.json("suffixes.json.gz").expect("array of strings");
+        let suffixes = load.json("suffixes.json").expect("array of strings");
         profiler.waypoint("suffixes");
 
-        let grammemes: Vec<GramRow> = load.json("grammemes.json.gz").expect("array of arrays");
+        let grammemes: Vec<GramRow> = load.json("grammemes.json").expect("array of arrays");
         profiler.waypoint("grammemes");
 
         let grammemes = {
@@ -126,7 +108,7 @@ impl Dictionary {
         profiler.waypoint("grammemes'");
 
         let gramtab: Vec<String> = load
-            .json("gramtab-opencorpora-int.json.gz")
+            .json("gramtab-opencorpora-int.json")
             .expect("array of strings");
         profiler.waypoint("gramtab");
         // TODO opencorpora-ext
@@ -136,23 +118,25 @@ impl Dictionary {
             .collect();
         profiler.waypoint("gramtab'");
 
-        let paradigms = Paradigms::from_reader(load.reader("paradigms.array.gz")?)?;
+        let paradigms = Paradigms::from_reader(load.reader("paradigms.array")?)?;
         profiler.waypoint("paradigms");
 
-        let words = CompletionDawg::from_reader(load.reader("words.dawg.gz")?)?;
+        let words = CompletionDawg::from_reader(load.reader("words.dawg")?)?;
         profiler.waypoint("words");
 
-        let p_t_given_w = CompletionDawg::from_reader(load.reader("p_t_given_w.intdawg.gz")?)?;
+        let p_t_given_w = match load.reader("p_t_given_w.intdawg") {
+            Ok(reader) => Some(CompletionDawg::from_reader(reader)?),
+            Err(e) if e.kind() == io::ErrorKind::NotFound => None,
+            Err(e) => Err(e)?,
+        };
         profiler.waypoint("p_t_given_w");
 
-        let prediction_prefixes = Dawg::from_reader(load.reader("prediction-prefixes.dawg.gz")?)?;
-        profiler.waypoint("prediction_prefixes");
+        // let prediction_prefixes = Dawg::from_reader(load.reader("prediction-prefixes.dawg")?)?;
+        // profiler.waypoint("prediction_prefixes");
 
         let prediction_suffixes_dawgs = (0..paradigm_prefixes.len())
             .map(|i| {
-                CompletionDawg::from_reader(
-                    load.reader(format!("prediction-suffixes-{}.dawg.gz", i))?,
-                )
+                CompletionDawg::from_reader(load.reader(format!("prediction-suffixes-{}.dawg", i))?)
             })
             .collect::<Result<_, LoadError>>()?;
         profiler.waypoint("prediction_suffixes_dawgs");
@@ -161,23 +145,33 @@ impl Dictionary {
         let char_substitutes = [("е".into(), "ё".into())].into_iter().collect();
 
         let rare_cases = {
-            use Case::*;
-
-            let case_gram = |case: Case| -> Gram {
-                // SAFETY: All cases should be in the registry.
-                grammemes.find_gram(case.gram_int()).unwrap()
-            };
-
             [
-                (case_gram(Gen1), case_gram(Gent)),
-                (case_gram(Gen2), case_gram(Gent)),
-                // (case_gram(Acc1), case_gram(Accs)),
-                (case_gram(Acc2), case_gram(Accs)),
-                (case_gram(Loc1), case_gram(Loct)),
-                (case_gram(Loc2), case_gram(Loct)),
-                (case_gram(Voct), case_gram(Nomn)),
+                ("gen1", "gent"),
+                ("gen2", "gent"),
+                ("acc1", "accs"),
+                ("acc2", "accs"),
+                ("loc1", "loct"),
+                ("loc2", "loct"),
+                ("voct", "nomn"),
             ]
+            .into_iter()
+            .filter_map(|(gram_int_1, gram_int_2)| {
+                Some((
+                    grammemes.find_gram(gram_int_1)?,
+                    grammemes.find_gram(gram_int_2)?,
+                ))
+            })
+            .collect()
         };
+
+        let non_productive: GramSet = [
+            "NUMR", "NPRO", "PRED", "PREP", "CONJ", "PRCL", "INTJ", "Apro",
+        ]
+        .into_iter()
+        .filter_map(|gram_int| grammemes.find_gram(gram_int))
+        .collect();
+
+        let numeral_grammemes = NumeralGrammemes::new(&grammemes);
 
         Ok(Dictionary {
             grammemes,
@@ -186,13 +180,15 @@ impl Dictionary {
             paradigms,
             words,
             p_t_given_w,
-            prediction_prefixes,
+            // prediction_prefixes,
             prediction_suffixes_dawgs,
             paradigm_prefixes,
             paradigm_prefixes_rev,
             max_suffix_length,
             char_substitutes,
             rare_cases,
+            non_productive,
+            numeral_grammemes,
         })
     }
 
@@ -282,12 +278,64 @@ impl Dictionary {
     }
 
     pub fn fix_rare_cases(&self, mut grammemes: GramSet) -> GramSet {
-        for (from, to) in self.rare_cases {
+        for &(from, to) in &self.rare_cases {
             if grammemes.contains(from) {
                 grammemes.remove(from);
                 grammemes.insert(to);
             }
         }
         grammemes
+    }
+
+    #[inline(always)]
+    pub fn is_productive(&self, grammemes: GramSet) -> bool {
+        (grammemes & self.non_productive).is_empty()
+    }
+
+    /// Returns grammemes that are required to be present in the word.
+    /// The number should be passed similar to `(number.abs() % 100) as u8`.
+    pub fn numeral_agreement_grammemes(&self, grammemes: GramSet, num: u8) -> GramSet {
+        enum NK {
+            One,
+            Little,
+            Many,
+        }
+
+        let NumeralGrammemes {
+            noun,
+            adjf,
+            prtf,
+            sing,
+            plur,
+            nomn,
+            gent,
+            accs,
+            femn,
+            case,
+        } = self.numeral_grammemes;
+
+        let (num_10, num_100) = (num % 10, num % 100);
+        let num_kind = match () {
+            () if (num_10 == 1) && (num_100 != 11) => NK::One,
+            () if (num_10 >= 2) && (num_10 <= 4) && (num_100 < 10 || num_100 >= 20) => NK::Little,
+            () => NK::Many,
+        };
+
+        let g = grammemes;
+        match num_kind {
+            _ if g.is_disjoint(noun | adjf | prtf) => GramSet::empty(),
+
+            _ if g.is_superset(noun) && g.is_disjoint(nomn | accs) => {
+                (case & g) | if let NK::One = num_kind { sing } else { plur }
+            }
+
+            NK::One if g.is_superset(nomn) => sing | nomn,
+            NK::One => sing | accs,
+
+            NK::Little if g.is_superset(noun) => sing | gent,
+            NK::Little if g.is_superset(femn) && g.is_intersect(adjf | prtf) => plur | nomn,
+
+            _ => plur | gent,
+        }
     }
 }

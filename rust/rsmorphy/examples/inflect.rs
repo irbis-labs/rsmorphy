@@ -3,66 +3,124 @@ use rsmorphy::prelude::*;
 
 pub mod util;
 
-//use util::print_row_lex;
-
 fn main() {
     let _ = env_logger::init();
 
-    let morph_ru = MorphAnalyzer::from_file(dict_ru::DICT_PATH).unwrap();
-    //let lex = Lex::from_id(&morph_ru, "ru:d:стали,388,4").unwrap();
-    //print_row_lex(&morph_ru, 0, &lex.inflect(&morph_ru, &GrammemeSet::from_str("plur,ablt")).unwrap());
-    //print_row_lex(&morph_ru, 1, &lex.inflect(&morph_ru, &GrammemeSet::from_str("femn,sing,ablt,V-ey")).unwrap());
-    //println!();
+    {
+        let rus = Russian::load_pymorphy2_dict(dict_ru::DICT_PATH).unwrap();
 
-    let apple = Lex::from_id("ru:d:яблоко,22c").unwrap();
-    let bread = Lex::from_id("ru:d:хлеб,878").unwrap();
-    let fish = Lex::from_id("ru:d:рыба,35").unwrap();
+        let apple = rus.decode_token("ru:d:яблоко,247").unwrap();
+        let bread = rus.decode_token("ru:d:хлеб,8d4").unwrap();
+        let fish = rus.decode_token("ru:d:рыба,35").unwrap();
 
-    let two = Lex::from_id("ru:d:два,4e0").unwrap();
-    let five = Lex::from_id("ru:d:пять,379").unwrap();
+        let two = rus.decode_token("ru:d:два,51c").unwrap();
+        let five = rus.decode_token("ru:d:пять,3a2").unwrap();
 
-    let grms = &morph_ru.dict().grammemes;
-    let ablt_set = grms.find_gram("ablt").unwrap().as_set();
+        let grms = &rus.dict().grammemes;
+        let ablt = grms.find_gram("ablt").unwrap().as_set();
 
-    println!(
-        " ::: {} {} + {} {} = {} {}",
-        1,
-        apple.get_plural(&morph_ru, 1).unwrap(),
-        4,
-        apple.get_plural(&morph_ru, 4).unwrap(),
-        5,
-        apple.get_plural(&morph_ru, 5).unwrap(),
-    );
-    println!(
-        " ::: {} {} - {} {} = {} {}",
-        102,
-        apple.get_plural(&morph_ru, 102).unwrap(),
-        11,
-        apple.get_plural(&morph_ru, 11).unwrap(),
-        91,
-        apple.get_plural(&morph_ru, 91).unwrap(),
-    );
-    println!(
-        " ::: {} {} сыт не будешь",
-        1,
-        apple
-            .inflect(&morph_ru, ablt_set)
-            .unwrap()
-            .get_plural(&morph_ru, 1)
-            .unwrap(),
-    );
-    println!(
-        " ::: накормил {} {} и {} {}",
-        two.inflect(&morph_ru, ablt_set).unwrap(),
-        bread
-            .inflect(&morph_ru, ablt_set)
-            .unwrap()
-            .get_plural(&morph_ru, 2)
-            .unwrap(),
-        five.inflect(&morph_ru, ablt_set).unwrap(),
-        fish.inflect(&morph_ru, ablt_set)
-            .unwrap()
-            .get_plural(&morph_ru, 5)
-            .unwrap(),
-    );
+        println!(
+            " ::: {} {} + {} {} = {} {}",
+            1,
+            apple.find_plural(&rus, 1).unwrap().word_lower(),
+            4,
+            apple.find_plural(&rus, 4).unwrap().word_lower(),
+            5,
+            apple.find_plural(&rus, 5).unwrap().word_lower(),
+        );
+        println!(
+            " ::: {} {} - {} {} = {} {}",
+            102,
+            apple.find_plural(&rus, 102).unwrap().word_lower(),
+            11,
+            apple.find_plural(&rus, 11).unwrap().word_lower(),
+            91,
+            apple.find_plural(&rus, 91).unwrap().word_lower(),
+        );
+        println!(
+            " ::: {} {} сыт не будешь",
+            1,
+            apple
+                .inflect(&rus, ablt)
+                .unwrap()
+                .find_plural(&rus, 1)
+                .unwrap()
+                .word_lower(),
+        );
+        println!(
+            " ::: накормил {} {} и {} {}",
+            two.inflect(&rus, ablt).unwrap().word_lower(),
+            bread
+                .inflect(&rus, ablt)
+                .unwrap()
+                .find_plural(&rus, 2)
+                .unwrap()
+                .word_lower(),
+            five.inflect(&rus, ablt).unwrap().word_lower(),
+            fish.inflect(&rus, ablt)
+                .unwrap()
+                .find_plural(&rus, 5)
+                .unwrap()
+                .word_lower(),
+        );
+    }
+
+    {
+        let ukr = Ukrainian::load_pymorphy2_dict(dict_uk::DICT_PATH).unwrap();
+
+        let apple = ukr.decode_token("uk:d:яблуко,4d6").unwrap();
+        let bread = ukr.decode_token("uk:d:хліб,7").unwrap();
+        let fish = ukr.decode_token("uk:d:риба,c5").unwrap();
+
+        let two = ukr.decode_token("uk:d:два,657").unwrap();
+        let five = ukr.decode_token("uk:d:п'ять,4df").unwrap();
+
+        let grms = &ukr.dict().grammemes;
+        let ablt = grms.find_gram("ablt").unwrap().as_set();
+
+        println!(
+            " ::: {} {} + {} {} = {} {}",
+            1,
+            apple.find_plural(&ukr, 1).unwrap().word_lower(),
+            4,
+            apple.find_plural(&ukr, 4).unwrap().word_lower(),
+            5,
+            apple.find_plural(&ukr, 5).unwrap().word_lower(),
+        );
+        println!(
+            " ::: {} {} - {} {} = {} {}",
+            102,
+            apple.find_plural(&ukr, 102).unwrap().word_lower(),
+            11,
+            apple.find_plural(&ukr, 11).unwrap().word_lower(),
+            91,
+            apple.find_plural(&ukr, 91).unwrap().word_lower(),
+        );
+        println!(
+            " ::: {} {} не наїсися",
+            1,
+            apple
+                .inflect(&ukr, ablt)
+                .unwrap()
+                .find_plural(&ukr, 1)
+                .unwrap()
+                .word_lower(),
+        );
+        println!(
+            " ::: нагодував {} {} та {} {}",
+            two.inflect(&ukr, ablt).unwrap().word_lower(),
+            bread
+                .inflect(&ukr, ablt)
+                .unwrap()
+                .find_plural(&ukr, 2)
+                .unwrap()
+                .word_lower(),
+            five.inflect(&ukr, ablt).unwrap().word_lower(),
+            fish.inflect(&ukr, ablt)
+                .unwrap()
+                .find_plural(&ukr, 5)
+                .unwrap()
+                .word_lower(),
+        );
+    }
 }

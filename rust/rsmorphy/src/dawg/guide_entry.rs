@@ -1,7 +1,4 @@
-use serde::Deserialize;
-use serde::Serialize;
-
-#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct GuideEntry {
     pub child: u8,
     pub sibling: u8,

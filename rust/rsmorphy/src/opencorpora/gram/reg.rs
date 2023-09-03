@@ -3,16 +3,12 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 use inlinable_string::InlinableString;
-use serde::Deserialize;
-use serde::Serialize;
 
 use super::Gram;
 use super::GramId;
 use crate::opencorpora::gram::GramSet;
 use crate::opencorpora::tag::TagSet;
 
-#[derive(Serialize, Deserialize)]
-//
 #[derive(Debug, Clone)]
 pub struct GramReg {
     pub gram: Gram,

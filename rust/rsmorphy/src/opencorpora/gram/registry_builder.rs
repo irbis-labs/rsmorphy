@@ -23,7 +23,7 @@ pub struct GramRegistryBuilder {
 #[derive(Debug, Deserialize)]
 pub struct GramRow {
     name: InlinableString,
-    parent: InlinableString,
+    parent: Option<InlinableString>,
     alias: InlinableString,
     desciption: InlinableString,
 }
@@ -32,7 +32,7 @@ impl GramRow {
     pub fn new(name: &str, parent: &str, alias: &str, desciption: &str) -> Self {
         GramRow {
             name: name.into(),
-            parent: parent.into(),
+            parent: Some(parent.into()),
             alias: alias.into(),
             desciption: desciption.into(),
         }
@@ -50,7 +50,24 @@ impl GramRegistryBuilder {
 
     #[inline(always)]
     pub fn add_grammeme(&mut self, row: GramRow, extra: bool) -> Result<Gram, GramRegistryError> {
-        self.add_grammeme_internal(&row.name, &row.parent, row.alias, row.desciption, extra)
+        // Fix parent grammeme ids of Ukrainian pymorphy2 dict.
+        let parent = Self::fix_ukrainian_parent(row.parent.as_deref());
+        self.add_grammeme_internal(&row.name, parent, row.alias, row.desciption, extra)
+    }
+
+    #[inline(always)]
+    fn fix_ukrainian_parent(parent: Option<&str>) -> &str {
+        match parent.unwrap_or("") {
+            "gndr" => "GNdr",
+            "post" => "POST",
+            "voice" => "VOic",
+            "nmbr" => "NMbr",
+            "trns" => "TRns",
+            "tense" => "TEns",
+            "mood" => "MOod",
+            "aspc" => "ASpc",
+            keep_other => keep_other,
+        }
     }
 
     #[inline(always)]
@@ -116,8 +133,8 @@ impl GramRegistryBuilder {
                 name,
                 alias: alias.into(),
                 description: description.into(),
-                children: GramSet::new(),
-                incompatible: GramSet::new(),
+                children: GramSet::empty(),
+                incompatible: GramSet::empty(),
                 tag: TagSet::from_gram_id(name),
                 extra,
             };
@@ -129,6 +146,18 @@ impl GramRegistryBuilder {
     }
 
     pub fn finish(mut self) -> Result<GramRegistry, GramRegistryError> {
+        //
+        // Fix Ukrainian pymorphy2 dict
+        //
+
+        let missing = [("Name", "", "имя", "имя"), ("Patr", "", "отч", "отчество")];
+
+        for (name, parent, alias, description) in missing {
+            if !self.lat_map.contains_key(name) {
+                self.add_grammeme_internal(name, parent, alias, description, false)?;
+            }
+        }
+
         //
         // Add extra grammemes
         //

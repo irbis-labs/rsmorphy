@@ -3,12 +3,10 @@ use std::io::Read;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
-use serde::Deserialize;
-use serde::Serialize;
 
 pub type Paradigm<'a> = &'a [ParadigmEntry];
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Debug)]
 pub struct Paradigms {
     idx: Vec<u32>,
     data: Vec<ParadigmEntry>,
@@ -89,7 +87,7 @@ impl Paradigms {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct ParadigmEntry {
     pub(crate) prefix_id: u16,
     pub(crate) tag_id: u16,

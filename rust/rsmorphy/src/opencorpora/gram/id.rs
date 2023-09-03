@@ -4,17 +4,17 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use super::GramIdError;
 
-#[derive(Serialize, Deserialize)]
-//
 #[derive(Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub struct GramId {
     // ASCII bytes, e.g. b"NOUN".
-    id: [u8; 4],
+    id: [u8; Self::MAX_LEN],
+    len: u8,
+}
+
+impl GramId {
+    pub const MAX_LEN: usize = 11;
 }
 
 impl fmt::Debug for GramId {
@@ -35,21 +35,26 @@ impl GramId {
     #[inline(always)]
     pub fn from_str(gram_lat: &str) -> Result<Self, GramIdError> {
         let bytes = gram_lat.as_bytes();
-        if bytes.len() != 4 {
-            return Err(GramIdError::InvalidLength(bytes.len()));
+
+        let len = bytes.len();
+        if len < 1 || len > Self::MAX_LEN {
+            return Err(GramIdError::InvalidLength(len));
         }
-        let mut id = [0; 4];
-        id.copy_from_slice(bytes);
-        if !id.iter().all(u8::is_ascii) {
+
+        let mut id = [0; Self::MAX_LEN];
+        id[..len].copy_from_slice(bytes);
+        if !id[..len].iter().all(u8::is_ascii) {
             return Err(GramIdError::NotAscii(id));
         }
-        Ok(Self { id })
+
+        let len = len as u8;
+        Ok(Self { id, len })
     }
 
     #[inline(always)]
     pub fn as_str(&self) -> &str {
         // SAFETY: GramId is always constructed from &str.
-        unsafe { std::str::from_utf8_unchecked(&self.id) }
+        unsafe { std::str::from_utf8_unchecked(self.id.get_unchecked(..self.len as usize)) }
     }
 }
 

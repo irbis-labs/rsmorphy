@@ -16,8 +16,8 @@ pub enum GramRegistryError {
 #[allow(missing_copy_implementations)]
 #[derive(Debug, Clone, Error)]
 pub enum GramIdError {
-    #[error("GramId must be 4 bytes long, but got {0}")]
+    #[error("GramId length must be in range 1..=11, but got {0}")]
     InvalidLength(usize),
     #[error("GramId must be ASCII, but got {0:?}")]
-    NotAscii([u8; 4]),
+    NotAscii([u8; GramId::MAX_LEN]),
 }

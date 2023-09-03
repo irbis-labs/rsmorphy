@@ -1,6 +1,6 @@
 [package]
 name = "rsmorphy-dict-uk"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>", "Mikhail Korobov <kmike84@gmail.com>"]
 license = "MIT"
 description = "Ukrainian dictionary stub for rsmorphy"

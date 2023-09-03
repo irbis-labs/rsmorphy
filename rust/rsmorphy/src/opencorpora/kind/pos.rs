@@ -1,11 +1,6 @@
-use serde::Deserialize;
-use serde::Serialize;
-
 use self::PartOfSpeech as POS;
 use crate::opencorpora::gram::GramId;
 
-#[derive(Serialize, Deserialize)]
-//
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum PartOfSpeech {
     /// имя существительное

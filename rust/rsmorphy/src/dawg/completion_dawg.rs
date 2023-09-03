@@ -10,8 +10,6 @@ use base64::Engine as _;
 use flate2::read::GzDecoder;
 use inlinable_string::InlinableString;
 use inlinable_string::StringExt;
-use serde::Deserialize;
-use serde::Serialize;
 use smallvec::SmallVec;
 
 use crate::dawg::completer::Completer;
@@ -22,7 +20,7 @@ use crate::opencorpora::dictionary::LoadError;
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Debug)]
 pub struct CompletionDawg<V>
 where
     V: DawgValue,
