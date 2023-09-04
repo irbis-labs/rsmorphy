@@ -1,16 +1,18 @@
 mod completer;
 mod completion_dawg;
-mod dawg;
 mod dawg_key;
-mod dictionary;
+mod dict;
+mod dict_entry;
 mod guide;
 mod guide_entry;
-mod units;
 mod value;
 
-pub use self::completion_dawg::CompletionDawg;
-pub use self::dawg::Dawg;
-pub use self::dawg_key::WordTagDawgKey;
-pub use self::value::DawgValue;
-pub use self::value::HH;
-pub use self::value::HHH;
+pub(crate) use self::completion_dawg::CompletionDawg;
+pub(crate) use self::dawg_key::WordTagDawgKey;
+pub(crate) use self::dict::DawgDictionary;
+pub(crate) use self::dict_entry::DictEntry;
+pub(crate) use self::guide::DawgGuide;
+pub(crate) use self::guide_entry::GuideEntry;
+pub(crate) use self::value::DawgValue;
+pub(crate) use self::value::HH;
+pub(crate) use self::value::HHH;

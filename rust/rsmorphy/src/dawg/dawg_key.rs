@@ -36,20 +36,10 @@ impl WordTagDawgKey {
     }
 
     #[inline(always)]
-    pub fn len(&self) -> usize {
-        self.len as usize
-    }
-
-    #[inline(always)]
-    pub fn is_empty(&self) -> bool {
-        self.len == 0
-    }
-
-    #[inline(always)]
     pub fn as_str(&self) -> &str {
         // SAFETY: Cursor does not allow to write beyond the end of the buffer, and the result is
         // checked that no error has occurred.
-        let slice = unsafe { self.buf.get_unchecked(..self.len()) };
+        let slice = unsafe { self.buf.get_unchecked(..self.len as usize) };
         // SAFETY: Only valid UTF-8 has been written to the buffer from &str.
         unsafe { from_utf8_unchecked(slice) }
     }

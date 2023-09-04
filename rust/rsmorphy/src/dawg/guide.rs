@@ -1,40 +1,25 @@
-use std::io;
-use std::io::Read;
-
-use byteorder::LittleEndian;
-use byteorder::ReadBytesExt;
+use std::ops;
 
 use super::guide_entry::GuideEntry;
+use crate::dawg::dict_entry::DictIndex;
 
 #[derive(Debug, Clone)]
-pub struct Guide {
-    /// Root index
-    #[allow(dead_code)]
-    root: u32,
-    units: Vec<GuideEntry>,
+pub struct DawgGuide {
+    units: Box<[GuideEntry]>,
 }
 
-impl Guide {
-    /// Reads a guide from an input stream.
-    pub fn from_reader(mut reader: impl Read) -> io::Result<Self> {
-        let root = 0;
-
-        let units_count = reader.read_u32::<LittleEndian>()?;
-        // if units_count == 0 {
-        //     return Err(io::Error::new(io::ErrorKind::InvalidData, "Guide is empty"));
-        // }
-
-        let units = (0..units_count)
-            .map(|_| Ok(GuideEntry::new(reader.read_u8()?, reader.read_u8()?)))
-            .collect::<io::Result<_>>()?;
-
-        Ok(Guide { root, units })
+impl DawgGuide {
+    pub fn new(units: Box<[GuideEntry]>) -> Self {
+        DawgGuide { units }
     }
+}
+
+impl ops::Index<DictIndex> for DawgGuide {
+    type Output = GuideEntry;
 
     #[inline(always)]
-    pub(super) fn unit(&self, index: u32) -> &GuideEntry {
-        let index = index as usize;
-        debug_assert!(index < self.units.len(), "index out of bounds");
-        unsafe { self.units.get_unchecked(index) }
+    fn index(&self, index: DictIndex) -> &Self::Output {
+        assert!(index.as_usize() < self.units.len(), "index out of bounds");
+        unsafe { self.units.get_unchecked(index.as_usize()) }
     }
 }

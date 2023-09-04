@@ -5,7 +5,8 @@ pub struct GuideEntry {
 }
 
 impl GuideEntry {
-    pub fn new(child: u8, sibling: u8) -> Self {
+    #[inline(always)]
+    pub const fn new(child: u8, sibling: u8) -> Self {
         GuideEntry { child, sibling }
     }
 }

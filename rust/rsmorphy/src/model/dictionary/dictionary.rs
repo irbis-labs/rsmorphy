@@ -6,8 +6,7 @@ use smallvec::SmallVec;
 use string_cache::DefaultAtom;
 
 use crate::dawg::CompletionDawg;
-pub use crate::dawg::HH;
-pub use crate::dawg::HHH;
+use crate::dawg::HH;
 use crate::model::dictionary::numeral_agreement::NumeralGrammemes;
 use crate::model::dictionary::value::WordValue;
 use crate::model::dictionary::ParadigmEntry;

@@ -1,22 +1,18 @@
 use std::collections::HashMap;
-use std::fs::File;
 use std::io;
-use std::io::Read;
 use std::marker::PhantomData;
-use std::path::Path;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
-use flate2::read::GzDecoder;
 use inlinable_string::InlinableString;
-use inlinable_string::StringExt;
 use smallvec::SmallVec;
 
 use crate::dawg::completer::Completer;
-use crate::dawg::guide::Guide;
+use crate::dawg::dict_entry::DictIndex;
+use crate::dawg::dict_entry::DictValue;
+use crate::dawg::guide::DawgGuide;
 use crate::dawg::value::DawgValue;
-use crate::dawg::Dawg;
-use crate::model::dictionary::LoadError;
+use crate::dawg::DawgDictionary;
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 
@@ -25,25 +21,27 @@ pub struct CompletionDawg<V>
 where
     V: DawgValue,
 {
-    dawg: Dawg,
-    guide: Guide,
-    _phantom: PhantomData<V>,
+    dict: DawgDictionary,
+    guide: DawgGuide,
+    _value: PhantomData<V>,
 }
 
 impl<V> CompletionDawg<V>
 where
     V: DawgValue,
 {
-    pub fn from_file(p: impl AsRef<Path>) -> Result<Self, LoadError> {
-        Self::from_reader(GzDecoder::new(File::open(p)?))
+    pub fn new(dict: DawgDictionary, guide: DawgGuide) -> Self {
+        // TODO validate dict and guide
+        CompletionDawg {
+            dict,
+            guide,
+            _value: PhantomData,
+        }
     }
 
-    pub fn from_reader(mut reader: impl Read) -> Result<Self, LoadError> {
-        Ok(CompletionDawg {
-            dawg: Dawg::from_reader(&mut reader)?,
-            guide: Guide::from_reader(&mut reader)?,
-            _phantom: PhantomData,
-        })
+    #[inline(always)]
+    pub fn find(&self, key: &str) -> Option<DictValue> {
+        self.dict.find(key)
     }
 
     /// Returns a list of (key, value) tuples for all variants of `key`
@@ -59,7 +57,7 @@ where
         replaces: &HashMap<InlinableString, InlinableString>,
     ) -> io::Result<SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]>> {
         let mut result = SmallVec::new();
-        self.similar_items_(&mut result, "", key, self.dawg.dict.root, replaces)?;
+        self.similar_items_(&mut result, "", key, DawgDictionary::ROOT_INDEX, replaces)?;
         Ok(result)
     }
 
@@ -68,11 +66,11 @@ where
         result: &mut SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]>,
         current_prefix: &str,
         key: &str,
-        mut index: u32,
+        mut index: DictIndex,
         replace_chars: &HashMap<InlinableString, InlinableString>,
     ) -> io::Result<()> {
         #[cfg(feature = "trace_dawg")]
-        log::trace!(r#"DAWG::similar_items_() index: {}"#, index);
+        log::trace!(r#"DAWG::similar_items_() index: {:x}"#, index);
 
         let start_pos = current_prefix.len();
         let subkey = &key[start_pos..];
@@ -91,31 +89,30 @@ where
                     replace_char
                 );
 
-                if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
+                if let Some(next_index) = self.dict.follow_bytes(replace_char, index) {
                     #[cfg(feature = "trace_dawg")]
-                    log::trace!(r#" next_index: {}"#, next_index);
+                    log::trace!(r#" next_index: {:x}"#, next_index);
 
-                    let mut prefix = InlinableString::new();
-                    prefix.push_str(current_prefix);
-                    prefix.push_str(&key[start_pos..word_pos]);
-                    prefix.push_str(replace_char);
+                    let prefix = InlinableString::from(current_prefix)
+                        + &key[start_pos..word_pos]
+                        + replace_char;
                     self.similar_items_(result, &prefix, key, next_index, replace_chars)?;
                 };
             }
-            index = match self.dawg.dict.follow_bytes(b_step, index) {
+            index = match self.dict.follow_bytes(b_step, index) {
                 Some(v) => v,
                 None => return Ok(()),
             };
 
             #[cfg(feature = "trace_dawg")]
-            log::trace!(r#" index: {}"#, index);
+            log::trace!(r#" index: {:x}"#, index);
 
             word_pos += b_step.len()
         }
 
-        if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
+        if let Some(index) = self.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
             #[cfg(feature = "trace_dawg")]
-            log::trace!(r#" index: {}"#, index);
+            log::trace!(r#" index: {:x}"#, index);
 
             let found_key = InlinableString::from(current_prefix) + subkey;
 
@@ -129,12 +126,12 @@ where
         Ok(())
     }
 
-    fn value_for_index_(&self, index: u32) -> io::Result<SmallVec<[V; 8]>> {
+    fn value_for_index_(&self, index: DictIndex) -> io::Result<SmallVec<[V; 8]>> {
         #[cfg(feature = "trace_dawg")]
-        log::trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
+        log::trace!(r#"DAWG::value_for_index_(index: {:x}) "#, index);
 
         let mut result = SmallVec::new();
-        let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, "");
+        let mut completer = Completer::new(&self.dict, &self.guide, index, "");
         while let Some(key) = completer.next_key() {
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
@@ -153,9 +150,5 @@ where
             result.push(value?);
         }
         Ok(result)
-    }
-
-    pub fn find(&self, key: &str) -> Option<u32> {
-        self.dawg.dict.find(key)
     }
 }

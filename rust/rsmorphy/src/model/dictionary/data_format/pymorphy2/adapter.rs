@@ -1,10 +1,18 @@
 use std::io;
 use std::path::Path;
 
+use byteorder::LittleEndian;
+use byteorder::ReadBytesExt;
 use string_cache::DefaultAtom;
 
 use crate::dawg::CompletionDawg;
+use crate::dawg::DawgDictionary;
+use crate::dawg::DawgGuide;
+use crate::dawg::DawgValue;
+use crate::dawg::DictEntry;
+use crate::dawg::GuideEntry;
 use crate::model::dictionary::data_format::load_helper::LoadHelper;
+use crate::model::dictionary::data_format::load_helper::Reader;
 use crate::model::dictionary::data_format::pymorphy2::Pymorphy2Meta;
 use crate::model::dictionary::numeral_agreement::NumeralGrammemes;
 use crate::model::dictionary::LoadError;
@@ -109,21 +117,19 @@ impl Pymorphy2Adapter {
         let paradigms = Paradigms::from_reader(load.reader("paradigms.array")?)?;
         profiler.waypoint("paradigms");
 
-        let words = CompletionDawg::from_reader(load.reader("words.dawg")?)?;
+        let words = read_completion_dawg(load.reader("words.dawg")?)?;
         profiler.waypoint("words");
 
-        let p_t_given_w = match load.reader("p_t_given_w.intdawg") {
-            Ok(reader) => Some(CompletionDawg::from_reader(reader)?),
-            Err(e) if e.kind() == io::ErrorKind::NotFound => None,
-            Err(e) => Err(e)?,
+        let p_t_given_w = match meta.p_t_w {
+            Some(_p_t_w) => Some(read_completion_dawg(load.reader("p_t_given_w.intdawg")?)?),
+            None => None,
         };
         profiler.waypoint("p_t_given_w");
 
         let mut prediction_suffixes_dawgs = Vec::new();
         for i in 0..paradigm_prefixes.len() {
-            let dawg = CompletionDawg::from_reader(
-                load.reader(format!("prediction-suffixes-{}.dawg", i))?,
-            )?;
+            let dawg =
+                read_completion_dawg(load.reader(format!("prediction-suffixes-{}.dawg", i))?)?;
             prediction_suffixes_dawgs.push(dawg);
         }
         profiler.waypoint("prediction_suffixes_dawgs");
@@ -176,4 +182,49 @@ impl Pymorphy2Adapter {
             numeral_grammemes,
         })
     }
+}
+
+fn read_completion_dawg<V: DawgValue>(reader: Reader) -> Result<CompletionDawg<V>, LoadError> {
+    let (dict, guide) = read_dawg(reader)?;
+    Ok(CompletionDawg::new(dict, guide))
+}
+
+fn read_dawg(mut reader: Reader) -> Result<(DawgDictionary, DawgGuide), LoadError> {
+    let dict = {
+        let units_count = reader.read_u32::<LittleEndian>()?;
+        if units_count == 0 {
+            Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Dictionary is empty",
+            ))?;
+        }
+
+        let units = (0..units_count)
+            .map(|_| {
+                let unit = reader.read_u32::<LittleEndian>()?;
+                Ok(unsafe { DictEntry::from_u32_unchecked(unit) })
+            })
+            .collect::<io::Result<_>>()?;
+
+        DawgDictionary::new(units)
+    };
+
+    let guide = {
+        let units_count = reader.read_u32::<LittleEndian>()?;
+        // if units_count == 0 {
+        //     return Err(io::Error::new(io::ErrorKind::InvalidData, "Guide is empty"));
+        // }
+
+        let units = (0..units_count)
+            .map(|_| {
+                let child = reader.read_u8()?;
+                let sibling = reader.read_u8()?;
+                Ok(GuideEntry::new(child, sibling))
+            })
+            .collect::<io::Result<_>>()?;
+
+        DawgGuide::new(units)
+    };
+
+    Ok((dict, guide))
 }
