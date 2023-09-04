@@ -14,7 +14,6 @@ use crate::analyzer::common::Initial;
 use crate::analyzer::common::Lex;
 use crate::analyzer::common::Main;
 use crate::analyzer::common::ParseContext;
-use crate::analyzer::common::ParseResult;
 use crate::analyzer::common::ShapeKind;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::common::SingleTagProbabilityEstimator;
@@ -55,15 +54,18 @@ impl Lang for Russian {
         &self.inner.dict
     }
 
-    fn parse(&self, word: &str) -> ParseResult<Self>
+    fn parse_prepared<'m, 'w, 'b>(&self, context: &mut ParseContext<'m, 'w, 'b, Self>)
     where
         Self: Sized,
     {
-        let mut context = ParseContext::new(self, word);
+        self.look_over(context);
+    }
 
-        self.look_over(&mut context);
+    fn estimate_prepared<'m, 'w, 'b>(&self, context: &mut ParseContext<'m, 'w, 'b, Self>)
+    where
+        Self: Sized,
+    {
         context.apply_estimator(&self.inner.estimator);
-        context.finish()
     }
 
     fn get_tag(&self, lex: &Lex) -> &TagReg {

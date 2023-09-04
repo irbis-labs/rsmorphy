@@ -23,11 +23,10 @@ impl Dawg {
     }
 
     /// Returns a list with keys of this DAWG that are prefixes of the `key`.
-    pub fn prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {
-        let mut result = Vec::new();
+    fn _prefixes<'k>(&self, key: &'k &str, result: &mut Vec<&'k str>) {
         let mut index = self.dict.root;
         for (i, &ch) in key.as_bytes().iter().enumerate() {
-            index = match self.dict.follow_char(ch, index) {
+            index = match self.dict.follow_byte(ch, index) {
                 Some(v) => v,
                 None => break,
             };
@@ -35,12 +34,5 @@ impl Dawg {
                 result.push(&key[..=i])
             };
         }
-        result
-    }
-
-    pub fn sorted_prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {
-        let mut result = self.prefixes(key);
-        result.sort_by_key(|v| -(v.len() as isize));
-        result
     }
 }

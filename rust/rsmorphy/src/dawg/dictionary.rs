@@ -62,33 +62,42 @@ impl Dictionary {
     }
 
     /// Follows a transition
-    pub fn follow_char(&self, label: u8, index: u32) -> Option<u32> {
+    pub fn follow_byte(&self, label: u8, index: u32) -> Option<u32> {
         #[cfg(feature = "trace_dawg")]
         log::trace!(
-            r#"Dictionary::follow_char() label: {:x}, index = {:x} "#,
+            r#"Dictionary::follow_byte() label: {:x}, index = {:x} "#,
             label,
             index
         );
+
+        let label = u32::from(label);
         let unit = self.units[index as usize];
+
         #[cfg(feature = "trace_dawg")]
-        log::trace!(r#"Dictionary::follow_char() unit: {:x} "#, unit);
+        log::trace!(r#"Dictionary::follow_byte() unit: {:x} "#, unit);
+
         let offset = units::offset(unit);
+
         #[cfg(feature = "trace_dawg")]
-        log::trace!(r#"Dictionary::follow_char() offset: {:x} "#, offset);
-        let next_index = (index ^ offset ^ u32::from(label)) & units::PRECISION_MASK;
+        log::trace!(r#"Dictionary::follow_byte() offset: {:x} "#, offset);
+
+        let next_index = (index ^ offset ^ label) & units::PRECISION_MASK;
         let leaf_label = units::label(self.units[next_index as usize]);
+
         #[cfg(feature = "trace_dawg")]
-        log::trace!(r#"Dictionary::follow_char() leaf_label: {:x} "#, leaf_label);
-        if leaf_label == u32::from(label) {
-            return Some(next_index);
+        log::trace!(r#"Dictionary::follow_byte() leaf_label: {:x} "#, leaf_label);
+
+        if leaf_label == label {
+            Some(next_index)
+        } else {
+            None
         }
-        None
     }
 
     /// Follows transitions.
     pub fn follow_bytes(&self, key: &str, mut index: u32) -> Option<u32> {
         for &ch in key.as_bytes() {
-            index = self.follow_char(ch, index)?;
+            index = self.follow_byte(ch, index)?;
         }
         Some(index)
     }

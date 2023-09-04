@@ -40,7 +40,7 @@ impl<L: Lang> PunctuationAnalyzer<L> {
         if !is_punctuation(word_lower) {
             return;
         }
-        let lex = Lex::from_base(Shaped::punctuation(word_lower));
+        let lex = Lex::from_base(Shaped::punctuation(word_lower.clone()));
         ctx.push(Parse::new(lex, self.score));
     }
 }

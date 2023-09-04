@@ -6,6 +6,7 @@ use crate::analyzer::common::parse::Parse;
 use crate::analyzer::common::ProbabilityEstimator;
 use crate::analyzer::common::Score;
 use crate::analyzer::Lang;
+use crate::dawg::WordTagDawgKey;
 use crate::opencorpora::tag::TagReg;
 use crate::opencorpora::Dictionary;
 
@@ -13,15 +14,16 @@ use crate::opencorpora::Dictionary;
 pub struct SingleTagProbabilityEstimator {}
 
 impl SingleTagProbabilityEstimator {
+    #[inline(always)]
     pub fn prob(&self, dict: &Dictionary, word_lower: &str, tag: &TagReg) -> f64 {
-        // FIXME avoid allocation
-        let dawg_key = format!("{}:{}", word_lower, tag.fmt_int);
-        let v = dict
-            .p_t_given_w
-            .as_ref()
-            .and_then(|dawg| dawg.find(&dawg_key))
-            .unwrap_or(0);
-        f64::from(v) / 1_000_000.0
+        self.prob_(dict, word_lower, tag).unwrap_or(0.0)
+    }
+
+    fn prob_(&self, dict: &Dictionary, word_lower: &str, tag: &TagReg) -> Option<f64> {
+        let dowg = dict.p_t_given_w.as_ref()?;
+        let dawg_key = WordTagDawgKey::new(word_lower, &tag.fmt_int)?;
+        let prob: f64 = dowg.find(&dawg_key)?.into();
+        Some(prob / 1_000_000.0)
     }
 }
 
@@ -37,9 +39,10 @@ impl ProbabilityEstimator for SingleTagProbabilityEstimator {
             return;
         }
 
+        let dict = morph.dict();
         let probs: SmallVec<[f64; 256]> = parses
             .iter()
-            .map(|p| self.prob(morph.dict(), word_lower, morph.get_tag(&p.lex)))
+            .map(|p| self.prob(dict, word_lower, morph.get_tag(&p.lex)))
             .collect();
 
         let prob_sum: f64 = probs.iter().copied().sum();
@@ -62,12 +65,7 @@ impl ProbabilityEstimator for SingleTagProbabilityEstimator {
             for (p, prob) in parses.iter_mut().zip(probs.into_iter()) {
                 p.score = Score::Real(prob);
             }
-            parses.sort_by(|p1, p2| {
-                p2.score
-                    .value()
-                    .partial_cmp(&p1.score.value())
-                    .unwrap_or(Ordering::Equal)
-            });
+            parses.sort_by_key(|parse| F(-parse.score.value()));
         }
     }
 
@@ -78,15 +76,24 @@ impl ProbabilityEstimator for SingleTagProbabilityEstimator {
         word_lower: &str,
         tags: &mut [TagReg],
     ) {
-        if tags.is_empty() {
-            return;
-        }
+        let dict = morph.dict();
+        tags.sort_by_cached_key(|tag: &TagReg| F(-self.prob(dict, word_lower, tag)));
+    }
+}
 
-        // FIXME avoid double probability calculation.
-        tags.sort_by(|t1: &TagReg, t2: &TagReg| {
-            self.prob(morph.dict(), word_lower, t2)
-                .partial_cmp(&self.prob(morph.dict(), word_lower, t1))
-                .unwrap_or(Ordering::Equal)
-        });
+#[derive(Debug, Clone, Copy, PartialOrd)]
+struct F(f64);
+
+impl PartialEq for F {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
+
+impl Eq for F {}
+
+impl Ord for F {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.partial_cmp(&other.0).unwrap_or(Ordering::Equal)
     }
 }

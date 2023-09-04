@@ -42,9 +42,10 @@ impl<L: Lang> HyphenSeparatedParticleAnalyzer<L> {
         log::trace!("HyphenSeparatedParticleAnalyzer::parse(); {ctx:?}");
 
         let morph = ctx.morph();
+        let word_lower = ctx.word_lower().clone();
+        let mut buffer = morph.make_buffer();
 
         'particle: for &particle in self.particles_after_hyphen {
-            let word_lower = ctx.word_lower();
             if word_lower.len() <= particle.len() || !word_lower.ends_with(particle) {
                 continue 'particle;
             };
@@ -57,7 +58,7 @@ impl<L: Lang> HyphenSeparatedParticleAnalyzer<L> {
             #[cfg(feature = "trace_analyzer")]
             log::trace!(r#" unsuffixed_word: "{}" "#, unsuffixed_word);
 
-            'subparse: for Parse { mut lex, score } in morph.parse(unsuffixed_word) {
+            'subparse: for Parse { mut lex, score } in buffer.parse(unsuffixed_word).drain() {
                 #[cfg(feature = "trace_analyzer")]
                 log::trace!(r#" subparse: {score:?}, {lex:?} "#);
 

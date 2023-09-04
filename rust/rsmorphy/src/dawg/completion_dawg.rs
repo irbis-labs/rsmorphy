@@ -94,6 +94,7 @@ where
                 if let Some(next_index) = self.dawg.dict.follow_bytes(replace_char, index) {
                     #[cfg(feature = "trace_dawg")]
                     log::trace!(r#" next_index: {}"#, next_index);
+
                     let mut prefix = InlinableString::new();
                     prefix.push_str(current_prefix);
                     prefix.push_str(&key[start_pos..word_pos]);
@@ -105,17 +106,22 @@ where
                 Some(v) => v,
                 None => return Ok(()),
             };
+
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" index: {}"#, index);
+
             word_pos += b_step.len()
         }
 
         if let Some(index) = self.dawg.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" index: {}"#, index);
+
             let found_key = InlinableString::from(current_prefix) + subkey;
+
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" found_key: {}"#, found_key);
+
             let value = self.value_for_index_(index)?;
             result.insert(0, (found_key, value));
         }
@@ -126,27 +132,27 @@ where
     fn value_for_index_(&self, index: u32) -> io::Result<SmallVec<[V; 8]>> {
         #[cfg(feature = "trace_dawg")]
         log::trace!(r#"DAWG::value_for_index_(index: {}) "#, index);
+
         let mut result = SmallVec::new();
         let mut completer = Completer::new(&self.dawg.dict, &self.guide, index, "");
         while let Some(key) = completer.next_key() {
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
+
             let value = V::new_in_place(move |buf| {
                 let decoded = STANDARD
                     .decode_slice_unchecked(&key, buf)
                     .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
                 #[cfg(feature = "trace_dawg")]
                 log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
+
                 debug_assert_eq!(decoded, buf.len());
                 Ok(())
             });
             result.push(value?);
         }
         Ok(result)
-    }
-
-    pub fn prefixes<'k>(&self, key: &'k str) -> Vec<&'k str> {
-        self.dawg.prefixes(key)
     }
 
     pub fn find(&self, key: &str) -> Option<u32> {

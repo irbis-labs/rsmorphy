@@ -4,15 +4,16 @@ use rsmorphy::util::format::ExplainParse;
 
 pub mod util;
 
-fn table(morph: &Russian, s: &str) {
-    for (i, parse) in morph.parse(s).into_iter().enumerate() {
+fn table<L: Lang>(buffer: &mut ParseBuffers<L>, word: &str) {
+    let morph = buffer.morph();
+    for (i, parse) in buffer.parse(word).drain().enumerate() {
+        println!(r#"{:2}. {}"#, i + 1, ExplainParse::new(morph, &parse));
         let enc = morph.encode_token(&parse.lex).to_string();
         let dec = morph.decode_token(&enc).unwrap();
         let decoded = Parse {
             lex: dec,
             score: parse.score,
         };
-        println!(r#"{:2}. {}"#, i + 1, ExplainParse::new(morph, &parse));
         println!(r#"{:2}. {}"#, i + 1, ExplainParse::new(morph, &decoded));
         println!();
     }
@@ -20,30 +21,36 @@ fn table(morph: &Russian, s: &str) {
 
 fn main() {
     let morph_ru = Russian::load_pymorphy2_dict(dict_ru::DICT_PATH).unwrap();
+    let mut buffer_ru = morph_ru.make_buffer();
+    let words = [
+        "яблоко",
+        "хлеб",
+        "рыба",
+        "стали",
+        "того",
+        "И",
+        "БГ",
+        "БГ-с",
+        "смотри-ка",
+        "человек-пароход",
+        "интернет-магазин",
+        "по-русски",
+        "по-западному",
+        "псевдокошку",
+        "байткод",
+        "бутявкать",
+        "бутявкает",
+        "pdf",
+        "42",
+        "3.14",
+        "XIII",
+        ", ",
+        ".",
+    ];
 
-    // table(&morph_ru, "яблоко");
-    //    table(&morph_ru, "хлеб");
-    //    table(&morph_ru, "рыба");
-    table(&morph_ru, "стали");
-    // table(&morph_ru, "того");
-    //    table(&morph_ru, "И");
-    //    table(&morph_ru, "БГ");
-    //    table(&morph_ru, "БГ-с");
-    //    table(&morph_ru, "смотри-ка");
-    //    table(&morph_ru, "человек-пароход");
-    //    table(&morph_ru, "интернет-магазин");
-    //    table(&morph_ru, "по-русски");
-    //    table(&morph_ru, "по-западному");
-    //    table(&morph_ru, "псевдокошку");
-    //    table(&morph_ru, "байткод");
-    //    table(&morph_ru, "бутявкать");
-    //    table(&morph_ru, "бутявкает");
-    //    table(&morph_ru, "pdf");
-    //    table(&morph_ru, "42");
-    //    table(&morph_ru, "3.14");
-    //    table(&morph_ru, "XIII");
-    //    table(&morph_ru, ", ");
-    //    table(&morph_ru, ".");
+    for word in words {
+        table(&mut buffer_ru, word);
+    }
 
     // Words, broken with wrong keyboard layout
     //    table(&morph_ru, "задaч");

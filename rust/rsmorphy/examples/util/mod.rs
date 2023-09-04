@@ -1,9 +1,9 @@
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
-pub fn input_loop<F>(f: F)
+pub fn input_loop<F>(mut f: F)
 where
-    F: Fn(&str),
+    F: FnMut(&str),
 {
     println!("Press Ctrl-C to exit.");
     let mut rl = DefaultEditor::new().unwrap();

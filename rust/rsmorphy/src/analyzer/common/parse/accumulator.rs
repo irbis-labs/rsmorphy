@@ -1,3 +1,4 @@
+use std::mem;
 use std::ops;
 
 use smallvec::SmallVec;
@@ -15,6 +16,15 @@ impl ParseVec {
         ParseVec {
             vec: SmallVec::new(),
         }
+    }
+
+    #[inline(always)]
+    pub fn take(&mut self) -> SmallVec<[Parse; 32]> {
+        mem::replace(&mut self.vec, SmallVec::new())
+    }
+
+    pub fn drain(&mut self, range: ops::RangeFull) -> impl Iterator<Item = Parse> + '_ {
+        self.vec.drain(range)
     }
 
     #[inline(always)]

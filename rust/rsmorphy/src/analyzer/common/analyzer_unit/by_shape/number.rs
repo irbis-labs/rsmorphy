@@ -46,8 +46,8 @@ impl<L: Lang> NumberAnalyzer<L> {
 
         // TODO Improve number parser [#12]
         let shaped = match () {
-            _ if i128::from_str(word_lower).is_ok() => Shaped::integer(word_lower),
-            _ if f64::from_str(word_lower).is_ok() => Shaped::fractional(word_lower),
+            _ if i128::from_str(word_lower).is_ok() => Shaped::integer(word_lower.clone()),
+            _ if f64::from_str(word_lower).is_ok() => Shaped::fractional(word_lower.clone()),
             _ => return,
         };
         let lex = Lex::from_base(shaped);

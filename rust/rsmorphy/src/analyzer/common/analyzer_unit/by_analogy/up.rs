@@ -1,12 +1,11 @@
 use std::marker::PhantomData;
 
-use inlinable_string::InlinableString;
-
 use crate::analyzer::common::Affix;
 use crate::analyzer::common::DictionaryAnalyzer;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::Lang;
 use crate::analyzer::Parse;
+use crate::Score;
 
 const MIN_REMINDER_LENGTH: usize = 3;
 const MAX_PREFIX_LENGTH: usize = 5;
@@ -46,20 +45,19 @@ impl<L: Lang> UnknownPrefixAnalyzer<L> {
         log::trace!("UnknownPrefixAnalyzer::parse(); {ctx:?}");
 
         let morph = ctx.morph();
-        // TODO avoid possible allocation.
-        let word_lower = InlinableString::from(ctx.word_lower());
+        let word_lower = ctx.word_lower().clone();
+        let mut parse_buffer = morph.make_buffer();
 
         for (prefix, unprefixed_word) in word_splits(
             &word_lower,
             self.min_reminder_length,
             self.max_prefix_length,
         ) {
-            let mut subresult = ParseContext::new(morph, unprefixed_word);
+            let mut subresult = parse_buffer.prepare(unprefixed_word);
             self.dictionary.parse(&mut subresult);
 
-            'iter_parses: for Parse { mut lex, score } in subresult.finish() {
+            'iter_parses: for Parse { mut lex, score } in subresult.estimate().drain() {
                 let tag_reg = morph.get_tag(&lex);
-                // if !tag_reg.tags.is_productive() {
                 if !morph.dict().is_productive(tag_reg.grammemes) {
                     continue 'iter_parses;
                 }
@@ -67,7 +65,7 @@ impl<L: Lang> UnknownPrefixAnalyzer<L> {
                 debug_assert!(lex.right.is_none() && lex.particle.is_none());
 
                 lex.left.affix = Some(Affix::unknown_prefix(prefix));
-                let score = score * self.score_multiplier;
+                let score = Score::Fake(score.value() * self.score_multiplier);
 
                 ctx.push_if_not_seen(Parse::new(lex, score));
             }

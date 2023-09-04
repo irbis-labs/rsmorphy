@@ -39,7 +39,7 @@ impl<L: Lang> LatinAnalyzer<L> {
         if !is_latin(ctx.word_lower()) {
             return;
         }
-        let lex = Lex::from_base(Shaped::latin(ctx.word_lower()));
+        let lex = Lex::from_base(Shaped::latin(ctx.word_lower().clone()));
         ctx.push(Parse::new(lex, self.score));
     }
 }

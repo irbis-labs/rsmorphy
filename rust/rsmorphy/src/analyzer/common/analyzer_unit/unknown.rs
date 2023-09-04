@@ -32,7 +32,7 @@ impl<L: Lang> UnknownAnalyzer<L> {
         log::trace!("UnknownAnalyzer::parse(); {ctx:?}");
 
         if ctx.seen_parses().is_empty() {
-            let lex = Lex::from_base(Unknown::new(ctx.word_lower()));
+            let lex = Lex::from_base(Unknown::new(ctx.word_lower().clone()));
             ctx.push(Parse::new(lex, self.score));
         }
     }

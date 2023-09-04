@@ -1,6 +1,8 @@
 pub use crate::analyzer::Lang;
 pub use crate::analyzer::Lex;
 pub use crate::analyzer::Parse;
+pub use crate::analyzer::ParseBuffers;
+pub use crate::analyzer::ParseContext;
 pub use crate::analyzer::ParseResult;
 pub use crate::analyzer::Russian;
 pub use crate::analyzer::Score;

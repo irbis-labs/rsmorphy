@@ -5,10 +5,8 @@
 #![allow(clippy::match_bool)]
 #![allow(clippy::module_inception)]
 
-// pub mod analyzer;
-pub mod dawg;
-// pub mod estimator;
 pub mod analyzer;
+pub mod dawg;
 pub mod opencorpora;
 pub mod shapes;
 pub mod token_codec;

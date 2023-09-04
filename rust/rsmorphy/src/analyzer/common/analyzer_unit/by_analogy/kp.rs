@@ -56,6 +56,8 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
         let max_len = self.known_prefixes.max_len.min(limit);
         let min_len = self.known_prefixes.min_len.max(1);
 
+        let mut parse_buffer = morph.make_buffer();
+
         // possible splits
         for prefix_len in (min_len..=max_len).rev() {
             let pos = word.chars().take(prefix_len).map(char::len_utf8).sum();
@@ -70,14 +72,18 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
                 continue;
             }
 
-            'iter_parses: for parse in morph.parse(unprefixed_word) {
+            'iter_parses: for parse in parse_buffer
+                .prepare(unprefixed_word)
+                .parse()
+                .estimate()
+                .drain()
+            {
                 #[cfg(feature = "trace_analyzer")]
                 log::trace!("parse = {:?}", parse);
 
                 let Parse { lex, score } = parse;
 
                 let tag_reg = morph.get_tag(&lex);
-                // if !tag_reg.tags.is_productive() {
                 if !morph.dict().is_productive(tag_reg.grammemes) {
                     continue 'iter_parses;
                 }

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::iter;
 use std::marker::PhantomData;
@@ -52,7 +53,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
         }
 
         let morph = ctx.morph();
-        let word_lower = InlinableString::from(ctx.word_lower());
+        let word_lower = ctx.word_lower().clone();
 
         let mut subresult: SmallVec<[(u16, u16, Lex); 16]> = SmallVec::new();
 
@@ -71,32 +72,35 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                     .take(word_len - i)
                     .map(char::len_utf8)
                     .sum();
+
                 #[cfg(feature = "trace_analyzer")]
                 log::trace!("i: {}, pos: {}", i, pos);
 
                 let (word_start, word_end) = word_lower.split_at(pos);
+
                 #[cfg(feature = "trace_analyzer")]
                 log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
                 let para_data = suffixes_dawg
                     .similar_items(word_end, &morph.dict().char_substitutes)
                     .unwrap();
+
                 for (fixed_suffix, parses) in para_data {
-                    // TODO use COW here.
                     let fixed_word = if fixed_suffix == word_end {
-                        word_lower.clone()
+                        Cow::Borrowed(&word_lower)
                     } else {
-                        InlinableString::from(word_start) + &fixed_suffix
+                        Cow::Owned(InlinableString::from(word_start) + &fixed_suffix)
                     };
+
                     #[cfg(feature = "trace_analyzer")]
                     log::trace!(
                         "fixed_suffix: {:?}, fixed_word: {:?}",
                         fixed_suffix,
                         fixed_word
                     );
-
                     #[cfg(feature = "trace_analyzer")]
                     log::trace!("parses: {:?}", parses);
+
                     'iter_parses: for PredictionSuffixValue {
                         count,
                         para_id,
@@ -104,7 +108,6 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                     } in parses
                     {
                         let tag_reg = morph.dict().get_tag(para_id, idx);
-                        // if !tag_reg.tags.is_productive() {
                         if !morph.dict().is_productive(tag_reg.grammemes) {
                             continue 'iter_parses;
                         }
@@ -118,15 +121,16 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                             total_counts[prefix_id as usize],
                             count
                         );
+
                         total_counts[prefix_id as usize] += count as u32;
 
-                        let seen = Seen::new(fixed_word.clone(), tag_reg, Some(para_id));
+                        let seen = Seen::new(fixed_word.as_ref().clone(), tag_reg, Some(para_id));
 
                         if !ctx.mark_as_seen(seen) {
                             continue 'iter_parses;
                         }
 
-                        let word_lower = WordStruct::unknown(fixed_word.clone());
+                        let word_lower = WordStruct::unknown(fixed_word.as_ref().clone());
                         let base = DictionaryWord::new(word_lower, para_id, idx);
                         let affix = Affix::known_suffix(fixed_suffix.clone());
                         let lex = Lex::from_main(Main::new(base, Some(affix)));
@@ -192,15 +196,15 @@ mod tests {
     fn big_count() {
         init_logger();
 
-        let mut ctx = ParseContext::new(&*RU, "существующой");
+        let mut buf = RU.make_buffer();
+        let mut ctx = buf.prepare("существующой");
         let ks_analyzer = KnownSuffixAnalyzer::new(None, None);
 
         let tm = std::time::Instant::now();
         ks_analyzer.parse(&mut ctx);
         log::debug!("Elapsed time: {:0.6} s", tm.elapsed().as_secs_f64());
 
-        let result = ctx.finish();
-        for (i, parse) in result.into_iter().enumerate() {
+        for (i, parse) in ctx.into_iter().enumerate() {
             log::debug!("{:2}. {}", i + 1, ExplainParse::new(&*RU, &parse));
         }
     }

@@ -13,9 +13,7 @@ use crate::analyzer::common::HyphenSeparatedParticle;
 use crate::analyzer::common::Initial;
 use crate::analyzer::common::Lex;
 use crate::analyzer::common::Main;
-use crate::analyzer::common::NoopProbabilityEstimator;
 use crate::analyzer::common::ParseContext;
-use crate::analyzer::common::ParseResult;
 use crate::analyzer::common::ShapeKind;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::common::Unknown;
@@ -46,7 +44,7 @@ pub struct Ukrainian {
 #[derive(Debug)]
 struct Inner {
     dict: Dictionary,
-    estimator: NoopProbabilityEstimator,
+    // estimator: SingleTagProbabilityEstimator,
     units: Units,
 }
 
@@ -55,15 +53,18 @@ impl Lang for Ukrainian {
         &self.inner.dict
     }
 
-    fn parse(&self, word: &str) -> ParseResult<Self>
+    fn parse_prepared<'m, 'w, 'b>(&self, context: &mut ParseContext<'m, 'w, 'b, Self>)
     where
         Self: Sized,
     {
-        let mut context = ParseContext::new(self, word);
+        self.look_over(context);
+    }
 
-        self.look_over(&mut context);
-        context.apply_estimator(&self.inner.estimator);
-        context.finish()
+    fn estimate_prepared<'m, 'w, 'b>(&self, _context: &mut ParseContext<'m, 'w, 'b, Self>)
+    where
+        Self: Sized,
+    {
+        // context.apply_estimator(&self.inner.estimator);
     }
 
     fn get_tag(&self, lex: &Lex) -> &TagReg {
@@ -146,13 +147,8 @@ impl Lang for Ukrainian {
 impl Ukrainian {
     /// Creates `MorphAnalyzer` with preloaded dict
     pub fn new(dict: Dictionary) -> Self {
-        let estimator = NoopProbabilityEstimator {};
         let units = Units::new(&dict.grammemes);
-        let inner = Arc::new(Inner {
-            dict,
-            estimator,
-            units,
-        });
+        let inner = Arc::new(Inner { dict, units });
         Ukrainian { inner }
     }
 

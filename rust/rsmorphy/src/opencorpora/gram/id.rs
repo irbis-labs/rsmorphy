@@ -3,6 +3,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops;
+use std::str::from_utf8_unchecked;
 
 use super::GramIdError;
 
@@ -54,7 +55,7 @@ impl GramId {
     #[inline(always)]
     pub fn as_str(&self) -> &str {
         // SAFETY: GramId is always constructed from &str.
-        unsafe { std::str::from_utf8_unchecked(self.id.get_unchecked(..self.len as usize)) }
+        unsafe { from_utf8_unchecked(self.id.get_unchecked(..self.len as usize)) }
     }
 }
 

@@ -57,27 +57,21 @@ impl<L: Lang> HyphenAdverbAnalyzer<L> {
             return;
         }
 
-        // TODO simplify (e.g., avoid estimation)
         morph
-            .parse(remnant)
-            .into_iter()
+            .make_buffer()
+            .prepare(remnant)
+            .parse()
+            // Currently, we don't use the score, so we can skip the estimation.
+            // .estimate()
+            .drain()
             .filter(|parse| {
                 morph
                     .get_tag(&parse.lex)
                     .grammemes
                     .is_superset(self.adjf_sing_datv)
-                // let tags = morph.get_tag(&parse.lex).tags;
-                // matches!(
-                //     (tags.pos, tags.number, tags.case),
-                //     (
-                //         Some(PartOfSpeech::AdjectiveFull),
-                //         Some(Number::Sing),
-                //         Some(Case::Datv)
-                //     )
-                // )
             })
             .for_each(|parse| {
-                let word = WordStruct::new(ctx.word_lower(), parse.lex.is_known());
+                let word = WordStruct::new(ctx.word_lower().clone(), parse.lex.is_known());
                 let lex = Lex::from_base(HyphenAdverb::new(word));
                 ctx.push(Parse::new(lex, Score::Fake(self.score_multiplier)));
             });

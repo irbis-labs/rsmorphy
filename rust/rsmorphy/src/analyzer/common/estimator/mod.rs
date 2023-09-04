@@ -2,10 +2,8 @@ use crate::analyzer::common::parse::Parse;
 use crate::analyzer::Lang;
 use crate::opencorpora::tag::TagReg;
 
-mod noop;
 mod single_tag;
 
-pub use self::noop::NoopProbabilityEstimator;
 pub use self::single_tag::SingleTagProbabilityEstimator;
 
 pub trait ProbabilityEstimator {

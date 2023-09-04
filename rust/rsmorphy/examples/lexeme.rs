@@ -7,14 +7,15 @@ pub mod util;
 
 use crate::util::input_loop;
 
-fn print_lexeme(morph: &Russian, lex: &Lex) {
+fn print_lexeme<L: Lang>(morph: &L, lex: &Lex) {
     for (i, lex) in morph.iter_lexeme(lex).enumerate() {
         println!(r#"{:>2}. {}"#, i + 1, ExplainLex::new(morph, &lex));
     }
 }
 
-fn list(morph: &Russian, s: &str) {
-    let mut lst = Vec::from_iter(morph.parse(s).into_iter().map(|parse| {
+fn list<L: Lang>(buffer: &mut ParseBuffers<L>, word: &str) {
+    let morph = buffer.morph();
+    let mut lst = Vec::from_iter(buffer.parse(word).drain().map(|parse| {
         let lemma = morph.get_lemma(&parse.lex);
         (morph.encode_token(&lemma).to_short_str(), lemma)
     }));
@@ -29,8 +30,10 @@ fn list(morph: &Russian, s: &str) {
 fn main() {
     let _ = env_logger::init();
 
-    // let rus = Russian::load_pymorphy2_dict(dict_ru::DICT_PATH).unwrap();
-    let ukr = Russian::load_pymorphy2_dict(dict_uk::DICT_PATH).unwrap();
+    let morph = Russian::load_pymorphy2_dict(dict_ru::DICT_PATH).unwrap();
+    // let morph = Ukrainian::load_pymorphy2_dict(dict_uk::DICT_PATH).unwrap();
 
-    input_loop(|word| list(&ukr, word));
+    let mut buffer = morph.make_buffer();
+
+    input_loop(move |word| list(&mut buffer, word));
 }

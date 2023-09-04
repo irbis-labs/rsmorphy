@@ -1,6 +1,8 @@
 use std::fmt;
 
 use crate::analyzer::common::Lex;
+use crate::analyzer::common::ParseBuffers;
+use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::ParseResult;
 use crate::analyzer::common::Seen;
 use crate::analyzer::common::Token;
@@ -11,7 +13,29 @@ use crate::token_codec::DecodeError;
 pub trait Lang: fmt::Debug + Clone {
     fn dict(&self) -> &Dictionary;
 
-    fn parse(&self, s: &str) -> ParseResult<Self>
+    fn parse_one(&self, word: &str) -> ParseResult<Self>
+    where
+        Self: Sized,
+    {
+        ParseBuffers::new(self)
+            .prepare(word)
+            .parse()
+            .estimate()
+            .take_result()
+    }
+
+    fn make_buffer(&self) -> ParseBuffers<Self>
+    where
+        Self: Sized,
+    {
+        ParseBuffers::new(self)
+    }
+
+    fn parse_prepared<'m, 'w, 'b>(&self, context: &mut ParseContext<'m, 'w, 'b, Self>)
+    where
+        Self: Sized;
+
+    fn estimate_prepared<'m, 'w, 'b>(&self, context: &mut ParseContext<'m, 'w, 'b, Self>)
     where
         Self: Sized;
 

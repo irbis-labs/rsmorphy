@@ -62,7 +62,7 @@ impl<'a> Completer<'a> {
 
     /// Looks for a next index and pushes it with the label on the stack.
     fn follow(&mut self, label: u8, index: u32) -> Option<u32> {
-        let next_index = self.dict.follow_char(label, index)?;
+        let next_index = self.dict.follow_byte(label, index)?;
         self.key.push(label);
         self.index_stack.push(next_index);
         Some(next_index)
