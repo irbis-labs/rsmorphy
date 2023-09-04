@@ -4,6 +4,7 @@ use smallvec::SmallVec;
 use super::CompileOptions;
 use super::GramtabFormats;
 use super::LanguageCode;
+use crate::model::dictionary::data_format::pymorphy2::meta::PTWOptions;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pymorphy2Meta {
@@ -23,11 +24,8 @@ pub struct Pymorphy2Meta {
     pub words_dawg_length: u32,
     pub compile_options: CompileOptions,
     pub prediction_suffixes_dawg_lengths: SmallVec<[u32; 8]>,
-    pub p_t_w: bool,
-    pub p_t_w_unique_words: u32,
-    pub p_t_w_outcomes: u32,
-    pub p_t_w_min_word_freq: u32,
-    pub corpus_revision: InlinableString,
+    pub p_t_w: Option<PTWOptions>,
+    pub corpus_revision: Option<InlinableString>,
 }
 
 mod serde_impl {
@@ -94,30 +92,35 @@ mod serde_impl {
     impl Helper {
         fn finish(self) -> Result<Pymorphy2Meta, MissingField<'static>> {
             Ok(Pymorphy2Meta {
-                language_code: unwrap_or(self.language_code, "language_code")?,
-                format_version: unwrap_or(self.format_version, "format_version")?,
-                pymorphy2_version: unwrap_or(self.pymorphy2_version, "pymorphy2_version")?,
-                compiled_at: unwrap_or(self.compiled_at, "compiled_at")?,
-                source: unwrap_or(self.source, "source")?,
-                source_version: unwrap_or(self.source_version, "source_version")?,
-                source_revision: unwrap_or(self.source_revision, "source_revision")?,
-                source_lexemes_count: unwrap_or(self.source_lexemes_count, "source_lexemes_count")?,
-                source_links_count: unwrap_or(self.source_links_count, "source_links_count")?,
-                gramtab_length: unwrap_or(self.gramtab_length, "gramtab_length")?,
-                gramtab_formats: unwrap_or(self.gramtab_formats, "gramtab_formats")?,
-                paradigms_length: unwrap_or(self.paradigms_length, "paradigms_length")?,
-                suffixes_length: unwrap_or(self.suffixes_length, "suffixes_length")?,
-                words_dawg_length: unwrap_or(self.words_dawg_length, "words_dawg_length")?,
-                compile_options: unwrap_or(self.compile_options, "compile_options")?,
-                prediction_suffixes_dawg_lengths: unwrap_or(
+                language_code: check(self.language_code, "language_code")?,
+                format_version: check(self.format_version, "format_version")?,
+                pymorphy2_version: check(self.pymorphy2_version, "pymorphy2_version")?,
+                compiled_at: check(self.compiled_at, "compiled_at")?,
+                source: check(self.source, "source")?,
+                source_version: check(self.source_version, "source_version")?,
+                source_revision: check(self.source_revision, "source_revision")?,
+                source_lexemes_count: check(self.source_lexemes_count, "source_lexemes_count")?,
+                source_links_count: check(self.source_links_count, "source_links_count")?,
+                gramtab_length: check(self.gramtab_length, "gramtab_length")?,
+                gramtab_formats: check(self.gramtab_formats, "gramtab_formats")?,
+                paradigms_length: check(self.paradigms_length, "paradigms_length")?,
+                suffixes_length: check(self.suffixes_length, "suffixes_length")?,
+                words_dawg_length: check(self.words_dawg_length, "words_dawg_length")?,
+                compile_options: check(self.compile_options, "compile_options")?,
+                prediction_suffixes_dawg_lengths: check(
                     self.prediction_suffixes_dawg_lengths,
                     "prediction_suffixes_dawg_lengths",
                 )?,
-                p_t_w: unwrap_or(self.p_t_w, "P(t|w)")?,
-                p_t_w_unique_words: unwrap_or(self.p_t_w_unique_words, "P(t|w)_unique_words")?,
-                p_t_w_outcomes: unwrap_or(self.p_t_w_outcomes, "P(t|w)_outcomes")?,
-                p_t_w_min_word_freq: unwrap_or(self.p_t_w_min_word_freq, "P(t|w)_min_word_freq")?,
-                corpus_revision: unwrap_or(self.corpus_revision, "corpus_revision")?,
+                p_t_w: if self.p_t_w.unwrap_or(false) {
+                    Some(PTWOptions {
+                        unique_words: check(self.p_t_w_unique_words, "P(t|w)_unique_words")?,
+                        outcomes: check(self.p_t_w_outcomes, "P(t|w)_outcomes")?,
+                        min_word_freq: check(self.p_t_w_min_word_freq, "P(t|w)_min_word_freq")?,
+                    })
+                } else {
+                    None
+                },
+                corpus_revision: self.corpus_revision,
             })
         }
     }
@@ -181,7 +184,7 @@ mod serde_impl {
         }
     }
 
-    fn unwrap_or<T>(value: Option<T>, name: &'static str) -> Result<T, MissingField> {
+    fn check<T>(value: Option<T>, name: &'static str) -> Result<T, MissingField> {
         value.ok_or_else(|| MissingField(name))
     }
     impl<'de> Deserialize<'de> for Field {
@@ -463,11 +466,12 @@ mod serde_impl {
                             .collect(),
                     },
                     prediction_suffixes_dawg_lengths: [375311, 1882, 21].into_iter().collect(),
-                    p_t_w: true,
-                    p_t_w_unique_words: 45458,
-                    p_t_w_outcomes: 518189,
-                    p_t_w_min_word_freq: 1,
-                    corpus_revision: "4579844".into(),
+                    p_t_w: Some(PTWOptions {
+                        unique_words: 45458,
+                        outcomes: 518189,
+                        min_word_freq: 1,
+                    }),
+                    corpus_revision: Some("4579844".into()),
                 }
             );
         }
