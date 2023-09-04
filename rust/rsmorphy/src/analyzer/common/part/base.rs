@@ -7,8 +7,8 @@ use crate::analyzer::common::DictionaryWord;
 use crate::analyzer::common::HyphenAdverb;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::common::Unknown;
-use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::Dictionary;
+use crate::model::dictionary::ParadigmId;
+use crate::model::Dictionary;
 
 #[derive(Debug, Clone, From)]
 pub enum Base {

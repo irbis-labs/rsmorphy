@@ -15,7 +15,7 @@ use crate::analyzer::uk::config::INITIAL_LETTERS;
 use crate::analyzer::uk::config::KNOWN_PREFIXES;
 use crate::analyzer::uk::config::PARTICLES_AFTER_HYPHEN;
 use crate::analyzer::Ukrainian;
-use crate::opencorpora::gram::GramRegistry;
+use crate::model::gram::GramRegistry;
 
 #[derive(Debug)]
 pub(super) struct Units {

@@ -6,8 +6,8 @@ use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Score;
 use crate::analyzer::common::Unknown;
 use crate::analyzer::Lang;
-use crate::opencorpora::gram::GramRegistry;
-use crate::opencorpora::tag::TagReg;
+use crate::model::gram::GramRegistry;
+use crate::model::tag::TagReg;
 
 const SCORE: Score = Score::Fake(1.0);
 

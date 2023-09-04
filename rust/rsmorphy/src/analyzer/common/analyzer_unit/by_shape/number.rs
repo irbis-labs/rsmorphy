@@ -7,8 +7,8 @@ use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::opencorpora::gram::GramRegistry;
-use crate::opencorpora::tag::TagReg;
+use crate::model::gram::GramRegistry;
+use crate::model::tag::TagReg;
 
 const SCORE: Score = Score::Fake(0.9);
 

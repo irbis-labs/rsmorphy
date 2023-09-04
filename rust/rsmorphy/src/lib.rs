@@ -7,7 +7,7 @@
 
 pub mod analyzer;
 pub mod dawg;
-pub mod opencorpora;
+pub mod model;
 pub mod shapes;
 pub mod token_codec;
 pub mod util;
@@ -20,6 +20,6 @@ pub use crate::analyzer::ParseResult;
 pub use crate::analyzer::Russian;
 pub use crate::analyzer::Score;
 pub use crate::analyzer::Ukrainian;
-pub use crate::opencorpora::Gram;
-pub use crate::opencorpora::GramReg;
-pub use crate::opencorpora::GramSet;
+pub use crate::model::Gram;
+pub use crate::model::GramReg;
+pub use crate::model::GramSet;

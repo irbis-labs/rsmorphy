@@ -1,4 +1,4 @@
-use crate::opencorpora::kind::InitialKind;
+use crate::model::kind::InitialKind;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Initial {

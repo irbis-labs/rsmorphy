@@ -6,8 +6,8 @@ use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::ParseResult;
 use crate::analyzer::common::Seen;
 use crate::analyzer::common::Token;
-use crate::opencorpora::tag::TagReg;
-use crate::opencorpora::Dictionary;
+use crate::model::tag::TagReg;
+use crate::model::Dictionary;
 use crate::token_codec::DecodeError;
 
 pub trait Lang: fmt::Debug + Clone {

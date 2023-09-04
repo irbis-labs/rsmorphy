@@ -16,8 +16,8 @@ use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::opencorpora::dictionary::PredictionSuffixValue;
-use crate::opencorpora::dictionary::PredictionSuffixesDawg;
+use crate::model::dictionary::PredictionSuffixValue;
+use crate::model::dictionary::PredictionSuffixesDawg;
 
 const MIN_WORD_LENGTH: usize = 4;
 const SCORE_MULTIPLIER: f64 = 0.5;

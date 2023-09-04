@@ -7,7 +7,7 @@ use crate::analyzer::common::Base;
 use crate::analyzer::common::HyphenSeparatedParticle;
 use crate::analyzer::common::Main;
 use crate::analyzer::Lang;
-use crate::opencorpora::Dictionary;
+use crate::model::Dictionary;
 use crate::GramSet;
 
 #[derive(Debug, Clone)]

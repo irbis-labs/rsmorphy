@@ -7,7 +7,7 @@ use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Score;
 use crate::analyzer::common::WordStruct;
 use crate::analyzer::Lang;
-use crate::opencorpora::dictionary::WordValue;
+use crate::model::dictionary::WordValue;
 
 const SCORE: Score = Score::Real(1.0);
 

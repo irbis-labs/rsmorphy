@@ -7,8 +7,8 @@ use crate::analyzer::common::ProbabilityEstimator;
 use crate::analyzer::common::Score;
 use crate::analyzer::Lang;
 use crate::dawg::WordTagDawgKey;
-use crate::opencorpora::tag::TagReg;
-use crate::opencorpora::Dictionary;
+use crate::model::tag::TagReg;
+use crate::model::Dictionary;
 
 #[derive(Debug, Clone)]
 pub struct SingleTagProbabilityEstimator {}

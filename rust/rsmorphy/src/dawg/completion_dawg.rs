@@ -16,7 +16,7 @@ use crate::dawg::completer::Completer;
 use crate::dawg::guide::Guide;
 use crate::dawg::value::DawgValue;
 use crate::dawg::Dawg;
-use crate::opencorpora::dictionary::LoadError;
+use crate::model::dictionary::LoadError;
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 

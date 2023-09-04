@@ -1,5 +1,5 @@
 use std::fmt;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::Arc;
 
 use inlinable_string::InlinableString;
@@ -21,12 +21,14 @@ use crate::analyzer::common::Unknown;
 use crate::analyzer::common::WordStruct;
 use crate::analyzer::ru::units::Units;
 use crate::analyzer::Lang;
-use crate::opencorpora::dictionary::LoadError;
-use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::dictionary::ParadigmIndex;
-use crate::opencorpora::kind::InitialKind;
-use crate::opencorpora::tag::TagReg;
-use crate::opencorpora::Dictionary;
+use crate::model::dictionary::data_format::pymorphy2::LanguageCode;
+use crate::model::dictionary::data_format::Pymorphy2Adapter;
+use crate::model::dictionary::LoadError;
+use crate::model::dictionary::ParadigmId;
+use crate::model::dictionary::ParadigmIndex;
+use crate::model::kind::InitialKind;
+use crate::model::tag::TagReg;
+use crate::model::Dictionary;
 use crate::token_codec::escape;
 use crate::token_codec::follow_str;
 use crate::token_codec::is_hex_digit;
@@ -163,8 +165,13 @@ impl Russian {
     }
 
     /// Loads `Dictionary` from disk and creates `MorphAnalyzer`
-    pub fn load_pymorphy2_dict(dict_dir: impl Into<PathBuf>) -> Result<Self, LoadError> {
-        let dict = Dictionary::load_pymorphy2(dict_dir)?;
+    pub fn load_pymorphy2_dict(dict_dir: impl AsRef<Path>) -> Result<Self, LoadError> {
+        let loader = Pymorphy2Adapter::open(dict_dir)?;
+        let meta = &loader.meta();
+        if meta.language_code != LanguageCode::Ru {
+            return Err(LoadError::InvalidLanguage(meta.language_code));
+        }
+        let dict = loader.load()?;
         Ok(Russian::new(dict))
     }
 

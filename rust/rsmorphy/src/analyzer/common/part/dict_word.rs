@@ -1,6 +1,6 @@
 use crate::analyzer::common::WordStruct;
-use crate::opencorpora::dictionary::ParadigmId;
-use crate::opencorpora::dictionary::ParadigmIndex;
+use crate::model::dictionary::ParadigmId;
+use crate::model::dictionary::ParadigmIndex;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DictionaryWord {
