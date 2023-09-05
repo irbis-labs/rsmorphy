@@ -29,7 +29,7 @@ pub struct NumberAnalyzer<L: Lang> {
 }
 
 impl<L: Lang> NumberAnalyzer<L> {
-    pub fn new(grammemes: &GramRegistry, score: Option<Score>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         NumberAnalyzer {
             tag_int: TagReg::from_fmt_int(grammemes, "NUMB,intg"),
             tag_real: TagReg::from_fmt_int(grammemes, "NUMB,real"),

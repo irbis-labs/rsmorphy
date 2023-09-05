@@ -1,82 +1,18 @@
-use std::io;
-use std::io::Read;
-
-use byteorder::LittleEndian;
-use byteorder::ReadBytesExt;
-
 pub type Paradigm<'a> = &'a [ParadigmEntry];
 
-#[derive(Debug)]
-pub struct Paradigms {
-    idx: Vec<u32>,
-    data: Vec<ParadigmEntry>,
+#[derive(Debug, Clone, Copy)]
+pub struct Paradigms<'d> {
+    idx: &'d [u32],
+    data: &'d [ParadigmEntry],
 }
 
-impl Paradigms {
-    pub fn from_reader(mut reader: impl Read) -> io::Result<Self> {
-        let paradigms_count = reader.read_u16::<LittleEndian>()?;
-        #[cfg(feature = "trace_opencorpora")]
-        log::trace!("Paradigms count: {}", paradigms_count);
-
-        let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
-        // Number of entries is greater than paradigms number, but we don't know how much
-        // exactly. So we just reserve space for at least 1 entry per paradigm to reduce
-        // reallocations.
-        let mut data = Vec::with_capacity(paradigms_count as usize);
-        let mut buf = Vec::with_capacity(1024);
-
-        idx.push(0);
-
-        for _para_num in 0..paradigms_count {
-            debug_assert!(buf.is_empty(), "Buffer must be empty");
-
-            let paradigm_len = reader.read_u16::<LittleEndian>()? as usize;
-            #[cfg(feature = "trace_opencorpora")]
-            log::trace!(
-                "Paradigm number: {}, paradigm length: {}",
-                _para_num + 1,
-                paradigm_len
-            );
-
-            for _i in 0..paradigm_len {
-                buf.push(reader.read_u16::<LittleEndian>()?)
-            }
-
-            debug_assert_eq!(buf.len(), paradigm_len, "Wrong number of entries read");
-            debug_assert_eq!(
-                paradigm_len % 3,
-                0,
-                "Paradigm length must be divisible by 3"
-            );
-
-            let paradigm_count = paradigm_len / 3;
-            let (suffix, tag) = buf.split_at(paradigm_count);
-            let (tag, prefix) = tag.split_at(paradigm_count);
-
-            debug_assert_eq!(prefix.len(), paradigm_count);
-            debug_assert_eq!(tag.len(), paradigm_count);
-            debug_assert_eq!(suffix.len(), paradigm_count);
-
-            let old_len = data.len();
-
-            for i in 0..paradigm_count {
-                data.push(ParadigmEntry::new(prefix[i], tag[i], suffix[i]));
-            }
-
-            debug_assert_eq!(
-                data.len() - old_len,
-                paradigm_count,
-                "Wrong number of entries written"
-            );
-
-            idx.push(data.len() as u32);
-            buf.clear();
-        }
-        Ok(Paradigms { idx, data })
+impl<'d> Paradigms<'d> {
+    pub(crate) fn new(idx: &'d [u32], data: &'d [ParadigmEntry]) -> Self {
+        Paradigms { idx, data }
     }
 
     #[inline]
-    pub fn get(&self, id: ParadigmId) -> Option<Paradigm> {
+    pub fn get(&self, id: ParadigmId) -> Option<Paradigm<'d>> {
         let idx = id.index();
         if idx + 1 < self.idx.len() {
             let (start, end) = (self.idx[idx] as usize, self.idx[idx + 1] as usize);
@@ -96,7 +32,7 @@ pub struct ParadigmEntry {
 
 impl ParadigmEntry {
     #[inline(always)]
-    fn new(prefix_id: u16, tag_id: u16, suffix_id: u16) -> Self {
+    pub(crate) fn new(prefix_id: u16, tag_id: u16, suffix_id: u16) -> Self {
         ParadigmEntry {
             prefix_id,
             tag_id,

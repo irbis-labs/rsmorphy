@@ -28,11 +28,11 @@ impl Eq for TagReg {}
 
 impl TagReg {
     #[inline(always)]
-    pub fn from_fmt_int(gram_registry: &GramRegistry, s: impl Into<DefaultAtom>) -> Self {
+    pub fn from_fmt_int(gram_registry: GramRegistry<'_>, s: impl Into<DefaultAtom>) -> Self {
         Self::from_fmt_int_(gram_registry, s.into())
     }
 
-    pub fn from_fmt_int_(gram_registry: &GramRegistry, fmt_int: DefaultAtom) -> Self {
+    pub fn from_fmt_int_(gram_registry: GramRegistry<'_>, fmt_int: DefaultAtom) -> Self {
         let mut grammemes = GramSet::empty();
 
         #[cfg(feature = "trace_opencorpora")]

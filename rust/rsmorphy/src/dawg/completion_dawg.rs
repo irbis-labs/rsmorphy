@@ -16,21 +16,21 @@ use crate::dawg::DawgDictionary;
 
 const PAYLOAD_SEPARATOR: &str = "\x01";
 
-#[derive(Debug)]
-pub struct CompletionDawg<V>
+#[derive(Debug, Clone, Copy)]
+pub struct CompletionDawg<'d, V>
 where
     V: DawgValue,
 {
-    dict: DawgDictionary,
-    guide: DawgGuide,
+    dict: DawgDictionary<'d>,
+    guide: DawgGuide<'d>,
     _value: PhantomData<V>,
 }
 
-impl<V> CompletionDawg<V>
+impl<'d, V> CompletionDawg<'d, V>
 where
     V: DawgValue,
 {
-    pub fn new(dict: DawgDictionary, guide: DawgGuide) -> Self {
+    pub fn new(dict: DawgDictionary<'d>, guide: DawgGuide<'d>) -> Self {
         // TODO validate dict and guide
         CompletionDawg {
             dict,
@@ -131,7 +131,7 @@ where
         log::trace!(r#"DAWG::value_for_index_(index: {:x}) "#, index);
 
         let mut result = SmallVec::new();
-        let mut completer = Completer::new(&self.dict, &self.guide, index, "");
+        let mut completer = Completer::new(self.dict, self.guide, index, "");
         while let Some(key) = completer.next_key() {
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);

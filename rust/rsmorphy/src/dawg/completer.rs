@@ -7,18 +7,18 @@ use crate::dawg::dict_entry::DictIndex;
 use crate::dawg::guide::DawgGuide;
 
 #[derive(Debug, Clone)]
-pub struct Completer<'a> {
-    dict: &'a DawgDictionary,
-    guide: &'a DawgGuide,
+pub struct Completer<'d> {
+    dict: DawgDictionary<'d>,
+    guide: DawgGuide<'d>,
     key: SmallVec<[u8; 64]>,
     index_stack: SmallVec<[DictIndex; 64]>,
     last_index: DictIndex,
 }
 
-impl<'a> Completer<'a> {
+impl<'d> Completer<'d> {
     pub(super) fn new(
-        dict: &'a DawgDictionary,
-        guide: &'a DawgGuide,
+        dict: DawgDictionary<'d>,
+        guide: DawgGuide<'d>,
         index: DictIndex,
         prefix: &str,
     ) -> Self {

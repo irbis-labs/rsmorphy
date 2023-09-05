@@ -16,7 +16,7 @@ pub struct NumeralGrammemes {
 }
 
 impl NumeralGrammemes {
-    pub fn new(registry: &GramRegistry) -> Self {
+    pub fn new(registry: GramRegistry<'_>) -> Self {
         let noun = registry.find_gram("NOUN").unwrap().as_set();
         let adjf = registry.find_gram("ADJF").unwrap().as_set();
         let prtf = registry.find_gram("PRTF").unwrap().as_set();

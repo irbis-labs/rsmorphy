@@ -149,7 +149,7 @@ impl Lang for Ukrainian {
 impl Ukrainian {
     /// Creates `MorphAnalyzer` with preloaded dict
     pub fn new(dict: Dictionary) -> Self {
-        let units = Units::new(&dict.grammemes);
+        let units = Units::new(dict.grammemes());
         let inner = Arc::new(Inner { dict, units });
         Ukrainian { inner }
     }

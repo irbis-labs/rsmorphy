@@ -6,15 +6,15 @@ use crate::dawg::dict_entry::DictLabel;
 use crate::dawg::dict_entry::DictValue;
 
 /// Dictionary class for retrieval and binary I/O.
-#[derive(Debug, Clone)]
-pub struct DawgDictionary {
-    units: Box<[DictEntry]>,
+#[derive(Debug, Clone, Copy)]
+pub struct DawgDictionary<'d> {
+    units: &'d [DictEntry],
 }
 
-impl DawgDictionary {
+impl<'d> DawgDictionary<'d> {
     pub const ROOT_INDEX: DictIndex = DictIndex::root();
 
-    pub fn new(units: Box<[DictEntry]>) -> Self {
+    pub fn new(units: &'d [DictEntry]) -> Self {
         DawgDictionary { units }
     }
 
@@ -107,7 +107,7 @@ impl DawgDictionary {
     }
 }
 
-impl ops::Index<DictIndex> for DawgDictionary {
+impl<'d> ops::Index<DictIndex> for DawgDictionary<'d> {
     type Output = DictEntry;
 
     #[inline(always)]

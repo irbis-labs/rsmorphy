@@ -9,6 +9,7 @@ use super::GramReg;
 use crate::model::gram::GramRegistry;
 use crate::model::gram::GramRegistryError;
 use crate::model::gram::GramRegistryError::ParentNotFound;
+use crate::model::gram::GramRegistryStorage;
 use crate::model::gram::GramSet;
 use crate::model::tag::TagSet;
 
@@ -145,7 +146,7 @@ impl GramRegistryBuilder {
         Ok(gram)
     }
 
-    pub fn finish(mut self) -> Result<GramRegistry, GramRegistryError> {
+    pub fn finish(mut self) -> Result<GramRegistryStorage, GramRegistryError> {
         //
         // Fix Ukrainian pymorphy2 dict
         //
@@ -233,6 +234,6 @@ impl GramRegistryBuilder {
         #[cfg(feature = "trace_opencorpora")]
         log::trace!("GramRegistryBuilder::finish: reg_map = {:?}", reg_map);
 
-        Ok(GramRegistry::from_builder(reg_map, lat_map))
+        Ok(GramRegistry::from_builder(reg_map.into(), lat_map))
     }
 }

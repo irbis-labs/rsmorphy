@@ -20,7 +20,7 @@ impl SingleTagProbabilityEstimator {
     }
 
     fn prob_(&self, dict: &Dictionary, word_lower: &str, tag: &TagReg) -> Option<f64> {
-        let dawg = dict.p_t_given_w.as_ref()?;
+        let dawg = dict.p_t_given_w()?;
         let dawg_key = WordTagDawgKey::new(word_lower, &tag.fmt_int)?;
         let prob: f64 = dawg.find(&dawg_key)?.as_u32().into();
         Some(prob / 1_000_000.0)

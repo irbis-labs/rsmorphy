@@ -30,7 +30,7 @@ pub struct HyphenAdverbAnalyzer<L: Lang> {
 }
 
 impl<L: Lang> HyphenAdverbAnalyzer<L> {
-    pub fn new(grammemes: &GramRegistry, score_multiplier: Option<f64>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, score_multiplier: Option<f64>) -> Self {
         let adjf_sing_datv = ["ADJF", "sing", "datv"]
             .into_iter()
             .map(|gram_int| grammemes.find_gram(gram_int).unwrap())

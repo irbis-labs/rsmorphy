@@ -58,7 +58,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
         let mut subresult: SmallVec<[(u16, u16, Lex); 16]> = SmallVec::new();
 
         let mut total_counts: SmallVec<[u32; 4]> = iter::repeat(1)
-            .take(morph.dict().paradigm_prefixes.len())
+            .take(morph.dict().paradigm_prefixes_len())
             .collect();
 
         #[allow(unused_variables)]
@@ -82,7 +82,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                 log::trace!("word_start: {}, word_end: {}", word_start, word_end);
 
                 let para_data = suffixes_dawg
-                    .similar_items(word_end, &morph.dict().char_substitutes)
+                    .similar_items(word_end, &morph.dict().char_substitutes())
                     .unwrap();
 
                 for (fixed_suffix, parses) in para_data.into_iter().rev() {
@@ -168,20 +168,18 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
         &self,
         morph: &'m L,
         word: &'s str,
-    ) -> impl Iterator<Item = (usize, &'m str, &'m PredictionSuffixesDawg)> + 'i {
-        use std::ops::Deref;
+    ) -> impl Iterator<Item = (usize, &'m str, PredictionSuffixesDawg<'m>)> + 'i {
         morph
             .dict()
-            .paradigm_prefixes
-            .iter()
+            .iter_paradigm_prefixes()
             .enumerate()
             .rev()
-            .filter(move |(_, prefix)| word.starts_with(prefix.as_ref()))
+            .filter(move |(_, prefix)| word.starts_with(prefix))
             .map(move |(prefix_idx, prefix)| {
                 (
                     prefix_idx,
-                    prefix.deref(),
-                    &morph.dict().prediction_suffixes_dawgs[prefix_idx],
+                    prefix,
+                    morph.dict().prediction_suffixes_dawgs(prefix_idx),
                 )
             })
     }

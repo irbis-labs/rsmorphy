@@ -107,7 +107,9 @@ impl Lex {
     #[inline(always)]
     pub fn find_plural<L: Lang>(&self, morph: &L, num: u8) -> Option<Lex> {
         let tag = morph.get_tag(self);
-        let required = morph.dict().numeral_agreement_grammemes(tag.grammemes, num);
+        let required = morph
+            .dict()
+            .get_numeral_agreement_grammemes(tag.grammemes, num);
         self.inflect(morph, required)
     }
 

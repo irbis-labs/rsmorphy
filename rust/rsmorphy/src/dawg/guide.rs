@@ -3,18 +3,18 @@ use std::ops;
 use super::guide_entry::GuideEntry;
 use crate::dawg::dict_entry::DictIndex;
 
-#[derive(Debug, Clone)]
-pub struct DawgGuide {
-    units: Box<[GuideEntry]>,
+#[derive(Debug, Clone, Copy)]
+pub struct DawgGuide<'d> {
+    units: &'d [GuideEntry],
 }
 
-impl DawgGuide {
-    pub fn new(units: Box<[GuideEntry]>) -> Self {
+impl<'d> DawgGuide<'d> {
+    pub fn new(units: &'d [GuideEntry]) -> Self {
         DawgGuide { units }
     }
 }
 
-impl ops::Index<DictIndex> for DawgGuide {
+impl<'d> ops::Index<DictIndex> for DawgGuide<'d> {
     type Output = GuideEntry;
 
     #[inline(always)]

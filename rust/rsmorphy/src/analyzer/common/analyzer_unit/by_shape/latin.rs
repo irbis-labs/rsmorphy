@@ -24,7 +24,7 @@ pub struct LatinAnalyzer<L: Lang> {
 }
 
 impl<L: Lang> LatinAnalyzer<L> {
-    pub fn new(grammemes: &GramRegistry, score: Option<Score>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         LatinAnalyzer {
             tag: TagReg::from_fmt_int(grammemes, "LATN"),
             score: score.unwrap_or(SCORE),

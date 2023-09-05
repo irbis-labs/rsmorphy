@@ -16,7 +16,7 @@ fn main() {
         let two = rus.decode_token("ru:d:два,51c").unwrap();
         let five = rus.decode_token("ru:d:пять,3a2").unwrap();
 
-        let grms = &rus.dict().grammemes;
+        let grms = rus.dict().grammemes();
         let ablt = grms.find_gram("ablt").unwrap().as_set();
 
         println!(
@@ -75,7 +75,7 @@ fn main() {
         let two = ukr.decode_token("uk:d:два,657").unwrap();
         let five = ukr.decode_token("uk:d:п'ять,4df").unwrap();
 
-        let grms = &ukr.dict().grammemes;
+        let grms = ukr.dict().grammemes();
         let ablt = grms.find_gram("ablt").unwrap().as_set();
 
         println!(

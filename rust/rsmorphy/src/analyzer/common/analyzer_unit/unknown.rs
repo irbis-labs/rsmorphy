@@ -19,7 +19,7 @@ pub struct UnknownAnalyzer<L: Lang> {
 }
 
 impl<L: Lang> UnknownAnalyzer<L> {
-    pub fn new(grammemes: &GramRegistry, score: Option<Score>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         UnknownAnalyzer {
             tag: TagReg::from_fmt_int(grammemes, "UNKN"),
             score: score.unwrap_or(SCORE),

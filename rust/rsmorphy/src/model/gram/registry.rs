@@ -5,19 +5,38 @@ use super::GramId;
 use super::GramReg;
 use crate::model::gram::registry_builder::GramRegistryBuilder;
 
+#[derive(Debug, Clone, Copy)]
+pub struct GramRegistry<'d> {
+    reg_map: &'d [GramReg],
+    lat_map: &'d HashMap<GramId, Gram>,
+}
+
 #[derive(Debug)]
-pub struct GramRegistry {
-    reg_map: Vec<GramReg>,
+pub struct GramRegistryStorage {
+    reg_map: Box<[GramReg]>,
     lat_map: HashMap<GramId, Gram>,
 }
 
-impl GramRegistry {
+impl GramRegistryStorage {
+    #[inline(always)]
+    pub fn to_ref(&self) -> GramRegistry {
+        GramRegistry {
+            reg_map: &self.reg_map,
+            lat_map: &self.lat_map,
+        }
+    }
+}
+
+impl<'d> GramRegistry<'d> {
     pub fn builder() -> GramRegistryBuilder {
         GramRegistryBuilder::new()
     }
 
-    pub(super) fn from_builder(reg_map: Vec<GramReg>, lat_map: HashMap<GramId, Gram>) -> Self {
-        GramRegistry { reg_map, lat_map }
+    pub(super) fn from_builder(
+        reg_map: Box<[GramReg]>,
+        lat_map: HashMap<GramId, Gram>,
+    ) -> GramRegistryStorage {
+        GramRegistryStorage { reg_map, lat_map }
     }
 
     #[inline(always)]

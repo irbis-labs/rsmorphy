@@ -36,7 +36,7 @@ pub(super) struct Units {
 }
 
 impl Units {
-    pub fn new(grammemes: &GramRegistry) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>) -> Self {
         let known_prefixes = Prefixes::new(KNOWN_PREFIXES);
         Units {
             dictionary: DictionaryAnalyzer::new(None),

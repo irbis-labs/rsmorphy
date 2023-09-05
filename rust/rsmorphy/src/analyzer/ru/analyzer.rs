@@ -155,7 +155,7 @@ impl Russian {
     /// Creates `MorphAnalyzer` with preloaded dict
     pub fn new(dict: Dictionary) -> Self {
         let estimator = SingleTagProbabilityEstimator {};
-        let units = Units::new(&dict.grammemes);
+        let units = Units::new(dict.grammemes());
         let inner = Arc::new(Inner {
             dict,
             estimator,

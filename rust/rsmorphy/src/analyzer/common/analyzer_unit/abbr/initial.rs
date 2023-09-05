@@ -20,7 +20,7 @@ pub struct InitialsAnalyzer<L: Lang> {
 }
 
 impl<L: Lang> InitialsAnalyzer<L> {
-    pub fn new(grammemes: &GramRegistry, letters: Letters, score: Option<Score>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, letters: Letters, score: Option<Score>) -> Self {
         use InitialKind::*;
 
         let mut tags: Vec<_> = Vec::new();

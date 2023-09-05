@@ -24,7 +24,7 @@ pub struct PunctuationAnalyzer<L: Lang> {
 }
 
 impl<L: Lang> PunctuationAnalyzer<L> {
-    pub fn new(grammemes: &GramRegistry, score: Option<Score>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         PunctuationAnalyzer {
             tag: TagReg::from_fmt_int(grammemes, "PNCT"),
             score: score.unwrap_or(SCORE),

@@ -5,10 +5,6 @@ use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 use smallvec::SmallVec;
 
-use crate::dawg::CompletionDawg;
-use crate::dawg::DawgDictionary;
-use crate::dawg::DawgGuide;
-use crate::dawg::DawgValue;
 use crate::dawg::DictEntry;
 use crate::dawg::GuideEntry;
 use crate::model::dictionary::data_format::load_helper::LoadHelper;
@@ -16,13 +12,13 @@ use crate::model::dictionary::data_format::load_helper::Reader;
 use crate::model::dictionary::data_format::pymorphy2::Pymorphy2Meta;
 use crate::model::dictionary::numeral_agreement::NumeralGrammemes;
 use crate::model::dictionary::LoadError;
+use crate::model::dictionary::ParadigmEntry;
 use crate::model::gram::GramRegistry;
 use crate::model::gram::GramRow;
 use crate::model::tag::TagReg;
 use crate::model::util::PausedSimpleTraceProfiler;
 use crate::model::util::SimpleTraceProfiler;
 use crate::model::Dictionary;
-use crate::model::Paradigms;
 use crate::GramSet;
 
 /// Pymorphy2 data format adapter.
@@ -72,7 +68,7 @@ impl Pymorphy2Adapter {
                 .collect()
         };
 
-        let max_suffix_length = meta.compile_options.max_suffix_length as usize;
+        let max_suffix_length = meta.compile_options.max_suffix_length;
 
         profiler.waypoint("meta'");
 
@@ -100,27 +96,26 @@ impl Pymorphy2Adapter {
 
             gramtab
                 .into_iter()
-                .map(|gram_int| TagReg::from_fmt_int(&grammemes, gram_int))
+                .map(|gram_int| TagReg::from_fmt_int(grammemes.to_ref(), gram_int))
                 .collect()
         };
         profiler.waypoint("gramtab'");
 
-        let paradigms = Paradigms::from_reader(load.reader("paradigms.array")?)?;
+        let paradigms = load_paradigms(load.reader("paradigms.array")?)?;
         profiler.waypoint("paradigms");
 
-        let words = read_completion_dawg(load.reader("words.dawg")?)?;
+        let words = read_dawg(load.reader("words.dawg")?)?;
         profiler.waypoint("words");
 
         let p_t_given_w = match meta.p_t_w {
-            Some(_p_t_w) => Some(read_completion_dawg(load.reader("p_t_given_w.intdawg")?)?),
+            Some(_p_t_w) => Some(read_dawg(load.reader("p_t_given_w.intdawg")?)?),
             None => None,
         };
         profiler.waypoint("p_t_given_w");
 
         let mut prediction_suffixes_dawgs = Vec::new();
         for i in 0..paradigm_prefixes.len() {
-            let dawg =
-                read_completion_dawg(load.reader(format!("prediction-suffixes-{}.dawg", i))?)?;
+            let dawg = read_dawg(load.reader(format!("prediction-suffixes-{}.dawg", i))?)?;
             prediction_suffixes_dawgs.push(dawg);
         }
         profiler.waypoint("prediction_suffixes_dawgs");
@@ -140,8 +135,8 @@ impl Pymorphy2Adapter {
             .into_iter()
             .filter_map(|(gram_int_1, gram_int_2)| {
                 Some((
-                    grammemes.find_gram(gram_int_1)?,
-                    grammemes.find_gram(gram_int_2)?,
+                    grammemes.to_ref().find_gram(gram_int_1)?,
+                    grammemes.to_ref().find_gram(gram_int_2)?,
                 ))
             })
             .collect()
@@ -151,12 +146,12 @@ impl Pymorphy2Adapter {
             "NUMR", "NPRO", "PRED", "PREP", "CONJ", "PRCL", "INTJ", "Apro",
         ]
         .into_iter()
-        .filter_map(|gram_int| grammemes.find_gram(gram_int))
+        .filter_map(|gram_int| grammemes.to_ref().find_gram(gram_int))
         .collect();
 
-        let numeral_grammemes = NumeralGrammemes::new(&grammemes);
+        let numeral_grammemes = NumeralGrammemes::new(grammemes.to_ref());
 
-        Ok(Dictionary {
+        Ok(Dictionary::new(
             grammemes,
             gramtab,
             suffixes,
@@ -170,16 +165,11 @@ impl Pymorphy2Adapter {
             rare_cases,
             non_productive,
             numeral_grammemes,
-        })
+        ))
     }
 }
 
-fn read_completion_dawg<V: DawgValue>(reader: Reader) -> Result<CompletionDawg<V>, LoadError> {
-    let (dict, guide) = read_dawg(reader)?;
-    Ok(CompletionDawg::new(dict, guide))
-}
-
-fn read_dawg(mut reader: Reader) -> Result<(DawgDictionary, DawgGuide), LoadError> {
+fn read_dawg(mut reader: Reader) -> Result<(Box<[DictEntry]>, Box<[GuideEntry]>), LoadError> {
     let dict = {
         let units_count = reader.read_u32::<LittleEndian>()?;
         if units_count == 0 {
@@ -196,7 +186,7 @@ fn read_dawg(mut reader: Reader) -> Result<(DawgDictionary, DawgGuide), LoadErro
             })
             .collect::<io::Result<_>>()?;
 
-        DawgDictionary::new(units)
+        units
     };
 
     let guide = {
@@ -213,8 +203,70 @@ fn read_dawg(mut reader: Reader) -> Result<(DawgDictionary, DawgGuide), LoadErro
             })
             .collect::<io::Result<_>>()?;
 
-        DawgGuide::new(units)
+        units
     };
 
     Ok((dict, guide))
+}
+
+fn load_paradigms(mut reader: Reader) -> io::Result<(Box<[u32]>, Box<[ParadigmEntry]>)> {
+    let paradigms_count = reader.read_u16::<LittleEndian>()?;
+    #[cfg(feature = "trace_opencorpora")]
+    log::trace!("Paradigms count: {}", paradigms_count);
+
+    let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
+    // Number of entries is greater than paradigms number, but we don't know how much
+    // exactly. So we just reserve space for at least 1 entry per paradigm to reduce
+    // reallocations.
+    let mut data = Vec::with_capacity(paradigms_count as usize);
+    let mut buf = Vec::with_capacity(1024);
+
+    idx.push(0);
+
+    for _para_num in 0..paradigms_count {
+        debug_assert!(buf.is_empty(), "Buffer must be empty");
+
+        let paradigm_len = reader.read_u16::<LittleEndian>()? as usize;
+        #[cfg(feature = "trace_opencorpora")]
+        log::trace!(
+            "Paradigm number: {}, paradigm length: {}",
+            _para_num + 1,
+            paradigm_len
+        );
+
+        for _i in 0..paradigm_len {
+            buf.push(reader.read_u16::<LittleEndian>()?)
+        }
+
+        debug_assert_eq!(buf.len(), paradigm_len, "Wrong number of entries read");
+        debug_assert_eq!(
+            paradigm_len % 3,
+            0,
+            "Paradigm length must be divisible by 3"
+        );
+
+        let paradigm_count = paradigm_len / 3;
+        let (suffix, tag) = buf.split_at(paradigm_count);
+        let (tag, prefix) = tag.split_at(paradigm_count);
+
+        debug_assert_eq!(prefix.len(), paradigm_count);
+        debug_assert_eq!(tag.len(), paradigm_count);
+        debug_assert_eq!(suffix.len(), paradigm_count);
+
+        let old_len = data.len();
+
+        for i in 0..paradigm_count {
+            data.push(ParadigmEntry::new(prefix[i], tag[i], suffix[i]));
+        }
+
+        debug_assert_eq!(
+            data.len() - old_len,
+            paradigm_count,
+            "Wrong number of entries written"
+        );
+
+        idx.push(data.len() as u32);
+        buf.clear();
+    }
+    Ok((idx.into(), data.into()))
 }
