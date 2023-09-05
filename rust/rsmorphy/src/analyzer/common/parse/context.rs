@@ -1,3 +1,5 @@
+use std::fmt;
+
 use inlinable_string::InlinableString;
 use inlinable_string::StringExt;
 
@@ -9,13 +11,24 @@ use crate::analyzer::common::Seen;
 use crate::analyzer::common::SeenSet;
 use crate::analyzer::Lang;
 
-#[derive(Debug)]
 pub struct ParseContext<'m, 'w, 'b, L: Lang> {
     morph: &'m L,
     word: &'w str,
     word_lower: &'b mut InlinableString,
     parses: &'b mut ParseVec,
     seen_parses: &'b mut SeenSet<'m>,
+}
+
+impl<'m, 'w, 'b, L: Lang> fmt::Debug for ParseContext<'m, 'w, 'b, L> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ParseContext")
+            .field("morph", &"...")
+            .field("word", &self.word)
+            .field("word_lower", &self.word_lower)
+            .field("parses", &self.parses)
+            .field("seen_parses", &self.seen_parses)
+            .finish()
+    }
 }
 
 impl<'m, 'w, 'b, L: Lang> ParseContext<'m, 'w, 'b, L> {

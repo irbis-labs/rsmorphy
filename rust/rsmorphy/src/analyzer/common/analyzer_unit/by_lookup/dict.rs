@@ -40,7 +40,7 @@ impl<L: Lang> DictionaryAnalyzer<L> {
         log::trace!(r#" para_data="{:?}" "#, para_data);
 
         // `fixed_word` is a word with proper substitute (e.g. ё) letters
-        for (fixed_word, parses) in para_data {
+        for (fixed_word, parses) in para_data.into_iter().rev() {
             for WordValue { para_id, idx } in parses {
                 let word_lower = WordStruct::known(fixed_word.clone());
                 let lex = Lex::from_base(DictionaryWord::new(word_lower, para_id, idx));

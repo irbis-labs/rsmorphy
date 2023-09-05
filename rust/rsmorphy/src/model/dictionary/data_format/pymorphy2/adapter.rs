@@ -3,7 +3,7 @@ use std::path::Path;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
-use string_cache::DefaultAtom;
+use smallvec::SmallVec;
 
 use crate::dawg::CompletionDawg;
 use crate::dawg::DawgDictionary;
@@ -64,22 +64,13 @@ impl Pymorphy2Adapter {
 
         let mut profiler = profiler.resume();
 
-        let paradigm_prefixes: Vec<DefaultAtom> = {
+        let paradigm_prefixes: SmallVec<_> = {
             meta.compile_options
                 .paradigm_prefixes
                 .iter()
                 .map(|v| v.as_ref().into())
                 .collect()
         };
-
-        // TODO remove, we can iter over paradigm_prefixes directly
-        let paradigm_prefixes_rev = paradigm_prefixes
-            .iter()
-            .cloned()
-            .enumerate()
-            .rev()
-            .map(|(i, v)| (i as u16, v))
-            .collect();
 
         let max_suffix_length = meta.compile_options.max_suffix_length as usize;
 
@@ -174,7 +165,6 @@ impl Pymorphy2Adapter {
             p_t_given_w,
             prediction_suffixes_dawgs,
             paradigm_prefixes,
-            paradigm_prefixes_rev,
             max_suffix_length,
             char_substitutes,
             rare_cases,

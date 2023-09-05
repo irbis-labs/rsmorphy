@@ -49,7 +49,7 @@ where
     ///
     /// `replaces` is an object obtained from
     /// `DAWG.compile_replaces(mapping)` where mapping is a dict
-    /// that maps single-char unicode sitrings to another single-char
+    /// that maps single-char unicode strings to another single-char
     /// unicode strings.
     pub fn similar_items(
         &self,
@@ -119,14 +119,14 @@ where
             #[cfg(feature = "trace_dawg")]
             log::trace!(r#" found_key: {}"#, found_key);
 
-            let value = self.value_for_index_(index)?;
-            result.insert(0, (found_key, value));
+            let list = self.values_for_index(index)?;
+            result.push((found_key, list));
         }
 
         Ok(())
     }
 
-    fn value_for_index_(&self, index: DictIndex) -> io::Result<SmallVec<[V; 8]>> {
+    fn values_for_index(&self, index: DictIndex) -> io::Result<SmallVec<[V; 8]>> {
         #[cfg(feature = "trace_dawg")]
         log::trace!(r#"DAWG::value_for_index_(index: {:x}) "#, index);
 

@@ -85,7 +85,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                     .similar_items(word_end, &morph.dict().char_substitutes)
                     .unwrap();
 
-                for (fixed_suffix, parses) in para_data {
+                for (fixed_suffix, parses) in para_data.into_iter().rev() {
                     let fixed_word = if fixed_suffix == word_end {
                         Cow::Borrowed(&word_lower)
                     } else {
@@ -118,11 +118,11 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                         log::trace!(
                             "prefix_id: {:?}, tc[prefix_id]: {:?}, cnt: {:?}",
                             prefix_id,
-                            total_counts[prefix_id as usize],
+                            total_counts[prefix_id],
                             count
                         );
 
-                        total_counts[prefix_id as usize] += count as u32;
+                        total_counts[prefix_id] += count as u32;
 
                         let seen = Seen::new(fixed_word.as_ref().clone(), tag_reg, Some(para_id));
 
@@ -135,9 +135,9 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                         let affix = Affix::known_suffix(fixed_suffix.clone());
                         let lex = Lex::from_main(Main::new(base, Some(affix)));
 
-                        subresult.push((count, prefix_id, lex));
+                        subresult.push((count, prefix_id as u16, lex));
                     }
-                    if total_counts[prefix_id as usize] > 1 {
+                    if total_counts[prefix_id] > 1 {
                         break 'iter_splits;
                     }
                 }
@@ -168,18 +168,20 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
         &self,
         morph: &'m L,
         word: &'s str,
-    ) -> impl Iterator<Item = (u16, &'m str, &'m PredictionSuffixesDawg)> + 'i {
+    ) -> impl Iterator<Item = (usize, &'m str, &'m PredictionSuffixesDawg)> + 'i {
         use std::ops::Deref;
         morph
             .dict()
-            .paradigm_prefixes_rev
+            .paradigm_prefixes
             .iter()
-            .filter(move |(_, prefix)| word.starts_with(prefix.deref()))
+            .enumerate()
+            .rev()
+            .filter(move |(_, prefix)| word.starts_with(prefix.as_ref()))
             .map(move |(prefix_idx, prefix)| {
                 (
-                    *prefix_idx,
+                    prefix_idx,
                     prefix.deref(),
-                    &morph.dict().prediction_suffixes_dawgs[*prefix_idx as usize],
+                    &morph.dict().prediction_suffixes_dawgs[prefix_idx],
                 )
             })
     }
