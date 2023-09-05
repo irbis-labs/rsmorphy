@@ -41,7 +41,11 @@ impl Base {
         match self {
             Base::Dictionary(dw) => writer.write_str(&dw.word_lower.word)?,
             Base::HyphenAdverb(ha) => writer.write_str(&ha.word_lower.word)?,
-            Base::Initial(initial) => writer.write_str(&initial.letter)?,
+            Base::Initial(initial) => {
+                for c in initial.letter.to_lowercase() {
+                    writer.write_char(c)?
+                }
+            }
             Base::Shaped(shaped) => writer.write_str(&shaped.word)?,
             Base::Unknown(unknown) => writer.write_str(&unknown.word_lower)?,
         }
@@ -54,7 +58,7 @@ impl Base {
                 dict.write_normal_form(writer, dw.para_id, dw.idx, &dw.word_lower.word)?
             }
             Base::HyphenAdverb(ha) => writer.write_str(&ha.word_lower.word)?,
-            Base::Initial(initial) => writer.write_str(&initial.letter)?,
+            Base::Initial(initial) => writer.write_char(initial.letter)?,
             Base::Shaped(shaped) => writer.write_str(&shaped.word)?,
             Base::Unknown(unknown) => writer.write_str(&unknown.word_lower)?,
         }
