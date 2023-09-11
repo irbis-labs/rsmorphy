@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use inlinable_string::InlinableString;
+use pascal_string::PascalString;
 use serde::Deserialize;
 
 use super::super::Gram;
 use super::super::GramId;
 use super::super::GramReg;
-use crate::data_struct::pascal_string::PascalString;
 use crate::model::gram::GramRegistryError;
 use crate::model::gram::GramRegistryError::ParentNotFound;
 use crate::model::gram::GramRegistryStorage;
@@ -113,8 +113,8 @@ impl GramRegistryBuilder {
 
         let name = GramId::from_str(name)?;
 
-        let alias = PascalString::from_str_truncated(alias);
-        let description = PascalString::from_str_truncated(description);
+        let alias = PascalString::from_str_truncated(&alias);
+        let description = PascalString::from_str_truncated(&description);
 
         let gram = self.reg_map.len() + 1;
         if gram == 128 {
@@ -218,7 +218,7 @@ impl GramRegistryBuilder {
         let gndr = find_gram("GNdr")?;
         let extra_incompatible = gndr.as_set() | reg_map[gndr.id() as usize - 1].children;
 
-        // TODO: check if this is correct:
+        // TODO: check whether this is correct:
         //   `gndr children minus plur` and `gram_reg children minus gram_reg itself`
         //   looks senseless.
 

@@ -3,8 +3,8 @@ use std::hash::Hasher;
 use std::mem;
 
 use byteorder::ByteOrder;
+use pascal_string::PascalString;
 
-use crate::data_struct::pascal_string::PascalString;
 use crate::model::gram::GramRegistry;
 use crate::model::gram::GramSet;
 

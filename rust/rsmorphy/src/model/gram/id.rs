@@ -4,8 +4,9 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops;
 
+use pascal_string::PascalString;
+
 use super::GramIdError;
-use crate::data_struct::pascal_string::PascalString;
 
 #[derive(Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub struct GramId {

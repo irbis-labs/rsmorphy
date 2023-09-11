@@ -44,6 +44,7 @@ lazy_static = "1.0"
 log = "0.4"
 maplit = "1.0"
 num = "0.4"
+pascal-string = { package = "pascal-string-rs", version = "0.1", path = "../../../pascal-string" }
 roman-ii = { version = "0.1", path = "../../../roman-ii" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1.0"

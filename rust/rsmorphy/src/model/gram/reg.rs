@@ -3,10 +3,10 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 use byteorder::ByteOrder;
+use pascal_string::PascalString;
 
 use super::Gram;
 use super::GramId;
-use crate::data_struct::pascal_string::PascalString;
 use crate::model::gram::GramSet;
 
 #[derive(Debug, Clone, Copy)]
