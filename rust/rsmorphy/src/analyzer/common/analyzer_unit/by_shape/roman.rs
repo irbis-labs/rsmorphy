@@ -29,7 +29,7 @@ impl<L: Lang> RomanAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("RomanAnalyzer::parse(); {ctx:?}");
 
         let word = ctx.word();

@@ -114,7 +114,7 @@ impl Lex {
     }
 
     pub fn inflect<L: Lang>(&self, morph: &L, mut required: GramSet) -> Option<Lex> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         {
             morph.iter_lexeme(self).for_each(|lex| {
                 let tag = morph.get_tag(&lex);
@@ -146,7 +146,7 @@ impl Lex {
 
         required = morph.dict().fix_rare_cases(required);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("inflect / fix rare_cases: {:?} {:?}", self, required);
 
         let mut possible_results_iter = morph
@@ -155,7 +155,7 @@ impl Lex {
 
         let res = self.complete_inflect(morph, required, &mut possible_results_iter);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("inflect / complete: {:?} {:?}", self, res);
 
         res
@@ -174,13 +174,13 @@ impl Lex {
             intersect_count * 10 - sym_diff_count
         }
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("complete_inflect: {:?} {:?}", self, required);
 
         let mut target = morph.get_tag(self).grammemes;
         target = morph.dict().update_grammemes(target, required);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("complete_inflect / target: {:?}", target);
 
         let mut best_result = None;
@@ -192,7 +192,7 @@ impl Lex {
                 best_result = Some(lex);
                 best_score = score;
 
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!(
                     "complete_inflect / candidate: {:?} {:?},  score / best: {} {}",
                     best_result,
@@ -201,7 +201,7 @@ impl Lex {
                     best_score
                 );
             } else {
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!(
                     "complete_inflect / candidate: {:?} {:?},  score / best: {} {}",
                     lex,
@@ -212,7 +212,7 @@ impl Lex {
             }
         }
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("complete_inflect / best_result: {:?}", best_result);
 
         best_result

@@ -222,7 +222,7 @@ fn read_dawg(mut reader: Reader) -> Result<(Box<[DictEntry]>, Box<[GuideEntry]>)
 
 fn load_paradigms(mut reader: Reader) -> io::Result<(Box<[u32]>, Box<[ParadigmEntry]>)> {
     let paradigms_count = reader.read_u16::<LittleEndian>()?;
-    #[cfg(feature = "trace_model")]
+    #[cfg(feature = "log_trace_model")]
     log::trace!("Paradigms count: {}", paradigms_count);
 
     let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
@@ -238,7 +238,7 @@ fn load_paradigms(mut reader: Reader) -> io::Result<(Box<[u32]>, Box<[ParadigmEn
         debug_assert!(buf.is_empty(), "Buffer must be empty");
 
         let paradigm_len = reader.read_u16::<LittleEndian>()? as usize;
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!(
             "Paradigm number: {}, paradigm length: {}",
             _para_num + 1,

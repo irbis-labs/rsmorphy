@@ -1,7 +1,7 @@
 pub use self::profiler::PausedSimpleTraceProfiler;
 pub use self::profiler::SimpleTraceProfiler;
 
-#[cfg(feature = "trace_model")]
+#[cfg(feature = "log_trace_model")]
 mod profiler {
     use std::time::Duration;
     use std::time::Instant;
@@ -63,7 +63,7 @@ mod profiler {
     }
 }
 
-#[cfg(not(feature = "trace_model"))]
+#[cfg(not(feature = "log_trace_model"))]
 mod profiler {
     #[allow(missing_copy_implementations)]
     #[derive(Debug, Clone)]

@@ -41,7 +41,7 @@ impl TagReg {
     pub fn from_fmt_int_(gram_registry: GramRegistry<'_>, fmt_int: &str) -> Self {
         let mut grammemes = GramSet::empty();
 
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!("tags for {}", fmt_int);
 
         for gram_int in fmt_int.split(|c| matches!(c, ',' | ' ')) {

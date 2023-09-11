@@ -101,7 +101,7 @@ impl<'d> DawgDictionary<'d> {
 
     /// Follows a transition
     pub(super) fn follow_byte(&self, label: DictLabel, index: DictIndex) -> Option<DictIndex> {
-        #[cfg(feature = "trace_dawg")]
+        #[cfg(feature = "log_trace_dawg")]
         log::trace!(
             r#"Dictionary::follow_byte() label: {:x}, index = {:x} "#,
             label,
@@ -110,19 +110,19 @@ impl<'d> DawgDictionary<'d> {
 
         let unit = self[index];
 
-        #[cfg(feature = "trace_dawg")]
+        #[cfg(feature = "log_trace_dawg")]
         log::trace!(r#"Dictionary::follow_byte() unit: {:x} "#, unit);
 
         let offset = unit.offset();
 
-        #[cfg(feature = "trace_dawg")]
+        #[cfg(feature = "log_trace_dawg")]
         log::trace!(r#"Dictionary::follow_byte() offset: {:x} "#, offset);
 
         // let next_index = (index ^ offset ^ label) & dict_entry::PRECISION_MASK;
         let next_index = index.next_index(offset, label);
         let leaf_label = self[next_index].label();
 
-        #[cfg(feature = "trace_dawg")]
+        #[cfg(feature = "log_trace_dawg")]
         log::trace!(r#"Dictionary::follow_byte() leaf_label: {:x} "#, leaf_label);
 
         if leaf_label == label {

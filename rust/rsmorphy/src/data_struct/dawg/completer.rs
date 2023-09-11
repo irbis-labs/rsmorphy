@@ -83,7 +83,7 @@ impl<'d> Completer<'d> {
             let child_label = self.guide[index].child;
             index = self.follow(child_label, index)?;
 
-            #[cfg(feature = "trace_dawg")]
+            #[cfg(feature = "log_trace_dawg")]
             log::trace!(
                 r#"Completer::find_terminal() index: {:8x?}, key: {:?}, stack = {:x?} "#,
                 index,

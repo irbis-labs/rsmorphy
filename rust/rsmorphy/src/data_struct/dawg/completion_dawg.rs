@@ -136,7 +136,7 @@ where
         mut index: DictIndex,
         replace_chars: LetterPairs<'_>,
     ) -> io::Result<()> {
-        #[cfg(feature = "trace_dawg")]
+        #[cfg(feature = "log_trace_dawg")]
         log::trace!(r#"DAWG::similar_items_() index: {:x}"#, index);
 
         let start_pos = current_prefix.len();
@@ -145,11 +145,11 @@ where
         let mut word_pos = start_pos;
 
         for b_step in subkey.split("").filter(|v| !v.is_empty()) {
-            #[cfg(feature = "trace_dawg")]
+            #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#" b_step: {:?}"#, b_step);
 
             if let Some(replace_char) = replace_chars.find_pair(b_step) {
-                #[cfg(feature = "trace_dawg")]
+                #[cfg(feature = "log_trace_dawg")]
                 log::trace!(
                     r#" b_step in replace_chars ({:?} => {:?})"#,
                     b_step,
@@ -160,7 +160,7 @@ where
                     .dict
                     .follow_bytes(replace_char.encode_utf8(&mut [0u8; 4]).as_ref(), index)
                 {
-                    #[cfg(feature = "trace_dawg")]
+                    #[cfg(feature = "log_trace_dawg")]
                     log::trace!(r#" next_index: {:x}"#, next_index);
 
                     let mut prefix =
@@ -174,19 +174,19 @@ where
                 None => return Ok(()),
             };
 
-            #[cfg(feature = "trace_dawg")]
+            #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#" index: {:x}"#, index);
 
             word_pos += b_step.len()
         }
 
         if let Some(index) = self.dict.follow_bytes(PAYLOAD_SEPARATOR, index) {
-            #[cfg(feature = "trace_dawg")]
+            #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#" index: {:x}"#, index);
 
             let found_key = InlinableString::from(current_prefix) + subkey;
 
-            #[cfg(feature = "trace_dawg")]
+            #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#" found_key: {}"#, found_key);
 
             let list = self.values_for_index(index)?;
@@ -197,13 +197,13 @@ where
     }
 
     fn values_for_index(&self, index: DictIndex) -> io::Result<SmallVec<[V; 8]>> {
-        #[cfg(feature = "trace_dawg")]
+        #[cfg(feature = "log_trace_dawg")]
         log::trace!(r#"DAWG::value_for_index_(index: {:x}) "#, index);
 
         let mut result = SmallVec::new();
         let mut completer = Completer::new(self.dict, self.guide, index, "");
         while let Some(key) = completer.next_key() {
-            #[cfg(feature = "trace_dawg")]
+            #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#"DAWG::value_for_index_(...); key: "{:?}" "#, key);
 
             let value = V::new_in_place(move |buf| {
@@ -211,7 +211,7 @@ where
                     .decode_slice_unchecked(&key, buf)
                     .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
-                #[cfg(feature = "trace_dawg")]
+                #[cfg(feature = "log_trace_dawg")]
                 log::trace!(r#"DAWG::value_for_index_(...); bytes: {:?} "#, buf);
 
                 debug_assert_eq!(decoded, buf.len());

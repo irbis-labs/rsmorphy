@@ -28,7 +28,7 @@ impl<L: Lang> UnknownAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("UnknownAnalyzer::parse(); {ctx:?}");
 
         if ctx.seen_parses().is_empty() {

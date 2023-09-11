@@ -47,13 +47,13 @@ impl<L: Lang> InitialsAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("InitialsAnalyzer::parse(); {ctx:?}");
 
         let letters = ctx.morph().dict().initial_letters();
         let letter = letters.find(ctx.word());
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!(r#" LETTERS contains word: {:?} "#, letter.is_some());
 
         if let Some(letter) = letter {

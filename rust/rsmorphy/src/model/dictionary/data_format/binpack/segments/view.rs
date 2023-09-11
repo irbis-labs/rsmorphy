@@ -16,18 +16,18 @@ pub struct SegmentsView<'d> {
 
 impl<'d> SegmentsView<'d> {
     pub fn new(bin: &'d [u8]) -> Self {
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!("bin: {:?}", bin.as_ptr());
-        #[cfg(all(feature = "trace_model", feature = "trace_big"))]
+        #[cfg(all(feature = "log_trace_model", feature = "log_trace_large"))]
         log::trace!("bin: {:?}", bin);
 
         assert!(bin.len() >= mem::size_of::<SegmentsMeta>());
         let meta = unsafe { &*(&bin[0] as *const _ as *const SegmentsMeta) };
 
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!("meta: {:?}", meta as *const _);
 
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!("meta: {:?}", meta);
 
         assert_eq!(meta.version(), &[0, 0]);

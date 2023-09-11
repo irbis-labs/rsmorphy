@@ -117,7 +117,7 @@ impl Lang for Ukrainian {
     }
 
     fn decode_token(&self, token: &str) -> Result<Lex, DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_token({:?})", token);
 
         let s = follow_str(token, "uk:")?;
@@ -141,7 +141,7 @@ impl Lang for Ukrainian {
 
         let res = Lex::new(left, right, particle);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_token({:?}) -> ({:?}, {:?})", token, _s, res);
 
         Ok(res)
@@ -277,7 +277,7 @@ impl Ukrainian {
         &self,
         token: &'t str,
     ) -> Result<(&'t str, HyphenSeparatedParticle), DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_particle({:?})", token);
 
         let s = follow_str(token, "hp").map_err(|e| match e {
@@ -288,14 +288,14 @@ impl Ukrainian {
 
         let res = HyphenSeparatedParticle::new(word);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_particle({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
     }
 
     fn decode_main<'t>(&self, token: &'t str) -> Result<(&'t str, Main), DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_main({:?})", token);
 
         let (s, base) = self.decode_base(token)?;
@@ -309,14 +309,14 @@ impl Ukrainian {
             s
         };
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_main({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
     }
 
     fn decode_affix<'t>(&self, token: &'t str) -> Result<(&'t str, Affix), DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_affix({:?})", token);
 
         let (s, kind) = follow_str(token, "ks")
@@ -331,7 +331,7 @@ impl Ukrainian {
 
         let res = Affix::new(word, kind);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_affix({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
@@ -348,7 +348,7 @@ impl Ukrainian {
             })
         }
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_base({:?})", token);
 
         let (s, res) = match try_(self.decode_dict(token))? {
@@ -368,14 +368,14 @@ impl Ukrainian {
             },
         };
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_base({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
     }
 
     fn decode_dict<'t>(&self, token: &'t str) -> Result<(&'t str, DictionaryWord), DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_dict({:?})", token);
 
         let (s, is_known) = follow_str(token, "d")
@@ -398,7 +398,7 @@ impl Ukrainian {
         // TODO check whether the `word` is in the lower case.
         let res = DictionaryWord::new(WordStruct::new(word, is_known), para_id, idx);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_dict({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
@@ -408,7 +408,7 @@ impl Ukrainian {
         &self,
         token: &'t str,
     ) -> Result<(&'t str, HyphenAdverb), DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_hyphene_adverb({:?})", token);
 
         let s = follow_str(token, "ha").map_err(|_| DecodeError::UnknownPartType)?;
@@ -421,7 +421,7 @@ impl Ukrainian {
         // TODO check whether the `word` is in the lower case.
         let res = HyphenAdverb::new(WordStruct::new(word, is_known));
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!(
             "< decode_hyphene_adverb({:?}) -> ({:?}, {:?})",
             token,
@@ -472,7 +472,7 @@ impl Ukrainian {
 
         let res = Initial::new(letter, kind, tag_idx);
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_initial({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
@@ -481,7 +481,7 @@ impl Ukrainian {
     fn decode_shaped<'t>(&self, token: &'t str) -> Result<(&'t str, Shaped), DecodeError> {
         use ShapeKind as SK;
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_shaped({:?})", token);
 
         let s = follow_str(token, "s").map_err(|_| DecodeError::UnknownPartType)?;
@@ -500,14 +500,14 @@ impl Ukrainian {
         let word = unescape(word).collect();
         let res = Shaped { word, kind };
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_shaped({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))
     }
 
     fn decode_unknown<'t>(&self, token: &'t str) -> Result<(&'t str, Unknown), DecodeError> {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("> decode_unknown({:?})", token);
 
         let s = follow_str(token, "u").map_err(|_| DecodeError::UnknownPartType)?;
@@ -515,7 +515,7 @@ impl Ukrainian {
         let word_lower = unescape(word).collect();
         let res = Unknown { word_lower };
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("< decode_unknown({:?}) -> ({:?}, {:?})", token, s, res);
 
         Ok((s, res))

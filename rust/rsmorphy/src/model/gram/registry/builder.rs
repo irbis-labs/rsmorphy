@@ -96,7 +96,7 @@ impl GramRegistryBuilder {
         description: InlinableString,
         extra: bool,
     ) -> Result<Gram, GramRegistryError> {
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!(
             "add grammeme: name = {}, parent = {}, alias = {}, description = {}, extra = {}",
             name,
@@ -231,7 +231,7 @@ impl GramRegistryBuilder {
 
         //
 
-        #[cfg(feature = "trace_model")]
+        #[cfg(feature = "log_trace_model")]
         log::trace!("GramRegistryBuilder::finish: reg_map = {:?}", reg_map);
 
         Ok(GramRegistryStorage::from_builder(reg_map.into(), lat_map))

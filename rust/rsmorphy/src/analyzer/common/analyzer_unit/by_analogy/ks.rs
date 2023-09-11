@@ -45,7 +45,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("KnownSuffixAnalyzer::parse(); {ctx:?}");
 
         let morph = ctx.morph();
@@ -76,7 +76,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
 
         #[allow(unused_variables)]
         for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(dict, &word_lower) {
-            #[cfg(feature = "trace_analyzer")]
+            #[cfg(feature = "log_trace_analyzer")]
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
             'iter_splits: for suffix_len in dict.prediction_splits(word_len) {
@@ -85,12 +85,12 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
 
                 let pos = word_splits[split_after_char - 1];
 
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!("i: {}, pos: {}", suffix_len, pos);
 
                 let (beginning, end) = word_lower.split_at(pos);
 
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!("word beginning: {}, end: {}", beginning, end);
 
                 let para_data = suffixes_dawg
@@ -104,13 +104,13 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                         Cow::Owned(InlinableString::from(beginning) + &fixed_suffix)
                     };
 
-                    #[cfg(feature = "trace_analyzer")]
+                    #[cfg(feature = "log_trace_analyzer")]
                     log::trace!(
                         "fixed_suffix: {:?}, fixed_word: {:?}",
                         fixed_suffix,
                         fixed_word
                     );
-                    #[cfg(feature = "trace_analyzer")]
+                    #[cfg(feature = "log_trace_analyzer")]
                     log::trace!("parses: {:?}", parses);
 
                     'iter_parses: for PredictionSuffixValue {
@@ -124,9 +124,9 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                             continue 'iter_parses;
                         }
 
-                        #[cfg(feature = "trace_analyzer")]
+                        #[cfg(feature = "log_trace_analyzer")]
                         log::trace!("tc: {:?}", total_counts);
-                        #[cfg(feature = "trace_analyzer")]
+                        #[cfg(feature = "log_trace_analyzer")]
                         log::trace!(
                             "prefix_id: {:?}, tc[prefix_id]: {:?}, cnt: {:?}",
                             prefix_id,

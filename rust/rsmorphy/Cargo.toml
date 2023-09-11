@@ -22,16 +22,16 @@ default = []
 
 # Tracing features.
 # Normally, you don't need them.
-trace_all = [
-    "trace_analyzer",
-    "trace_dawg",
-    "trace_model",
+log_trace_all = [
+    "log_trace_analyzer",
+    "log_trace_dawg",
+    "log_trace_model",
 ]
-trace_analyzer = []
-trace_dawg = []
-trace_model = []
+log_trace_analyzer = []
+log_trace_dawg = []
+log_trace_model = []
 # If you really need to see all these bytes.
-trace_big = []
+log_trace_large = []
 
 
 [dependencies]

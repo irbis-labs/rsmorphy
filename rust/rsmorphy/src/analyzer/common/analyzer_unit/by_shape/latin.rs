@@ -33,7 +33,7 @@ impl<L: Lang> LatinAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("LatinAnalyzer::parse(); {ctx:?}");
 
         if !is_latin(ctx.word_lower()) {

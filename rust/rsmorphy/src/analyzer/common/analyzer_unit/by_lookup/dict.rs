@@ -26,7 +26,7 @@ impl<L: Lang> DictionaryAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("DictionaryAnalyzer::parse(); {ctx:?}");
 
         let morph = ctx.morph();
@@ -36,7 +36,7 @@ impl<L: Lang> DictionaryAnalyzer<L> {
             .words()
             .similar_items(ctx.word_lower(), morph.dict().char_substitutes())
             .unwrap();
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!(r#" para_data="{:?}" "#, para_data);
 
         // `fixed_word` is a word with proper substitute (e.g. ё) letters

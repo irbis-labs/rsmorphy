@@ -32,7 +32,7 @@ impl<L: Lang> HyphenatedWordsAnalyzer<L> {
     }
 
     pub fn parse(&self, _ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("HyphenatedWordsAnalyzer::parse(); {_ctx:?}");
 
         // FIXME unimplemented

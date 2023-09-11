@@ -39,7 +39,7 @@ impl<L: Lang> NumberAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("NumberAnalyzer::parse(); {ctx:?}");
 
         let word_lower = ctx.word_lower();

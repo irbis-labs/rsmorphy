@@ -41,7 +41,7 @@ impl<L: Lang> UnknownPrefixAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("UnknownPrefixAnalyzer::parse(); {ctx:?}");
 
         let morph = ctx.morph();
@@ -82,7 +82,7 @@ pub fn word_splits<'w: 'i, 'i>(
     let word_len = word.chars().count();
     let max_split = word_len.saturating_sub(min_reminder).min(max_prefix_length);
 
-    #[cfg(feature = "trace_analyzer")]
+    #[cfg(feature = "log_trace_analyzer")]
     log::trace!("max_split: {}", max_split);
 
     word.chars().take(max_split).map({

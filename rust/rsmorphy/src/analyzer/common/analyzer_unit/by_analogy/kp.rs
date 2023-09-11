@@ -38,7 +38,7 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("KnownPrefixAnalyzer::parse(); {ctx:?}");
 
         let word = ctx.word();
@@ -50,7 +50,7 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
         let limit = word_len - self.min_reminder_length;
         let morph = ctx.morph();
 
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("possible_splits for word = {word}, limit = {limit}");
 
         let max_len = self.known_prefixes.max_len.min(limit);
@@ -63,11 +63,11 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
             let pos = word.chars().take(prefix_len).map(char::len_utf8).sum();
             let (prefix, unprefixed_word) = word.split_at(pos);
 
-            #[cfg(feature = "trace_analyzer")]
+            #[cfg(feature = "log_trace_analyzer")]
             log::trace!("prefix = {prefix:?}, unprefixed_word = {unprefixed_word:?}");
 
             if !self.known_prefixes.contains_hinted(prefix, prefix_len) {
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!("skipping: prefix not found in known_prefixes");
                 continue;
             }
@@ -78,7 +78,7 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
                 .estimate()
                 .drain()
             {
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!("parse = {:?}", parse);
 
                 let Parse { lex, score } = parse;
@@ -95,7 +95,7 @@ impl<L: Lang> KnownPrefixAnalyzer<L> {
                 } = lex;
 
                 if particle.is_some() || right.is_some() || left.affix.is_some() {
-                    #[cfg(feature = "trace_analyzer")]
+                    #[cfg(feature = "log_trace_analyzer")]
                     log::trace!(
                         "skipping:  particle.is_some = {}  or  right.is_some = {}  or  left.affix.is_some = {}",
                         particle.is_some(),

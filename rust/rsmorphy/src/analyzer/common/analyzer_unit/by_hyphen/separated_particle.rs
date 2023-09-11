@@ -38,7 +38,7 @@ impl<L: Lang> HyphenSeparatedParticleAnalyzer<L> {
     }
 
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
-        #[cfg(feature = "trace_analyzer")]
+        #[cfg(feature = "log_trace_analyzer")]
         log::trace!("HyphenSeparatedParticleAnalyzer::parse(); {ctx:?}");
 
         let morph = ctx.morph();
@@ -50,16 +50,16 @@ impl<L: Lang> HyphenSeparatedParticleAnalyzer<L> {
                 continue 'particle;
             };
 
-            #[cfg(feature = "trace_analyzer")]
+            #[cfg(feature = "log_trace_analyzer")]
             log::trace!(r#" particle: "{}" "#, particle);
 
             let unsuffixed_word = &word_lower[..word_lower.len() - particle.len()];
 
-            #[cfg(feature = "trace_analyzer")]
+            #[cfg(feature = "log_trace_analyzer")]
             log::trace!(r#" unsuffixed_word: "{}" "#, unsuffixed_word);
 
             'subparse: for Parse { mut lex, score } in buffer.parse(unsuffixed_word).drain() {
-                #[cfg(feature = "trace_analyzer")]
+                #[cfg(feature = "log_trace_analyzer")]
                 log::trace!(r#" subparse: {score:?}, {lex:?} "#);
 
                 // If a word ends with with one of the particles, it can't ends with an another.
