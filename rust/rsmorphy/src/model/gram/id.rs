@@ -3,25 +3,56 @@ use std::fmt;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops;
-use std::str::from_utf8_unchecked;
 
 use super::GramIdError;
+use crate::data_struct::pascal_string::PascalString;
 
 #[derive(Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub struct GramId {
-    // ASCII bytes, e.g. b"NOUN".
-    id: [u8; Self::MAX_LEN],
-    len: u8,
+    inner: PascalString<{ Self::MAX_LEN }>,
 }
 
 impl GramId {
     pub const MAX_LEN: usize = 11;
+
+    #[inline(always)]
+    pub fn from_str(gram_lat: &str) -> Result<Self, GramIdError> {
+        let bytes = gram_lat.as_bytes();
+
+        let len = bytes.len();
+        if len < 1 || len > Self::MAX_LEN {
+            return Err(GramIdError::InvalidLength(len));
+        }
+
+        // PANIC SAFETY: Only the length can be invalid, and it is checked above.
+        let inner = PascalString::try_from(gram_lat).unwrap();
+
+        if !bytes.iter().all(u8::is_ascii) {
+            let (_len, data) = inner.into_inner();
+            return Err(GramIdError::NotAscii(data));
+        }
+
+        Ok(Self { inner })
+    }
+
+    #[inline(always)]
+    pub fn as_str(&self) -> &str {
+        // SAFETY: GramId is always constructed from &str.
+        self.inner.as_str()
+    }
 }
 
-impl fmt::Debug for GramId {
+impl fmt::Display for GramId {
     #[inline(always)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.as_str().fmt(f)
+    }
+}
+
+impl fmt::Debug for GramId {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("GramId").field(&self.as_str()).finish()
     }
 }
 
@@ -32,37 +63,10 @@ impl Hash for GramId {
     }
 }
 
-impl GramId {
-    #[inline(always)]
-    pub fn from_str(gram_lat: &str) -> Result<Self, GramIdError> {
-        let bytes = gram_lat.as_bytes();
-
-        let len = bytes.len();
-        if len < 1 || len > Self::MAX_LEN {
-            return Err(GramIdError::InvalidLength(len));
-        }
-
-        let mut id = [0; Self::MAX_LEN];
-        id[..len].copy_from_slice(bytes);
-        if !id[..len].iter().all(u8::is_ascii) {
-            return Err(GramIdError::NotAscii(id));
-        }
-
-        let len = len as u8;
-        Ok(Self { id, len })
-    }
-
-    #[inline(always)]
-    pub fn as_str(&self) -> &str {
-        // SAFETY: GramId is always constructed from &str.
-        unsafe { from_utf8_unchecked(self.id.get_unchecked(..self.len as usize)) }
-    }
-}
-
 impl AsRef<str> for GramId {
     #[inline(always)]
     fn as_ref(&self) -> &str {
-        self.as_str()
+        self
     }
 }
 
@@ -78,13 +82,6 @@ impl ops::Deref for GramId {
 impl Borrow<str> for GramId {
     #[inline(always)]
     fn borrow(&self) -> &str {
-        self.as_str()
-    }
-}
-
-impl fmt::Display for GramId {
-    #[inline(always)]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.as_str().fmt(f)
+        self
     }
 }

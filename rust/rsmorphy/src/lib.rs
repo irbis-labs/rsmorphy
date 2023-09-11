@@ -6,7 +6,7 @@
 #![allow(clippy::module_inception)]
 
 pub mod analyzer;
-pub mod dawg;
+pub mod data_struct;
 pub mod model;
 pub mod shapes;
 pub mod token_codec;

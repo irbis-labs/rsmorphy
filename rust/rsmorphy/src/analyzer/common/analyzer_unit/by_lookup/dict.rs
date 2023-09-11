@@ -34,7 +34,7 @@ impl<L: Lang> DictionaryAnalyzer<L> {
         let para_data = morph
             .dict()
             .words()
-            .similar_items(ctx.word_lower(), &morph.dict().char_substitutes())
+            .similar_items(ctx.word_lower(), morph.dict().char_substitutes())
             .unwrap();
         #[cfg(feature = "trace_analyzer")]
         log::trace!(r#" para_data="{:?}" "#, para_data);

@@ -1,4 +1,3 @@
-use crate::analyzer::common::util::Prefixes;
 use crate::analyzer::common::DictionaryAnalyzer;
 use crate::analyzer::common::HyphenAdverbAnalyzer;
 use crate::analyzer::common::HyphenSeparatedParticleAnalyzer;
@@ -12,10 +11,10 @@ use crate::analyzer::common::PunctuationAnalyzer;
 use crate::analyzer::common::RomanAnalyzer;
 use crate::analyzer::common::UnknownAnalyzer;
 use crate::analyzer::common::UnknownPrefixAnalyzer;
-use crate::analyzer::ru::config::INITIAL_LETTERS;
 use crate::analyzer::ru::config::KNOWN_PREFIXES;
 use crate::analyzer::ru::config::PARTICLES_AFTER_HYPHEN;
 use crate::analyzer::Russian;
+use crate::data_struct::prefixes::Prefixes;
 use crate::model::gram::GramRegistry;
 
 #[derive(Debug)]
@@ -40,7 +39,7 @@ impl Units {
         let known_prefixes = Prefixes::new(KNOWN_PREFIXES);
         Units {
             dictionary: DictionaryAnalyzer::new(None),
-            initial: InitialsAnalyzer::new(grammemes, INITIAL_LETTERS, None),
+            initial: InitialsAnalyzer::new(grammemes, None),
             latin: LatinAnalyzer::new(grammemes, None),
             number: NumberAnalyzer::new(grammemes, None),
             roman: RomanAnalyzer::new(grammemes, None),

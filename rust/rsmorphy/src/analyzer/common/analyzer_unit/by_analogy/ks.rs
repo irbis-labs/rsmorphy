@@ -18,6 +18,7 @@ use crate::analyzer::Parse;
 use crate::analyzer::Score;
 use crate::model::dictionary::PredictionSuffixValue;
 use crate::model::dictionary::PredictionSuffixesDawg;
+use crate::model::Dictionary;
 
 const MIN_WORD_LENGTH: usize = 4;
 const SCORE_MULTIPLIER: f64 = 0.5;
@@ -47,49 +48,60 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
         #[cfg(feature = "trace_analyzer")]
         log::trace!("KnownSuffixAnalyzer::parse(); {ctx:?}");
 
-        let word_len = ctx.word_lower().chars().count();
+        let morph = ctx.morph();
+        let dict = morph.dict();
+        let word_lower = ctx.word_lower().clone();
+
+        let word_splits: SmallVec<[usize; 32]> = word_lower
+            .chars()
+            .map({
+                let mut pos = 0;
+                move |ch| {
+                    pos += ch.len_utf8();
+                    pos
+                }
+            })
+            .collect();
+
+        let word_len = word_splits.len();
         if word_len < self.min_word_length {
             return;
         }
 
-        let morph = ctx.morph();
-        let word_lower = ctx.word_lower().clone();
-
         let mut subresult: SmallVec<[(u16, u16, Lex); 16]> = SmallVec::new();
 
         let mut total_counts: SmallVec<[u32; 4]> = iter::repeat(1)
-            .take(morph.dict().paradigm_prefixes_len())
+            .take(dict.paradigm_prefixes().len())
             .collect();
 
         #[allow(unused_variables)]
-        for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(morph, &word_lower) {
+        for (prefix_id, prefix, suffixes_dawg) in self.possible_prefixes(dict, &word_lower) {
             #[cfg(feature = "trace_analyzer")]
             log::trace!(r#" prefix_id: {}, prefix: "{}" "#, prefix_id, prefix);
 
-            'iter_splits: for i in morph.dict().prediction_splits(word_len) {
-                let pos = word_lower
-                    .chars()
-                    .take(word_len - i)
-                    .map(char::len_utf8)
-                    .sum();
+            'iter_splits: for suffix_len in dict.prediction_splits(word_len) {
+                let split_after_char = word_len - suffix_len;
+                debug_assert!(split_after_char > 0);
+
+                let pos = word_splits[split_after_char - 1];
 
                 #[cfg(feature = "trace_analyzer")]
-                log::trace!("i: {}, pos: {}", i, pos);
+                log::trace!("i: {}, pos: {}", suffix_len, pos);
 
-                let (word_start, word_end) = word_lower.split_at(pos);
+                let (beginning, end) = word_lower.split_at(pos);
 
                 #[cfg(feature = "trace_analyzer")]
-                log::trace!("word_start: {}, word_end: {}", word_start, word_end);
+                log::trace!("word beginning: {}, end: {}", beginning, end);
 
                 let para_data = suffixes_dawg
-                    .similar_items(word_end, &morph.dict().char_substitutes())
+                    .similar_items(end, dict.char_substitutes())
                     .unwrap();
 
                 for (fixed_suffix, parses) in para_data.into_iter().rev() {
-                    let fixed_word = if fixed_suffix == word_end {
+                    let fixed_word = if fixed_suffix == end {
                         Cow::Borrowed(&word_lower)
                     } else {
-                        Cow::Owned(InlinableString::from(word_start) + &fixed_suffix)
+                        Cow::Owned(InlinableString::from(beginning) + &fixed_suffix)
                     };
 
                     #[cfg(feature = "trace_analyzer")]
@@ -107,8 +119,8 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                         idx,
                     } in parses
                     {
-                        let tag_reg = morph.dict().get_tag(para_id, idx);
-                        if !morph.dict().is_productive(tag_reg.grammemes) {
+                        let tag_reg = dict.get_tag(para_id, idx);
+                        if !dict.is_productive(tag_reg.grammemes) {
                             continue 'iter_parses;
                         }
 
@@ -166,12 +178,11 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
 
     fn possible_prefixes<'m: 'i, 's: 'i, 'i>(
         &self,
-        morph: &'m L,
+        dict: &'m Dictionary,
         word: &'s str,
     ) -> impl Iterator<Item = (usize, &'m str, PredictionSuffixesDawg<'m>)> + 'i {
-        morph
-            .dict()
-            .iter_paradigm_prefixes()
+        dict.paradigm_prefixes()
+            .iter()
             .enumerate()
             .rev()
             .filter(move |(_, prefix)| word.starts_with(prefix))
@@ -179,7 +190,7 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                 (
                     prefix_idx,
                     prefix,
-                    morph.dict().prediction_suffixes_dawgs(prefix_idx),
+                    dict.prediction_suffixes_dawg(prefix_idx),
                 )
             })
     }

@@ -7,6 +7,6 @@ use smallvec::SmallVec;
 pub struct CompileOptions {
     pub min_ending_freq: u32,
     pub min_paradigm_popularity: u32,
-    pub max_suffix_length: u32,
+    pub max_suffix_length: u8,
     pub paradigm_prefixes: SmallVec<[InlinableString; 8]>,
 }

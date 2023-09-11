@@ -25,11 +25,13 @@ default = []
 trace_all = [
     "trace_analyzer",
     "trace_dawg",
-    "trace_opencorpora",
+    "trace_model",
 ]
 trace_analyzer = []
 trace_dawg = []
-trace_opencorpora = []
+trace_model = []
+# If you really need to see all these bytes.
+trace_big = []
 
 
 [dependencies]
@@ -46,7 +48,6 @@ roman-ii = { version = "0.1", path = "../../../roman-ii" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1.0"
 smallvec = { version = "1.4", features = ["serde"] }
-string_cache = "0.8"
 thiserror = "1"
 unicode_categories = "0.1"
 

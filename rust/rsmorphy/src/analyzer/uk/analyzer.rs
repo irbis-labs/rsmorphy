@@ -18,6 +18,8 @@ use crate::analyzer::common::ShapeKind;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::common::Unknown;
 use crate::analyzer::common::WordStruct;
+use crate::analyzer::uk::config::CHAR_SUBSTITUTES;
+use crate::analyzer::uk::config::INITIAL_LETTERS;
 use crate::analyzer::uk::units::Units;
 use crate::analyzer::Lang;
 use crate::model::dictionary::data_format::pymorphy2::LanguageCode;
@@ -161,7 +163,7 @@ impl Ukrainian {
         if meta.language_code != LanguageCode::Uk {
             return Err(LoadError::InvalidLanguage(meta.language_code));
         }
-        let dict = loader.load()?;
+        let dict = loader.load(INITIAL_LETTERS, CHAR_SUBSTITUTES)?;
         Ok(Ukrainian::new(dict))
     }
 
@@ -463,10 +465,8 @@ impl Ukrainian {
             _ => Err(DecodeError::DoesntMatch)?,
         };
         let letter = self
-            .inner
-            .units
-            .initial
-            .letters
+            .dict()
+            .initial_letters()
             .find(word)
             .ok_or(DecodeError::DoesntMatch)?;
 

@@ -5,15 +5,18 @@ use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 use smallvec::SmallVec;
 
-use crate::dawg::DictEntry;
-use crate::dawg::GuideEntry;
+use crate::data_struct::dawg::DictEntry;
+use crate::data_struct::dawg::GuideEntry;
+use crate::data_struct::string_list::StringArray;
 use crate::model::dictionary::data_format::load_helper::LoadHelper;
 use crate::model::dictionary::data_format::load_helper::Reader;
 use crate::model::dictionary::data_format::pymorphy2::Pymorphy2Meta;
-use crate::model::dictionary::numeral_agreement::NumeralGrammemes;
+use crate::model::dictionary::gram_sets::GramSetsOwned;
+use crate::model::dictionary::meta::DictionaryMetaOwned;
+use crate::model::dictionary::DictionaryInner;
 use crate::model::dictionary::LoadError;
 use crate::model::dictionary::ParadigmEntry;
-use crate::model::gram::GramRegistry;
+use crate::model::gram::GramRegistryStorage;
 use crate::model::gram::GramRow;
 use crate::model::tag::TagReg;
 use crate::model::util::PausedSimpleTraceProfiler;
@@ -51,24 +54,29 @@ impl Pymorphy2Adapter {
         &self.meta
     }
 
-    pub fn load(self) -> Result<Dictionary, LoadError> {
+    pub fn load(
+        self,
+        initial_letters: &[char],
+        char_substitutes_: &[(char, char)],
+    ) -> Result<Dictionary, LoadError> {
         let Self {
             load,
-            meta,
+            meta: pm2_meta,
             profiler,
         } = self;
 
+        let meta = DictionaryMetaOwned::new(pm2_meta.compile_options.max_suffix_length);
+
         let mut profiler = profiler.resume();
 
-        let paradigm_prefixes: SmallVec<_> = {
-            meta.compile_options
+        let paradigm_prefixes: StringArray = {
+            pm2_meta
+                .compile_options
                 .paradigm_prefixes
                 .iter()
                 .map(|v| v.as_ref().into())
                 .collect()
         };
-
-        let max_suffix_length = meta.compile_options.max_suffix_length;
 
         profiler.waypoint("meta'");
 
@@ -79,11 +87,11 @@ impl Pymorphy2Adapter {
             let grammemes: Vec<GramRow> = load.json("grammemes.json")?;
             profiler.waypoint("grammemes");
 
-            let mut builder = GramRegistry::builder();
+            let mut builder = GramRegistryStorage::builder();
             for row in grammemes {
                 builder.add_grammeme(row, false)?;
             }
-            builder.finish()?
+            builder.build()?
         };
         profiler.waypoint("grammemes'");
 
@@ -107,7 +115,7 @@ impl Pymorphy2Adapter {
         let words = read_dawg(load.reader("words.dawg")?)?;
         profiler.waypoint("words");
 
-        let p_t_given_w = match meta.p_t_w {
+        let p_t_given_w = match pm2_meta.p_t_w {
             Some(_p_t_w) => Some(read_dawg(load.reader("p_t_given_w.intdawg")?)?),
             None => None,
         };
@@ -120,7 +128,9 @@ impl Pymorphy2Adapter {
         }
         profiler.waypoint("prediction_suffixes_dawgs");
 
-        let char_substitutes = [("е".into(), "ё".into())].into_iter().collect();
+        let initial_letters = initial_letters.iter().copied().collect();
+        let mut char_substitutes: (SmallVec<_>, SmallVec<_>) = Default::default();
+        char_substitutes.extend(char_substitutes_.iter().copied());
 
         let rare_cases = {
             [
@@ -149,9 +159,10 @@ impl Pymorphy2Adapter {
         .filter_map(|gram_int| grammemes.to_ref().find_gram(gram_int))
         .collect();
 
-        let numeral_grammemes = NumeralGrammemes::new(grammemes.to_ref());
+        let gram_sets = GramSetsOwned::new(grammemes.to_ref(), non_productive);
 
-        Ok(Dictionary::new(
+        let dict = DictionaryInner::new(
+            meta,
             grammemes,
             gramtab,
             suffixes,
@@ -160,12 +171,12 @@ impl Pymorphy2Adapter {
             p_t_given_w,
             prediction_suffixes_dawgs,
             paradigm_prefixes,
-            max_suffix_length,
+            initial_letters,
             char_substitutes,
             rare_cases,
-            non_productive,
-            numeral_grammemes,
-        ))
+            gram_sets,
+        );
+        Ok(Dictionary::new(dict))
     }
 }
 
@@ -211,7 +222,7 @@ fn read_dawg(mut reader: Reader) -> Result<(Box<[DictEntry]>, Box<[GuideEntry]>)
 
 fn load_paradigms(mut reader: Reader) -> io::Result<(Box<[u32]>, Box<[ParadigmEntry]>)> {
     let paradigms_count = reader.read_u16::<LittleEndian>()?;
-    #[cfg(feature = "trace_opencorpora")]
+    #[cfg(feature = "trace_model")]
     log::trace!("Paradigms count: {}", paradigms_count);
 
     let mut idx = Vec::with_capacity(paradigms_count as usize + 1);
@@ -227,7 +238,7 @@ fn load_paradigms(mut reader: Reader) -> io::Result<(Box<[u32]>, Box<[ParadigmEn
         debug_assert!(buf.is_empty(), "Buffer must be empty");
 
         let paradigm_len = reader.read_u16::<LittleEndian>()? as usize;
-        #[cfg(feature = "trace_opencorpora")]
+        #[cfg(feature = "trace_model")]
         log::trace!(
             "Paradigm number: {}, paradigm length: {}",
             _para_num + 1,

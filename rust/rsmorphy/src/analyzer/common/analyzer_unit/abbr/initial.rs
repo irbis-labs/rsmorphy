@@ -1,4 +1,3 @@
-use crate::analyzer::common::util::Letters;
 use crate::analyzer::common::Initial;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::Lang;
@@ -14,13 +13,12 @@ const SCORE: Score = Score::Fake(0.1);
 #[derive(Debug)]
 pub struct InitialsAnalyzer<L: Lang> {
     pub tags: Vec<(TagReg, InitialKind)>,
-    pub letters: Letters,
     pub score: Score,
     _lang: std::marker::PhantomData<L>,
 }
 
 impl<L: Lang> InitialsAnalyzer<L> {
-    pub fn new(grammemes: GramRegistry<'_>, letters: Letters, score: Option<Score>) -> Self {
+    pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         use InitialKind::*;
 
         let mut tags: Vec<_> = Vec::new();
@@ -43,7 +41,6 @@ impl<L: Lang> InitialsAnalyzer<L> {
 
         InitialsAnalyzer {
             tags,
-            letters,
             score: score.unwrap_or(SCORE),
             _lang: std::marker::PhantomData,
         }
@@ -52,13 +49,12 @@ impl<L: Lang> InitialsAnalyzer<L> {
     pub fn parse(&self, ctx: &mut ParseContext<L>) {
         #[cfg(feature = "trace_analyzer")]
         log::trace!("InitialsAnalyzer::parse(); {ctx:?}");
-        #[cfg(feature = "trace_analyzer")]
-        log::trace!(r#" LETTERS: "{:?}" "#, self.letters);
 
-        let letter = self.letters.find(ctx.word());
+        let letters = ctx.morph().dict().initial_letters();
+        let letter = letters.find(ctx.word());
 
         #[cfg(feature = "trace_analyzer")]
-        log::trace!(r#" LETTERS contains word: {:?} "#, letter);
+        log::trace!(r#" LETTERS contains word: {:?} "#, letter.is_some());
 
         if let Some(letter) = letter {
             for (tag_idx, &(_, kind)) in self.tags.iter().enumerate() {

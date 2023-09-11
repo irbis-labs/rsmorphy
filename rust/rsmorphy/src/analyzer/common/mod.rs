@@ -6,7 +6,6 @@ mod score;
 mod seen;
 mod seen_set;
 mod token;
-pub mod util;
 
 pub use analyzer_unit::*;
 pub use estimator::ProbabilityEstimator;

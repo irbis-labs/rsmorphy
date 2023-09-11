@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
-use crate::analyzer::common::util::Prefixes;
 use crate::analyzer::common::Affix;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
+use crate::data_struct::prefixes::Prefixes;
 
 const MIN_REMINDER_LENGTH: usize = 3;
 const SCORE_MULTIPLIER: f64 = 0.75;

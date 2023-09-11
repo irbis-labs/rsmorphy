@@ -1,7 +1,10 @@
 mod error;
 mod reg;
+mod registry;
 mod set;
 
-pub use self::error::EitherError;
-pub use self::reg::TagReg;
-pub use self::set::TagSet;
+pub use error::EitherError;
+pub use reg::TagReg;
+pub use registry::TagRegistry;
+pub use registry::TagRegistrySuspended;
+pub use set::TagSet;

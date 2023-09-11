@@ -1,7 +1,7 @@
 use std::io;
 
-use crate::dawg::DawgValue;
-use crate::dawg::HH;
+use crate::data_struct::dawg::DawgValue;
+use crate::data_struct::dawg::HH;
 use crate::model::dictionary::ParadigmId;
 use crate::model::dictionary::ParadigmIndex;
 

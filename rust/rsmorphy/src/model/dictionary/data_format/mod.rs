@@ -1,3 +1,4 @@
+pub mod binpack;
 mod error;
 pub mod load_helper;
 pub mod pymorphy2;

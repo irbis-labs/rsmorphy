@@ -1,29 +1,28 @@
-use std::collections::HashMap;
+use std::cmp::min;
 use std::fmt;
 
-use inlinable_string::InlinableString;
-use smallvec::SmallVec;
-use string_cache::DefaultAtom;
-
-use crate::dawg::CompletionDawg;
-use crate::dawg::DictEntry;
-use crate::dawg::GuideEntry;
-use crate::dawg::HH;
-use crate::model::dictionary::dictionary_inner::DictionaryInner;
-use crate::model::dictionary::numeral_agreement::NumeralGrammemes;
+use crate::data_struct::dawg::CompletionDawg;
+use crate::data_struct::dawg::HH;
+use crate::data_struct::letter_pairs::LetterPairs;
+use crate::data_struct::letters::Letters;
+use crate::data_struct::string_list::StringArrayRef;
+use crate::model::dictionary::gram_sets::NumeralGrammemes;
+use crate::model::dictionary::meta::DictionaryMeta;
 use crate::model::dictionary::value::WordValue;
 use crate::model::dictionary::ParadigmEntry;
 use crate::model::dictionary::PredictionSuffixValue;
-use crate::model::gram::Gram;
 use crate::model::gram::GramRegistry;
-use crate::model::gram::GramRegistryStorage;
 use crate::model::gram::GramSet;
 use crate::model::tag::TagReg;
+use crate::model::tag::TagRegistry;
 use crate::model::ParadigmId;
 use crate::model::ParadigmIndex;
-use crate::model::Paradigms;
+use crate::model::ParadigmList;
 
 pub type PredictionSuffixesDawg<'d> = CompletionDawg<'d, PredictionSuffixValue>;
+
+// pub type DictionaryInner = super::dictionary_struct::DictionaryStruct;
+pub type DictionaryInner = super::dictionary_pack::DictionaryPack;
 
 /// Open Corpora dictionary wrapper class.
 #[derive(Debug)]
@@ -33,38 +32,8 @@ pub struct Dictionary {
 
 impl Dictionary {
     #[inline(always)]
-    pub(in crate::model::dictionary) fn new(
-        grammemes: GramRegistryStorage,
-        gramtab: Box<[TagReg]>,
-        suffixes: Box<[DefaultAtom]>,
-        paradigms: (Box<[u32]>, Box<[ParadigmEntry]>),
-        words: (Box<[DictEntry]>, Box<[GuideEntry]>),
-        p_t_given_w: Option<(Box<[DictEntry]>, Box<[GuideEntry]>)>,
-        prediction_suffixes_dawgs: Vec<(Box<[DictEntry]>, Box<[GuideEntry]>)>,
-        paradigm_prefixes: SmallVec<[DefaultAtom; 4]>,
-        max_suffix_length: u32,
-        char_substitutes: HashMap<InlinableString, InlinableString>,
-        rare_cases: SmallVec<[(Gram, Gram); 8]>,
-        non_productive: GramSet,
-        numeral_grammemes: NumeralGrammemes,
-    ) -> Self {
-        Dictionary {
-            inner: DictionaryInner::new(
-                grammemes,
-                gramtab,
-                suffixes,
-                paradigms,
-                words,
-                p_t_given_w,
-                prediction_suffixes_dawgs,
-                paradigm_prefixes,
-                max_suffix_length,
-                char_substitutes,
-                rare_cases,
-                non_productive,
-                numeral_grammemes,
-            ),
-        }
+    pub(in crate::model::dictionary) fn new(inner: DictionaryInner) -> Self {
+        Dictionary { inner }
     }
 
     #[inline(always)]
@@ -73,22 +42,22 @@ impl Dictionary {
     }
 
     #[inline(always)]
-    pub fn gramtab(&self) -> &[TagReg] {
+    pub fn gramtab(&self) -> TagRegistry<'_> {
         self.inner.gramtab()
     }
 
     #[inline(always)]
-    pub fn suffixes(&self) -> &[DefaultAtom] {
+    fn suffixes(&self) -> StringArrayRef<'_> {
         self.inner.suffixes()
     }
 
     #[inline(always)]
-    pub fn paradigms(&self) -> Paradigms<'_> {
+    pub fn paradigms(&self) -> ParadigmList<'_> {
         self.inner.paradigms()
     }
 
     #[inline(always)]
-    pub fn para(&self) -> Paradigms<'_> {
+    pub fn para(&self) -> ParadigmList<'_> {
         self.inner.para()
     }
 
@@ -103,42 +72,49 @@ impl Dictionary {
     }
 
     #[inline(always)]
-    pub fn prediction_suffixes_dawgs(&self, n: usize) -> CompletionDawg<PredictionSuffixValue> {
-        self.inner.prediction_suffixes_dawgs(n)
+    pub fn prediction_suffixes_dawg(&self, n: usize) -> CompletionDawg<PredictionSuffixValue> {
+        self.inner.prediction_suffixes_dawg(n)
     }
 
     #[inline(always)]
-    pub fn paradigm_prefixes_len(&self) -> usize {
-        self.inner.paradigm_prefixes_len()
+    pub fn paradigm_prefixes(&self) -> StringArrayRef {
+        self.inner.paradigm_prefixes()
     }
 
     #[inline(always)]
-    pub fn iter_paradigm_prefixes(
-        &self,
-    ) -> impl Iterator<Item = &str> + DoubleEndedIterator + ExactSizeIterator + '_ {
-        self.inner.iter_paradigm_prefixes()
+    fn meta(&self) -> DictionaryMeta<'_> {
+        self.inner.meta()
     }
 
     #[inline(always)]
-    pub fn max_suffix_length(&self) -> usize {
-        self.inner.max_suffix_length()
+    pub fn initial_letters(&self) -> Letters<'_> {
+        self.inner.initial_letters()
     }
 
     #[inline(always)]
-    pub fn char_substitutes(&self) -> &HashMap<InlinableString, InlinableString> {
+    pub fn char_substitutes(&self) -> LetterPairs<'_> {
         self.inner.char_substitutes()
     }
 
+    // ---------------------------------------------------------------------------------------------
+
     #[inline(always)]
     pub fn prediction_splits(&self, word_len: usize) -> impl Iterator<Item = usize> {
-        (1..=self.max_suffix_length().min(word_len.saturating_sub(1))).rev()
+        let max_suffix_len = self.meta().max_suffix_length();
+        // At least 1 char should be left for the stem.
+        let max_word_len = word_len.saturating_sub(1);
+
+        let max_suffix_len = min(max_suffix_len, max_word_len);
+
+        // From the longest suffixes to the shortest.
+        (1..=max_suffix_len).rev()
     }
 
     /// Return tag as a string
     #[inline]
     pub fn get_tag(&self, id: ParadigmId, idx: ParadigmIndex) -> &TagReg {
         let para = self.para().get(id).expect("paradigm");
-        &self.gramtab()[para[idx.index()].tag_id() as usize]
+        self.gramtab().get(para[idx.index()].tag_id()).unwrap()
     }
 
     #[inline]
@@ -150,7 +126,21 @@ impl Dictionary {
             .get(id)
             .expect("paradigm")
             .into_iter()
-            .map(move |entry: &'d ParadigmEntry| self.inner.paradigm_entry_info(*entry))
+            .map(move |entry: &'d ParadigmEntry| self.paradigm_entry_info(*entry))
+    }
+
+    /// Return a tuple
+    ///     (prefix, tag, suffix)
+    /// tuples representing the paradigm entry.
+    #[inline]
+    pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &TagReg, &str) {
+        (
+            self.paradigm_prefixes()
+                .get(entry.prefix_id() as usize)
+                .unwrap(),
+            self.gramtab().get(entry.tag_id()).unwrap(),
+            self.suffixes().get(entry.suffix_id() as usize).unwrap(),
+        )
     }
 
     /// Return word stem (given a word, paradigm and the word index).
@@ -163,7 +153,7 @@ impl Dictionary {
     ) -> &'a str {
         let paradigm = self.para().get(id).expect("paradigm");
         let para_entry = paradigm[idx.index()];
-        let (prefix, _, suffix) = self.inner.paradigm_entry_info(para_entry);
+        let (prefix, _, suffix) = self.paradigm_entry_info(para_entry);
         let begin = prefix.len();
         let end = fixed_word.len() - suffix.len();
         &fixed_word[begin..end]
@@ -182,7 +172,7 @@ impl Dictionary {
         } else {
             let stem = self.get_stem(id, idx, fixed_word);
             let para = self.para().get(id).expect("paradigm");
-            let (normal_prefix, _, normal_suffix) = self.inner.paradigm_entry_info(para[0]);
+            let (normal_prefix, _, normal_suffix) = self.paradigm_entry_info(para[0]);
             f.write_str(normal_prefix)?;
             f.write_str(stem)?;
             f.write_str(normal_suffix)?;
@@ -194,23 +184,25 @@ impl Dictionary {
         required
             .iter()
             .fold(grammemes | required, |grammemes, gram| {
-                grammemes - self.grammemes().get_reg_by_gram(gram).incompatible
+                let gram_reg = self.grammemes().get_reg_by_gram(gram);
+                let incompatible = gram_reg.map(|gr| gr.incompatible).unwrap_or_default();
+                grammemes - incompatible
             })
     }
 
-    pub fn fix_rare_cases(&self, mut grammemes: GramSet) -> GramSet {
-        for &(from, to) in self.inner.rare_cases() {
-            if grammemes.contains(from) {
-                grammemes.remove(from);
-                grammemes.insert(to);
-            }
-        }
-        grammemes
+    pub fn fix_rare_cases(&self, grammemes: GramSet) -> GramSet {
+        self.inner
+            .rare_cases()
+            .iter()
+            .filter(|&(from, _to)| grammemes.contains(from))
+            .fold(grammemes, |set, (from, to)| {
+                (set - from.as_set()) | to.as_set()
+            })
     }
 
     #[inline(always)]
     pub fn is_productive(&self, grammemes: GramSet) -> bool {
-        (grammemes & self.inner.non_productive()).is_empty()
+        (grammemes & self.inner.gram_sets().non_productive()).is_empty()
     }
 
     /// Returns grammemes that are required to be present in the word.
@@ -233,7 +225,7 @@ impl Dictionary {
             accs,
             femn,
             case,
-        } = *self.inner.numeral_grammemes();
+        } = *self.inner.gram_sets().numeral();
 
         let (num_10, num_100) = (num % 10, num % 100);
         let num_kind = match () {

@@ -1,14 +1,20 @@
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::mem;
 
-use string_cache::DefaultAtom;
+use byteorder::ByteOrder;
 
+use crate::data_struct::pascal_string::PascalString;
 use crate::model::gram::GramRegistry;
 use crate::model::gram::GramSet;
 
-#[derive(Debug, Clone)]
+const TAG_REG_SIZE: usize = 128;
+const FMT_INT_MAX_LEN: usize = TAG_REG_SIZE - mem::size_of::<GramSet>() - 1;
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C, align(64))]
 pub struct TagReg {
-    pub fmt_int: DefaultAtom,
+    pub fmt_int: PascalString<FMT_INT_MAX_LEN>,
     pub grammemes: GramSet,
 }
 
@@ -28,14 +34,14 @@ impl Eq for TagReg {}
 
 impl TagReg {
     #[inline(always)]
-    pub fn from_fmt_int(gram_registry: GramRegistry<'_>, s: impl Into<DefaultAtom>) -> Self {
-        Self::from_fmt_int_(gram_registry, s.into())
+    pub fn from_fmt_int(gram_registry: GramRegistry<'_>, s: impl AsRef<str>) -> Self {
+        Self::from_fmt_int_(gram_registry, s.as_ref())
     }
 
-    pub fn from_fmt_int_(gram_registry: GramRegistry<'_>, fmt_int: DefaultAtom) -> Self {
+    pub fn from_fmt_int_(gram_registry: GramRegistry<'_>, fmt_int: &str) -> Self {
         let mut grammemes = GramSet::empty();
 
-        #[cfg(feature = "trace_opencorpora")]
+        #[cfg(feature = "trace_model")]
         log::trace!("tags for {}", fmt_int);
 
         for gram_int in fmt_int.split(|c| matches!(c, ',' | ' ')) {
@@ -45,7 +51,23 @@ impl TagReg {
             grammemes.insert(gram);
         }
 
+        let Ok(fmt_int) = PascalString::try_from(fmt_int) else {
+            panic!(
+                "Too long tag {} ({} exceeds {} bytes)",
+                fmt_int,
+                fmt_int.len(),
+                FMT_INT_MAX_LEN
+            );
+        };
+
         TagReg { fmt_int, grammemes }
+    }
+
+    pub fn into_order<Order: ByteOrder>(self) -> Self {
+        TagReg {
+            fmt_int: self.fmt_int,
+            grammemes: self.grammemes.into_order::<Order>(),
+        }
     }
 }
 
@@ -85,3 +107,13 @@ impl TagReg {
 //         _ => (Number::Plur, Some(Case::Gent)),
 //     })
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_size() {
+        assert_eq!(mem::size_of::<TagReg>(), TAG_REG_SIZE);
+    }
+}

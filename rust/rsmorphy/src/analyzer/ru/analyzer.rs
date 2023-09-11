@@ -19,6 +19,8 @@ use crate::analyzer::common::Shaped;
 use crate::analyzer::common::SingleTagProbabilityEstimator;
 use crate::analyzer::common::Unknown;
 use crate::analyzer::common::WordStruct;
+use crate::analyzer::ru::config::CHAR_SUBSTITUTES;
+use crate::analyzer::ru::config::INITIAL_LETTERS;
 use crate::analyzer::ru::units::Units;
 use crate::analyzer::Lang;
 use crate::model::dictionary::data_format::pymorphy2::LanguageCode;
@@ -171,7 +173,7 @@ impl Russian {
         if meta.language_code != LanguageCode::Ru {
             return Err(LoadError::InvalidLanguage(meta.language_code));
         }
-        let dict = loader.load()?;
+        let dict = loader.load(INITIAL_LETTERS, CHAR_SUBSTITUTES)?;
         Ok(Russian::new(dict))
     }
 
@@ -475,10 +477,8 @@ impl Russian {
             _ => Err(DecodeError::DoesntMatch)?,
         };
         let letter = self
-            .inner
-            .units
-            .initial
-            .letters
+            .dict()
+            .initial_letters()
             .find(word)
             .ok_or(DecodeError::DoesntMatch)?;
 

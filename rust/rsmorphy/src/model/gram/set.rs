@@ -2,9 +2,13 @@ use std::fmt;
 use std::iter::FromIterator;
 use std::ops;
 
+use byteorder::ByteOrder;
+
+use crate::model::dictionary::data_format::binpack::util::rewrite_u128;
 use crate::model::gram::gram::Gram;
 
 #[derive(Default, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
 pub struct GramSet {
     set: u128,
 }
@@ -26,6 +30,15 @@ impl GramSet {
     #[inline(always)]
     fn from_set(set: u128) -> Self {
         Self { set }
+    }
+
+    pub fn into_inner(self) -> u128 {
+        self.set
+    }
+
+    pub fn into_order<Order: ByteOrder>(mut self) -> Self {
+        rewrite_u128::<Order>(&mut self.set);
+        self
     }
 
     #[inline(always)]

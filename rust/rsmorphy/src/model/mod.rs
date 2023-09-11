@@ -7,7 +7,7 @@ pub mod util;
 pub use self::dictionary::Dictionary;
 pub use self::dictionary::ParadigmId;
 pub use self::dictionary::ParadigmIndex;
-pub use self::dictionary::Paradigms;
+pub use self::dictionary::ParadigmList;
 pub use self::gram::Gram;
 pub use self::gram::GramReg;
 pub use self::gram::GramSet;

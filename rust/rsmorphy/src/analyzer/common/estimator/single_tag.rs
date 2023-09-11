@@ -6,7 +6,7 @@ use crate::analyzer::common::parse::Parse;
 use crate::analyzer::common::ProbabilityEstimator;
 use crate::analyzer::common::Score;
 use crate::analyzer::Lang;
-use crate::dawg::WordTagDawgKey;
+use crate::data_struct::dawg::WordTagDawgKey;
 use crate::model::tag::TagReg;
 use crate::model::Dictionary;
 

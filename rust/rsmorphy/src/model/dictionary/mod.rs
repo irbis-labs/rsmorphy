@@ -1,7 +1,10 @@
 pub mod data_format;
 mod dictionary;
-mod dictionary_inner;
-mod numeral_agreement;
+mod dictionary_pack;
+mod dictionary_struct;
+mod dictionary_view;
+mod gram_sets;
+mod meta;
 mod paradigm;
 mod value;
 

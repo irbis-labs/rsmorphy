@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
-use crate::analyzer::common::util::Prefixes;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::Lang;
+use crate::data_struct::prefixes::Prefixes;
 
 const SCORE_MULTIPLIER: f64 = 0.75;
 
