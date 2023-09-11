@@ -1,4 +1,3 @@
-use std::io::Cursor;
 use std::io::Write;
 
 use byteorder::ByteOrder;
@@ -71,18 +70,6 @@ impl SegmentsBuilder {
 
         bin.build()
     }
-}
-
-fn cursor(data: &mut Vec<u8>) -> Cursor<&mut Vec<u8>> {
-    let pos = data.len();
-    let mut cur = Cursor::new(data);
-    cur.set_position(pos as u64);
-    cur
-}
-
-fn pad(data: &mut Vec<u8>, align: usize) {
-    let new_len = data.len() + padding(data, align);
-    data.resize(new_len, 0);
 }
 
 fn padding(data: &[u8], align: usize) -> usize {

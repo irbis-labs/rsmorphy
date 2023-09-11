@@ -1,7 +1,7 @@
 use std::mem;
 use std::ops;
 
-const SIZE_ASSERT: () = {
+const _SIZE_ASSERT: () = {
     assert!(BinChunk::SIZE == mem::size_of::<BinChunk>());
 };
 
@@ -16,8 +16,7 @@ impl BinChunk {
 
     #[inline(always)]
     pub fn zeroed() -> Self {
-        let data = [0; Self::SIZE];
-        BinChunk { data }
+        BinChunk::new([0; Self::SIZE])
     }
 
     #[inline(always)]

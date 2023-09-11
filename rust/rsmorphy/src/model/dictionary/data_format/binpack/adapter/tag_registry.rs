@@ -27,7 +27,7 @@ impl MemView for TagRegistryAdapter {
             unsafe { convert_slice(segment) }.unwrap()
         };
 
-        unsafe { TagRegistry::new(tags) }
+        TagRegistry::new(tags)
     }
 }
 

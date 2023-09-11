@@ -99,11 +99,6 @@ impl DictionaryStruct {
     }
 
     #[inline(always)]
-    pub fn para(&self) -> ParadigmList<'_> {
-        ParadigmList::new(&self.paradigms.0, &self.paradigms.1)
-    }
-
-    #[inline(always)]
     pub fn words(&self) -> CompletionDawg<'_, WordValue> {
         let (dict, guide) = &self.words;
         CompletionDawg::new(DawgDictionary::new(dict), DawgGuide::new(guide))
@@ -159,20 +154,6 @@ impl DictionaryStruct {
     #[inline(always)]
     pub fn char_substitutes(&self) -> LetterPairs<'_> {
         LetterPairs::new(&self.char_substitutes.0, &self.char_substitutes.1)
-    }
-
-    /// Return a tuple
-    ///     (prefix, tag, suffix)
-    /// tuples representing the paradigm entry.
-    #[inline]
-    pub fn paradigm_entry_info(&self, entry: ParadigmEntry) -> (&str, &TagReg, &str) {
-        (
-            self.paradigm_prefixes
-                .get(entry.prefix_id() as usize)
-                .unwrap(),
-            &self.gramtab[entry.tag_id() as usize],
-            self.suffixes.get(entry.suffix_id() as usize).unwrap(),
-        )
     }
 
     #[inline(always)]

@@ -62,14 +62,17 @@ impl<'d> SegmentsView<'d> {
         self.meta.segments_number() as usize
     }
 
+    #[cfg(test)]
     pub(super) fn start(&self) -> &[u32] {
         self.start
     }
 
+    #[cfg(test)]
     pub(super) fn size(&self) -> &[u32] {
         self.size
     }
 
+    #[cfg(test)]
     pub(super) fn data(&self) -> &[u8] {
         &self.data
     }

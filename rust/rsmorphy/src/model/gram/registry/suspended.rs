@@ -12,7 +12,7 @@ pub struct GramRegistrySuspended {
 impl Revive for GramRegistrySuspended {
     type Revived<'d> = GramRegistry<'d>;
 
-    unsafe fn revive<'d>(&self, source_bin: &'d [u8]) -> Self::Revived<'d> {
+    unsafe fn revive<'d>(&self, _source_bin: &'d [u8]) -> Self::Revived<'d> {
         GramRegistry {
             reg_map: &*self.reg_map,
             lat_map: &*self.lat_map,

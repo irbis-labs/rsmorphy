@@ -34,7 +34,7 @@ impl MemView for GramRegistryAdapter {
             unsafe { convert_slice(segment) }.unwrap()
         };
 
-        unsafe { GramRegistry::new(reg_map, lat_map) }
+        GramRegistry::new(reg_map, lat_map)
     }
 }
 

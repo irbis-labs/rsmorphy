@@ -33,7 +33,7 @@ impl MemView for ParadigmListAdapter {
             unsafe { convert_slice(segment) }.unwrap()
         };
 
-        unsafe { ParadigmList::new(idx, data) }
+        ParadigmList::new(idx, data)
     }
 }
 

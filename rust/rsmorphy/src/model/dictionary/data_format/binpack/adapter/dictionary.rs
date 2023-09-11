@@ -71,47 +71,47 @@ impl MemView for DictionaryAdapter {
 
         let suffixes = {
             let data = segments.get(Segment::Suffixes as usize).unwrap();
-            unsafe { StringArrayAdapter::view(data) }
+            StringArrayAdapter::view(data)
         };
 
         let prefixes = {
             let data = segments.get(Segment::ParadigmPrefixes as usize).unwrap();
-            unsafe { StringArrayAdapter::view(data) }
+            StringArrayAdapter::view(data)
         };
 
         let paradigms = {
             let data = segments.get(Segment::Paradigms as usize).unwrap();
-            unsafe { ParadigmListAdapter::view(data) }
+            ParadigmListAdapter::view(data)
         };
 
         let initial_letters = {
             let data = segments.get(Segment::InitialLetters as usize).unwrap();
-            unsafe { LettersAdapter::view(data) }
+            LettersAdapter::view(data)
         };
 
         let char_substitutes = {
             let data = segments.get(Segment::CharSubstitutes as usize).unwrap();
-            unsafe { LetterPairsAdapter::view(data) }
+            LetterPairsAdapter::view(data)
         };
 
         let rare_cases = {
             let data = segments.get(Segment::RareCases as usize).unwrap();
-            unsafe { GramPairsAdapter::view(data) }
+            GramPairsAdapter::view(data)
         };
 
         let gram_sets = {
             let data = segments.get(Segment::GramSets as usize).unwrap();
-            unsafe { GramSetsAdapter::view(data) }
+            GramSetsAdapter::view(data)
         };
 
         let grammemes = {
             let data = segments.get(Segment::Grammemes as usize).unwrap();
-            unsafe { GramRegistryAdapter::view(data) }
+            GramRegistryAdapter::view(data)
         };
 
         let gramtab = {
             let data = segments.get(Segment::Gramtab as usize).unwrap();
-            unsafe { TagRegistryAdapter::view(data) }
+            TagRegistryAdapter::view(data)
         };
 
         DictionaryView::new(
