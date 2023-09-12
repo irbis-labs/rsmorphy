@@ -3,7 +3,7 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 use byteorder::ByteOrder;
-use pascal_string::PascalString;
+use smart_string::PascalString;
 
 use super::Gram;
 use super::GramId;

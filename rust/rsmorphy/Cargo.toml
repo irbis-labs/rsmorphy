@@ -18,29 +18,35 @@ travis-ci = { repository = "irbis-labs/rsmorphy" }
 
 
 [features]
-default = ["dict_load-include_static"]
+default = ["dict_load-include_static", "lang-all"]
 
 # Enable languages and corresponding dictionaries.
-
 # At least one language must be selected
+
 lang-all = ["lang-ru", "lang-uk"]
 lang-ru = ["dict-ru"]
 lang-uk = ["dict-uk"]
 
 # Dictionary representation in memory.
 
-dict_repr-classic = []
+# Repack dictionary into single allocation blob.
+# Default choice.
 dict_repr-repacked = []
+# Use set of allocated data structures, instead of single blob.
+# Choose this if you don't use `include static` feature and for some reason want to avoid repacking.
+dict_repr-classic = []
 
 # Loading features.
 # At least one of these features must be selected.
 
-# Support for pymorphy2 dictionaries,
-# can be used with both dict_repr-classic and dict_repr-repacked.
-dict_load-pymorphy2 = []
-# Support for dictionaries, staticaly included in the binary,
+# Statically include dictionaries in the binary,
 # can be used only with dict_repr-repacked.
+# The most convenient choice for most users.
 dict_load-include_static = ["dict_repr-repacked", "dict-ru/include_static", "dict-uk/include_static"]
+# Support for dynamically load pymorphy2 dictionaries,
+# can be used with both dict_repr-classic and dict_repr-repacked.
+# Useful if you want to dynamically load different dictionaries.
+dict_load-pymorphy2 = []
 
 # Tracing features.
 # Normally, you don't need them.
@@ -62,7 +68,7 @@ derive_more = { version = "1.0.0-beta.3", features = ["from", "is_variant"] }
 inlinable_string = { version = "0.1", features = ["serde"] }
 log = "0.4"
 num = "0.4"
-roman-ii = { version = "0.1", path = "../../../roman-ii" }
+numeri-romani = { version = "0.1", path = "../../../numeri-romani" }
 smallvec = { version = "1.4", features = ["serde"] }
 thiserror = "1"
 unicode_categories = "0.1"

@@ -4,7 +4,7 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops;
 
-use pascal_string::PascalString;
+use smart_string::PascalString;
 
 use super::GramIdError;
 

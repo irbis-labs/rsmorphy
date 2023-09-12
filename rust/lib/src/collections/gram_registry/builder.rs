@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use inlinable_string::InlinableString;
-use pascal_string::PascalString;
+use smart_string::PascalString;
 
 use crate::collections::gram_registry::GramRegistryError;
 use crate::collections::gram_registry::GramRegistryStorage;

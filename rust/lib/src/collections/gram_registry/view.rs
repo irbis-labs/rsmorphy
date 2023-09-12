@@ -1,4 +1,4 @@
-use pascal_string::PascalString;
+use smart_string::PascalString;
 
 use super::GramRegistrySuspended;
 use super::LatMapEntry;

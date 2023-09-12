@@ -40,19 +40,12 @@ byteorder = "1.3"
 derive_more = { version = "1.0.0-beta.3", features = ["from", "is_variant"] }
 flate2 = { version = "1.0" }
 inlinable_string = { version = "0.1", features = ["serde"] }
-#lazy_static = "1.0"
 log = "0.4"
-#num = "0.4"
-pascal-string = { package = "pascal-string-rs", version = "0.1", path = "../../../pascal-string" }
-#roman-ii = { version = "0.1", path = "../../../roman-ii" }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 smallvec = { version = "1.4", features = ["serde"] }
+smart-string = { version = "0.1", path = "../../../smart-string" }
 thiserror = "1"
-#unicode_categories = "0.1"
-
-#dict-ru = { version = "0.1", package = "rsmorphy-dict-ru", path = "../dict/ru" }
-#dict-uk = { version = "0.1", package = "rsmorphy-dict-uk", path = "../dict/uk" }
 
 
 [dev-dependencies]
