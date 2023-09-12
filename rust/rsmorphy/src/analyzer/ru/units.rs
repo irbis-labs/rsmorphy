@@ -1,3 +1,8 @@
+use dict_ru::config::KNOWN_PREFIXES;
+use dict_ru::config::PARTICLES_AFTER_HYPHEN;
+use lib::collections::gram_registry::GramRegistry;
+use lib::collections::prefixes::Prefixes;
+
 use crate::analyzer::common::DictionaryAnalyzer;
 use crate::analyzer::common::HyphenAdverbAnalyzer;
 use crate::analyzer::common::HyphenSeparatedParticleAnalyzer;
@@ -11,11 +16,7 @@ use crate::analyzer::common::PunctuationAnalyzer;
 use crate::analyzer::common::RomanAnalyzer;
 use crate::analyzer::common::UnknownAnalyzer;
 use crate::analyzer::common::UnknownPrefixAnalyzer;
-use crate::analyzer::ru::config::KNOWN_PREFIXES;
-use crate::analyzer::ru::config::PARTICLES_AFTER_HYPHEN;
 use crate::analyzer::Russian;
-use crate::data_struct::prefixes::Prefixes;
-use crate::model::gram::GramRegistry;
 
 #[derive(Debug)]
 pub(super) struct Units {

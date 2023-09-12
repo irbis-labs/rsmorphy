@@ -1,14 +1,14 @@
 use std::fmt;
 
 use derive_more::From;
+use lib::collections::paradigm::ParadigmId;
 
 use crate::analyzer::common::part::initial::Initial;
 use crate::analyzer::common::DictionaryWord;
 use crate::analyzer::common::HyphenAdverb;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::common::Unknown;
-use crate::model::dictionary::ParadigmId;
-use crate::model::Dictionary;
+use crate::analyzer::Dictionary;
 
 #[derive(Debug, Clone, From)]
 pub enum Base {

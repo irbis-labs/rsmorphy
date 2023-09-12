@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use lib::collections::dawg_value::WordValue;
+
 use crate::analyzer::common::DictionaryWord;
 use crate::analyzer::common::Lex;
 use crate::analyzer::common::Parse;
@@ -7,7 +9,6 @@ use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Score;
 use crate::analyzer::common::WordStruct;
 use crate::analyzer::Lang;
-use crate::model::dictionary::WordValue;
 
 const SCORE: Score = Score::Real(1.0);
 

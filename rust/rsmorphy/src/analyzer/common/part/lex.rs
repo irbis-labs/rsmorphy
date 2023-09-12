@@ -2,13 +2,13 @@ use std::fmt;
 
 use inlinable_string::InlinableString;
 use inlinable_string::StringExt;
+use lib::types::gram::GramSet;
 
 use crate::analyzer::common::Base;
 use crate::analyzer::common::HyphenSeparatedParticle;
 use crate::analyzer::common::Main;
+use crate::analyzer::Dictionary;
 use crate::analyzer::Lang;
-use crate::model::Dictionary;
-use crate::GramSet;
 
 #[derive(Debug, Clone)]
 pub struct Lex {

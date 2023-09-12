@@ -1,12 +1,13 @@
+use lib::collections::gram_registry::GramRegistry;
+use lib::types::tag::TagReg;
+use lib::types::tag_kind::InitialKind;
+
 use crate::analyzer::common::Initial;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::model::gram::GramRegistry;
-use crate::model::kind::InitialKind;
-use crate::model::tag::TagReg;
 
 const SCORE: Score = Score::Fake(0.1);
 
@@ -25,15 +26,12 @@ impl<L: Lang> InitialsAnalyzer<L> {
         for kind in [FirstName, Patronym] {
             for gender in ["masc", "femn"] {
                 for case in ["nomn", "gent", "datv", "accs", "ablt", "loct"] {
-                    let tag = TagReg::from_fmt_int(
-                        grammemes,
-                        format!(
-                            "NOUN,anim,{gender},Sgtm,{kind},Fixd,Abbr,Init sing,{case}",
-                            kind = kind.gram_int(),
-                            gender = gender,
-                            case = case
-                        ),
-                    );
+                    let tag = grammemes.parse_tag(&format!(
+                        "NOUN,anim,{gender},Sgtm,{kind},Fixd,Abbr,Init sing,{case}",
+                        kind = kind.gram_int(),
+                        gender = gender,
+                        case = case
+                    ));
                     tags.push((tag, kind));
                 }
             }

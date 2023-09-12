@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 
+use lib::collections::gram_registry::GramRegistry;
+use lib::types::tag::TagReg;
+
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::model::gram::GramRegistry;
-use crate::model::tag::TagReg;
 use crate::shapes::is_latin;
 
 const SCORE: Score = Score::Fake(0.9);
@@ -26,7 +27,7 @@ pub struct LatinAnalyzer<L: Lang> {
 impl<L: Lang> LatinAnalyzer<L> {
     pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         LatinAnalyzer {
-            tag: TagReg::from_fmt_int(grammemes, "LATN"),
+            tag: grammemes.parse_tag("LATN"),
             score: score.unwrap_or(SCORE),
             _lang: PhantomData,
         }

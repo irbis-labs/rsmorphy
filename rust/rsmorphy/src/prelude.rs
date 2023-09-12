@@ -1,13 +1,12 @@
+pub use crate::analyzer::Dictionary;
 pub use crate::analyzer::Lang;
 pub use crate::analyzer::Lex;
 pub use crate::analyzer::Parse;
 pub use crate::analyzer::ParseBuffers;
 pub use crate::analyzer::ParseContext;
 pub use crate::analyzer::ParseResult;
+#[cfg(feature = "lang-ru")]
 pub use crate::analyzer::Russian;
 pub use crate::analyzer::Score;
+#[cfg(feature = "lang-uk")]
 pub use crate::analyzer::Ukrainian;
-pub use crate::model::Dictionary;
-pub use crate::model::Gram;
-pub use crate::model::GramReg;
-pub use crate::model::GramSet;

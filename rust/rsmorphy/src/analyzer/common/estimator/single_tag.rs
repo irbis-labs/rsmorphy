@@ -1,14 +1,14 @@
 use std::cmp::Ordering;
 
+use lib::collections::dawg::WordTagDawgKey;
+use lib::types::tag::TagReg;
 use smallvec::SmallVec;
 
 use crate::analyzer::common::parse::Parse;
 use crate::analyzer::common::ProbabilityEstimator;
 use crate::analyzer::common::Score;
+use crate::analyzer::Dictionary;
 use crate::analyzer::Lang;
-use crate::data_struct::dawg::WordTagDawgKey;
-use crate::model::tag::TagReg;
-use crate::model::Dictionary;
 
 #[derive(Debug, Clone)]
 pub struct SingleTagProbabilityEstimator {}

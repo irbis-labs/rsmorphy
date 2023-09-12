@@ -1,6 +1,7 @@
+use lib::types::tag::TagReg;
+
 use crate::analyzer::common::parse::Parse;
 use crate::analyzer::Lang;
-use crate::model::tag::TagReg;
 
 mod single_tag;
 

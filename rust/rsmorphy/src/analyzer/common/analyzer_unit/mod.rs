@@ -9,6 +9,7 @@ pub use self::abbr::initial::InitialsAnalyzer;
 pub use self::by_analogy::kp::KnownPrefixAnalyzer;
 pub use self::by_analogy::ks::KnownSuffixAnalyzer;
 pub use self::by_analogy::up::UnknownPrefixAnalyzer;
+#[cfg(feature = "lang-ru")]
 pub use self::by_hyphen::adverb::HyphenAdverbAnalyzer;
 pub use self::by_hyphen::separated_particle::HyphenSeparatedParticleAnalyzer;
 pub use self::by_hyphen::words::HyphenatedWordsAnalyzer;

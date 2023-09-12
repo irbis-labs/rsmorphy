@@ -4,6 +4,7 @@ use std::iter;
 use std::marker::PhantomData;
 
 use inlinable_string::InlinableString;
+use lib::collections::dawg_value::PredictionSuffixValue;
 use smallvec::SmallVec;
 
 use crate::analyzer::common::Affix;
@@ -12,13 +13,12 @@ use crate::analyzer::common::Main;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Seen;
 use crate::analyzer::common::WordStruct;
+use crate::analyzer::dictionary::PredictionSuffixesDawg;
+use crate::analyzer::Dictionary;
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::model::dictionary::PredictionSuffixValue;
-use crate::model::dictionary::PredictionSuffixesDawg;
-use crate::model::Dictionary;
 
 const MIN_WORD_LENGTH: usize = 4;
 const SCORE_MULTIPLIER: f64 = 0.5;
@@ -196,16 +196,16 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
     }
 }
 
+#[cfg(feature = "lang-ru")]
 #[cfg(test)]
-mod tests {
+mod tests_ru {
     use super::*;
     use crate::analyzer::ru::util::test::RU;
     use crate::util::format::ExplainParse;
-    use crate::util::test::init_logger;
 
     #[test]
-    fn big_count() {
-        init_logger();
+    fn big_number_of_parses() {
+        lib_dev::init_logger();
 
         let mut buf = RU.make_buffer();
         let mut ctx = buf.prepare("существующой");

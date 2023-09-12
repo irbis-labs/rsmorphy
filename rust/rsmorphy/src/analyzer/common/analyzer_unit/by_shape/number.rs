@@ -1,14 +1,15 @@
 use std::marker::PhantomData;
 use std::str::FromStr;
 
+use lib::collections::gram_registry::GramRegistry;
+use lib::types::tag::TagReg;
+
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::model::gram::GramRegistry;
-use crate::model::tag::TagReg;
 
 const SCORE: Score = Score::Fake(0.9);
 
@@ -31,8 +32,8 @@ pub struct NumberAnalyzer<L: Lang> {
 impl<L: Lang> NumberAnalyzer<L> {
     pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         NumberAnalyzer {
-            tag_int: TagReg::from_fmt_int(grammemes, "NUMB,intg"),
-            tag_real: TagReg::from_fmt_int(grammemes, "NUMB,real"),
+            tag_int: grammemes.parse_tag("NUMB,intg"),
+            tag_real: grammemes.parse_tag("NUMB,real"),
             score: score.unwrap_or(SCORE),
             _lang: PhantomData,
         }

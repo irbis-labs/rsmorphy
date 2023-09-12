@@ -1,4 +1,10 @@
+#![cfg(feature = "lang-ru")]
+
 use std::marker::PhantomData;
+
+use lib::collections::gram_registry::GramRegistry;
+use lib::types::gram::GramSet;
+use lib::types::tag::TagReg;
 
 use crate::analyzer::common::HyphenAdverb;
 use crate::analyzer::common::ParseContext;
@@ -7,9 +13,6 @@ use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::model::gram::GramRegistry;
-use crate::model::tag::TagReg;
-use crate::GramSet;
 
 const RU_HA_PREFIX: &str = "по-";
 const RU_HA_PREFIX_LEN: usize = 3;
@@ -36,7 +39,7 @@ impl<L: Lang> HyphenAdverbAnalyzer<L> {
             .map(|gram_int| grammemes.find_gram(gram_int).unwrap())
             .collect();
         HyphenAdverbAnalyzer {
-            tag: TagReg::from_fmt_int(grammemes, "ADVB"),
+            tag: grammemes.parse_tag("ADVB"),
             score_multiplier: score_multiplier.unwrap_or(SCORE_MULTIPLIER),
             adjf_sing_datv,
             _lang: PhantomData,

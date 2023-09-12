@@ -21,6 +21,9 @@ pub enum DecodeError {
     /// The number decoder failed to parse a float
     #[error("The number decoder failed to parse a float: {0}")]
     ParseFloatError(ParseFloatError),
+    /// The string decoder failed to validate parameter
+    #[error("The string decoder failed to validate parameter")]
+    BadData,
 }
 
 impl From<ParseIntError> for DecodeError {

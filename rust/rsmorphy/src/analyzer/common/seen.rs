@@ -1,9 +1,8 @@
 use std::hash::Hash;
 
 use inlinable_string::InlinableString;
-
-use crate::model::dictionary::ParadigmId;
-use crate::model::tag::TagReg;
+use lib::collections::paradigm::ParadigmId;
+use lib::types::tag::TagReg;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Seen<'a> {

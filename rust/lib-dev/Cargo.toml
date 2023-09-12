@@ -1,0 +1,25 @@
+[package]
+name = "rsmorphy-lib-dev"
+version = "0.5.0-dev.1"
+authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
+license = "MIT/Apache-2.0"
+description = "Common code for rsmorphy dev stages"
+keywords = []
+categories = []
+readme = "README.md"
+homepage = "https://github.com/irbis-labs/rsmorphy"
+repository = "https://github.com/irbis-labs/rsmorphy"
+documentation = "https://docs.rs/rsmorphy/"
+edition = "2021"
+publish = false
+
+[dependencies]
+log = "0.4"
+env_logger = "0.10"
+rustyline = "12"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

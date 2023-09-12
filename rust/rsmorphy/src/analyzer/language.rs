@@ -1,13 +1,14 @@
 use std::fmt;
 
+use lib::types::tag::TagReg;
+
 use crate::analyzer::common::Lex;
 use crate::analyzer::common::ParseBuffers;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::ParseResult;
 use crate::analyzer::common::Seen;
 use crate::analyzer::common::Token;
-use crate::model::tag::TagReg;
-use crate::model::Dictionary;
+use crate::analyzer::Dictionary;
 use crate::token_codec::DecodeError;
 
 pub trait Lang: fmt::Debug + Clone {

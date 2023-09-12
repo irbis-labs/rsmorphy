@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 
+use lib::collections::gram_registry::GramRegistry;
+use lib::types::tag::TagReg;
+
 use crate::analyzer::common::parse::Parse;
 use crate::analyzer::common::Lex;
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Score;
 use crate::analyzer::common::Unknown;
 use crate::analyzer::Lang;
-use crate::model::gram::GramRegistry;
-use crate::model::tag::TagReg;
 
 const SCORE: Score = Score::Fake(1.0);
 
@@ -21,7 +22,7 @@ pub struct UnknownAnalyzer<L: Lang> {
 impl<L: Lang> UnknownAnalyzer<L> {
     pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         UnknownAnalyzer {
-            tag: TagReg::from_fmt_int(grammemes, "UNKN"),
+            tag: grammemes.parse_tag("UNKN"),
             score: score.unwrap_or(SCORE),
             _lang: PhantomData,
         }

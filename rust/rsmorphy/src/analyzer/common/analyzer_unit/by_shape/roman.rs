@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 
+use lib::collections::gram_registry::GramRegistry;
+use lib::types::tag::TagReg;
+
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::Shaped;
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
 use crate::analyzer::Parse;
 use crate::analyzer::Score;
-use crate::model::gram::GramRegistry;
-use crate::model::tag::TagReg;
 use crate::shapes::is_roman_number;
 
 const SCORE: Score = Score::Fake(0.9);
@@ -22,7 +23,7 @@ pub struct RomanAnalyzer<L: Lang> {
 impl<L: Lang> RomanAnalyzer<L> {
     pub fn new(grammemes: GramRegistry<'_>, score: Option<Score>) -> Self {
         RomanAnalyzer {
-            tag: TagReg::from_fmt_int(grammemes, "ROMN"),
+            tag: grammemes.parse_tag("ROMN"),
             score: score.unwrap_or(SCORE),
             _lang: PhantomData,
         }

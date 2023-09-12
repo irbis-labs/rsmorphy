@@ -1,9 +1,9 @@
 [package]
 name = "rsmorphy-dict-uk"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>", "Mikhail Korobov <kmike84@gmail.com>"]
 license = "MIT"
-description = "Ukrainian dictionary stub for rsmorphy"
+description = "Ukrainian dictionary for rsmorphy"
 keywords = ["nlp", "ukrainian"]
 categories = ["text-processing", "value-formatting"]
 homepage = "https://github.com/alexander-irbis/rsmorphy"
@@ -13,4 +13,14 @@ edition = "2021"
 publish = true
 
 
+[features]
+default = []
+include_static = []
+
+
 [dependencies]
+lib = { package = "rsmorphy-lib", path = "../../lib" }
+
+[build-dependencies]
+byteorder = "1"
+lib = { package = "rsmorphy-lib", path = "../../lib" }

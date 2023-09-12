@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::analyzer::common::Affix;
 use crate::analyzer::common::Base;
-use crate::model::Dictionary;
+use crate::analyzer::Dictionary;
 
 #[derive(Debug, Clone)]
 pub struct Main {

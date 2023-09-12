@@ -1,8 +1,13 @@
 use std::fmt;
-use std::path::Path;
 use std::sync::Arc;
 
 use inlinable_string::InlinableString;
+#[cfg(feature = "dict_repr-repacked")]
+use lib::collections::dictionary::DictionaryPack;
+use lib::collections::paradigm::ParadigmId;
+use lib::collections::paradigm::ParadigmIndex;
+use lib::types::tag::TagReg;
+use lib::types::tag_kind::InitialKind;
 
 use crate::analyzer::common::Affix;
 use crate::analyzer::common::AffixKind;
@@ -19,18 +24,9 @@ use crate::analyzer::common::Shaped;
 use crate::analyzer::common::SingleTagProbabilityEstimator;
 use crate::analyzer::common::Unknown;
 use crate::analyzer::common::WordStruct;
-use crate::analyzer::ru::config::CHAR_SUBSTITUTES;
-use crate::analyzer::ru::config::INITIAL_LETTERS;
 use crate::analyzer::ru::units::Units;
+use crate::analyzer::Dictionary;
 use crate::analyzer::Lang;
-use crate::model::dictionary::data_format::pymorphy2::LanguageCode;
-use crate::model::dictionary::data_format::Pymorphy2Adapter;
-use crate::model::dictionary::LoadError;
-use crate::model::dictionary::ParadigmId;
-use crate::model::dictionary::ParadigmIndex;
-use crate::model::kind::InitialKind;
-use crate::model::tag::TagReg;
-use crate::model::Dictionary;
 use crate::token_codec::escape;
 use crate::token_codec::follow_str;
 use crate::token_codec::is_hex_digit;
@@ -166,15 +162,42 @@ impl Russian {
         Russian { inner }
     }
 
+    #[cfg(feature = "dict_load-pymorphy2")]
     /// Loads `Dictionary` from disk and creates `MorphAnalyzer`
-    pub fn load_pymorphy2_dict(dict_dir: impl AsRef<Path>) -> Result<Self, LoadError> {
+    pub fn load_pymorphy2_dict(
+        dict_dir: impl AsRef<std::path::Path>,
+    ) -> Result<Self, lib::data_format::LoadError> {
+        use dict_ru::config::CHAR_SUBSTITUTES;
+        use dict_ru::config::INITIAL_LETTERS;
+        use lib::data_format::pymorphy2::LanguageCode;
+        use lib::data_format::LoadError;
+        use lib::data_format::Pymorphy2Adapter;
+
         let loader = Pymorphy2Adapter::open(dict_dir)?;
         let meta = &loader.meta();
         if meta.language_code != LanguageCode::Ru {
             return Err(LoadError::InvalidLanguage(meta.language_code));
         }
         let dict = loader.load(INITIAL_LETTERS, CHAR_SUBSTITUTES)?;
+
+        #[cfg(not(feature = "dict_repr-classic"))]
+        let dict = DictionaryPack::from_storage(&dict);
+
+        let dict = Dictionary::from(dict);
         Ok(Russian::new(dict))
+    }
+
+    #[cfg(feature = "dict_load-include_static")]
+    /// Instantiates `MorphAnalyzer` with statically bundled dict.
+    pub fn new_static() -> Self {
+        use std::borrow::Cow;
+
+        use lib::binpack::BinPackRef;
+
+        let data = unsafe { BinPackRef::from_aligned_unchecked(&*dict_ru::data::DICT_STATIC) };
+        let dict = DictionaryPack::from_bin_pack(Cow::Borrowed(data));
+        let dict = Dictionary::from(dict);
+        Russian::new(dict)
     }
 
     fn look_over(&self, ctx: &mut ParseContext<Self>) {
@@ -403,9 +426,14 @@ impl Russian {
             .map(|s| take_str_while_char(s, is_hex_digit).and_then(parse_hex_int::<u16>))
             .unwrap_or_else(|| Ok((s, 0)))?;
 
-        // TODO check paradigm reference.
-        let para_id = ParadigmId::new(para_id);
-        let idx = ParadigmIndex::new(idx);
+        // Validate the `para_id` and `idx`.
+        let paradigms = self.dict().paradigms();
+
+        let para_id = unsafe { ParadigmId::new_unchecked(para_id) };
+        let paradigm = paradigms.get(para_id).ok_or(DecodeError::BadData)?;
+
+        let _entry = paradigm.get(idx as usize).ok_or(DecodeError::BadData)?;
+        let idx = unsafe { ParadigmIndex::new_unchecked(idx) };
 
         // TODO check whether the `word` is in the lower case.
         let res = DictionaryWord::new(WordStruct::new(word, is_known), para_id, idx);
@@ -576,7 +604,7 @@ impl Russian {
                     |(idx, (prefix, _tag, suffix))| {
                         let word = InlinableString::from(prefix) + stem + suffix;
                         let word = WordStruct::new(word, dw.word_lower.is_known);
-                        let idx = ParadigmIndex::new(idx as u16);
+                        let idx = unsafe { ParadigmIndex::new_unchecked(idx as u16) };
                         Base::from(DictionaryWord::new(word, dw.para_id, idx))
                     },
                 )

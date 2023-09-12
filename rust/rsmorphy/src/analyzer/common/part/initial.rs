@@ -1,4 +1,4 @@
-use crate::model::kind::InitialKind;
+use lib::types::tag_kind::InitialKind;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Initial {
