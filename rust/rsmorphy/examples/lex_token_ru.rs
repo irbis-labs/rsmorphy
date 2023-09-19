@@ -42,8 +42,8 @@ fn main() {
     ];
 
     // Reusable buffer to avoid unnecessary allocations.
-
     let mut buffer = morph.make_buffer();
+
     for word in words {
         table(&mut buffer, word);
     }
