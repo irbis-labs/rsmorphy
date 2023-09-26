@@ -1,4 +1,4 @@
-use inlinable_string::InlinableString;
+use smart_string::SmartString;
 use thiserror::Error;
 
 use crate::types::gram::GramId;
@@ -9,7 +9,7 @@ pub enum GramRegistryError {
     #[error("Registry is full, overflowed at gram {0}")]
     RegistryIsFull(GramId),
     #[error("Parent Gram {0:?} not found")]
-    ParentNotFound(InlinableString),
+    ParentNotFound(SmartString),
     #[error("{0}")]
     BadGramId(#[from] GramIdError),
 }

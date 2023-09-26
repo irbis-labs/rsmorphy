@@ -62,14 +62,13 @@ log_trace_model = []
 # If you really need to see all these bytes.
 log_trace_large = []
 
-
 [dependencies]
 derive_more = { version = "1.0.0-beta.3", features = ["from", "is_variant"] }
-inlinable_string = { version = "0.1", features = ["serde"] }
 log = "0.4"
 num = "0.4"
 numeri-romani = { version = "0.1", path = "../../../numeri-romani" }
 smallvec = { version = "1.4", features = ["serde"] }
+smart-string = { version = "0.1.2", features = ["serde"] }
 thiserror = "1"
 unicode_categories = "0.1"
 

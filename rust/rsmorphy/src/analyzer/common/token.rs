@@ -1,7 +1,6 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-use inlinable_string::StringExt;
+use smart_string::SmartString;
 
 use crate::analyzer::common::Lex;
 use crate::analyzer::Lang;
@@ -17,8 +16,8 @@ impl<'m, 'l, L: Lang> Token<'m, 'l, L> {
         Token { morph, lex }
     }
 
-    pub fn to_short_str(&self) -> InlinableString {
-        let mut enc = InlinableString::new();
+    pub fn to_short_str(&self) -> SmartString {
+        let mut enc = SmartString::new();
         self.morph.write_token(&mut enc, self.lex).unwrap();
         enc
     }

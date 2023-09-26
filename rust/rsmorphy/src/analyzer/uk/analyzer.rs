@@ -1,13 +1,13 @@
 use std::fmt;
 use std::sync::Arc;
 
-use inlinable_string::InlinableString;
 #[cfg(feature = "dict_repr-repacked")]
 use lib::collections::dictionary::DictionaryPack;
 use lib::collections::paradigm::ParadigmId;
 use lib::collections::paradigm::ParadigmIndex;
 use lib::types::tag::TagReg;
 use lib::types::tag_kind::InitialKind;
+use smart_string::SmartString;
 
 use crate::analyzer::common::Affix;
 use crate::analyzer::common::AffixKind;
@@ -584,8 +584,8 @@ impl Ukrainian {
                 let dict = &self.inner.dict;
                 let stem = dict.get_stem(dw.para_id, dw.idx, &dw.word_lower.word);
                 dict.iter_paradigm_info(dw.para_id).enumerate().map(
-                    |(idx, (prefix, _tag, suffix))| {
-                        let word = InlinableString::from(prefix) + stem + suffix;
+                    move |(idx, (prefix, _tag, suffix))| {
+                        let word = SmartString::from(prefix) + stem + suffix;
                         let word = WordStruct::new(word, dw.word_lower.is_known);
                         let idx = unsafe { ParadigmIndex::new_unchecked(idx as u16) };
                         Base::from(DictionaryWord::new(word, dw.para_id, idx))

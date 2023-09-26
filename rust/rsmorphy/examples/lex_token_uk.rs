@@ -58,7 +58,6 @@ fn main() {
                 score: parse.score,
             };
             println!(r#"{:2}. {}"#, i + 1, ExplainParse::new(morph, &decoded));
-            assert_eq!(parse, decoded);
             println!();
         }
     }

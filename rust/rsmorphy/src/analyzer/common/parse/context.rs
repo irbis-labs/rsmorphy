@@ -1,7 +1,6 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-use inlinable_string::StringExt;
+use smart_string::SmartString;
 
 use crate::analyzer::common::parse::Parse;
 use crate::analyzer::common::parse::ParseResult;
@@ -14,7 +13,7 @@ use crate::analyzer::Lang;
 pub struct ParseContext<'m, 'w, 'b, L: Lang> {
     morph: &'m L,
     word: &'w str,
-    word_lower: &'b mut InlinableString,
+    word_lower: &'b mut SmartString,
     parses: &'b mut ParseVec,
     seen_parses: &'b mut SeenSet<'m>,
 }
@@ -36,7 +35,7 @@ impl<'m, 'w, 'b, L: Lang> ParseContext<'m, 'w, 'b, L> {
     pub(super) fn new(
         morph: &'m L,
         word: &'w str,
-        word_lower: &'b mut InlinableString,
+        word_lower: &'b mut SmartString,
         parses: &'b mut ParseVec,
         seen_parses: &'b mut SeenSet<'m>,
     ) -> Self {
@@ -99,7 +98,7 @@ impl<'m, 'w, 'b, L: Lang> ParseContext<'m, 'w, 'b, L> {
     }
 
     #[inline]
-    pub fn word_lower<'s: 'b>(&'s self) -> &'b InlinableString {
+    pub fn word_lower<'s: 'b>(&'s self) -> &'b SmartString {
         self.word_lower
     }
 

@@ -3,9 +3,10 @@ use std::cmp::Ordering;
 use std::iter;
 use std::marker::PhantomData;
 
-use inlinable_string::InlinableString;
 use lib::collections::dawg_value::PredictionSuffixValue;
 use smallvec::SmallVec;
+use smart_string::DisplayExt;
+use smart_string::SmartString;
 
 use crate::analyzer::common::Affix;
 use crate::analyzer::common::DictionaryWord;
@@ -101,7 +102,8 @@ impl<L: Lang> KnownSuffixAnalyzer<L> {
                     let fixed_word = if fixed_suffix == end {
                         Cow::Borrowed(&word_lower)
                     } else {
-                        Cow::Owned(InlinableString::from(beginning) + &fixed_suffix)
+                        let s: SmartString = format_args!("{beginning}{fixed_suffix}").to_fmt();
+                        Cow::Owned(s)
                     };
 
                     #[cfg(feature = "log_trace_analyzer")]

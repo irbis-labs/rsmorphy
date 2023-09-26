@@ -1,4 +1,4 @@
-use inlinable_string::InlinableString;
+use smart_string::SmartString;
 
 use self::AffixKind::*;
 
@@ -11,29 +11,29 @@ pub enum AffixKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Affix {
-    pub affix: InlinableString,
+    pub affix: SmartString,
     pub kind: AffixKind,
 }
 
 impl Affix {
     #[inline(always)]
-    pub fn new(affix: impl Into<InlinableString>, kind: AffixKind) -> Self {
+    pub fn new(affix: impl Into<SmartString>, kind: AffixKind) -> Self {
         let affix = affix.into();
         Affix { affix, kind }
     }
 
     #[inline(always)]
-    pub fn known_suffix(affix: impl Into<InlinableString>) -> Self {
+    pub fn known_suffix(affix: impl Into<SmartString>) -> Self {
         Affix::new(affix, KnownSuffix)
     }
 
     #[inline(always)]
-    pub fn known_prefix(affix: impl Into<InlinableString>) -> Self {
+    pub fn known_prefix(affix: impl Into<SmartString>) -> Self {
         Affix::new(affix, KnownPrefix)
     }
 
     #[inline(always)]
-    pub fn unknown_prefix(affix: impl Into<InlinableString>) -> Self {
+    pub fn unknown_prefix(affix: impl Into<SmartString>) -> Self {
         Affix::new(affix, UnknownPrefix)
     }
 

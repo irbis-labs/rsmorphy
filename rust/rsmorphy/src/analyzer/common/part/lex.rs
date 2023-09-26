@@ -1,8 +1,7 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-use inlinable_string::StringExt;
 use lib::types::gram::GramSet;
+use smart_string::SmartString;
 
 use crate::analyzer::common::Base;
 use crate::analyzer::common::HyphenSeparatedParticle;
@@ -61,8 +60,8 @@ impl Lex {
         LexLower(self)
     }
 
-    pub fn make_word_lower(&self) -> InlinableString {
-        let mut word = InlinableString::new();
+    pub fn make_word_lower(&self) -> SmartString {
+        let mut word = SmartString::new();
         // SAFETY: this is safe because we are writing to an extendable buffer.
         self.write_word_lower(&mut word).unwrap();
         word
@@ -84,8 +83,8 @@ impl Lex {
         LexNormalForm { lex: self, dict }
     }
 
-    pub fn make_normal_form(&self, dict: &Dictionary) -> InlinableString {
-        let mut word = InlinableString::new();
+    pub fn make_normal_form(&self, dict: &Dictionary) -> SmartString {
+        let mut word = SmartString::new();
         // SAFETY: this is safe because we are writing to an extendable buffer.
         self.write_normal_form(&mut word, dict).unwrap();
         word

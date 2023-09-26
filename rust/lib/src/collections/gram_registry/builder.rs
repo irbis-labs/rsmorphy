@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use inlinable_string::InlinableString;
 use smart_string::PascalString;
+use smart_string::SmartString;
 
 use crate::collections::gram_registry::GramRegistryError;
 use crate::collections::gram_registry::GramRegistryStorage;
@@ -21,10 +21,10 @@ pub struct GramRegistryBuilder {
 #[derive(Debug)]
 #[cfg_attr(feature = "with-serde", derive(serde::Deserialize))]
 pub struct GramRow {
-    name: InlinableString,
-    parent: Option<InlinableString>,
-    alias: InlinableString,
-    desciption: InlinableString,
+    name: SmartString,
+    parent: Option<SmartString>,
+    alias: SmartString,
+    desciption: SmartString,
 }
 
 impl GramRow {
@@ -74,8 +74,8 @@ impl GramRegistryBuilder {
         &mut self,
         name: impl AsRef<str>,
         parent: impl AsRef<str>,
-        alias: impl Into<InlinableString>,
-        description: impl Into<InlinableString>,
+        alias: impl Into<SmartString>,
+        description: impl Into<SmartString>,
         extra: bool,
     ) -> Result<Gram, GramRegistryError> {
         self.add_grammeme_internal_(
@@ -91,8 +91,8 @@ impl GramRegistryBuilder {
         &mut self,
         name: &str,
         parent: &str,
-        alias: InlinableString,
-        description: InlinableString,
+        alias: SmartString,
+        description: SmartString,
         extra: bool,
     ) -> Result<Gram, GramRegistryError> {
         #[cfg(feature = "log_trace_model")]

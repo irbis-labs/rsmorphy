@@ -1,5 +1,4 @@
-use inlinable_string::InlinableString;
-use inlinable_string::StringExt;
+use smart_string::SmartString;
 
 use crate::analyzer::common::ParseContext;
 use crate::analyzer::common::ParseVec;
@@ -11,7 +10,7 @@ pub struct ParseBuffers<'m, L: Lang> {
     pub(super) morph: &'m L,
     pub(super) parses: ParseVec,
     pub(super) seen_parses: SeenSet<'m>,
-    pub(super) word_lower: InlinableString,
+    pub(super) word_lower: SmartString,
 }
 
 impl<'m, L: Lang> ParseBuffers<'m, L> {
@@ -19,7 +18,7 @@ impl<'m, L: Lang> ParseBuffers<'m, L> {
     pub fn new(morph: &'m L) -> Self {
         let parses = ParseVec::new();
         let seen_parses = SeenSet::new();
-        let word_lower = InlinableString::new();
+        let word_lower = SmartString::new();
         ParseBuffers {
             morph,
             parses,

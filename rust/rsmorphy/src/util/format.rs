@@ -1,7 +1,6 @@
 use std::fmt;
 
-use inlinable_string::InlinableString;
-use inlinable_string::StringExt;
+use smart_string::SmartString;
 
 use crate::analyzer::Lang;
 use crate::analyzer::Lex;
@@ -50,7 +49,7 @@ impl<'s, L: Lang> fmt::Display for ExplainLex<'s, L> {
 
         let word = lex.make_word_lower();
         let norm = lex.make_normal_form(morph.dict());
-        let mut enc = InlinableString::new();
+        let mut enc = SmartString::<254>::new();
         morph.write_token(&mut enc, lex).unwrap();
         let tag = &morph.get_tag(lex).fmt_int;
 

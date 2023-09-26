@@ -4,8 +4,9 @@ use std::marker::PhantomData;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _;
-use inlinable_string::InlinableString;
 use smallvec::SmallVec;
+use smart_string::DisplayExt;
+use smart_string::SmartString;
 
 use super::completer::Completer;
 use super::dict::DawgDictionarySuspended;
@@ -122,7 +123,7 @@ where
         &self,
         key: &str,
         replaces: LetterPairs<'_>,
-    ) -> io::Result<SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]>> {
+    ) -> io::Result<SmallVec<[(SmartString, SmallVec<[V; 8]>); 4]>> {
         let mut result = SmallVec::new();
         self.similar_items_(&mut result, "", key, DawgDictionary::ROOT_INDEX, replaces)?;
         Ok(result)
@@ -130,7 +131,7 @@ where
 
     fn similar_items_(
         &self,
-        result: &mut SmallVec<[(InlinableString, SmallVec<[V; 8]>); 4]>,
+        result: &mut SmallVec<[(SmartString, SmallVec<[V; 8]>); 4]>,
         current_prefix: &str,
         key: &str,
         mut index: DictIndex,
@@ -163,8 +164,8 @@ where
                     #[cfg(feature = "log_trace_dawg")]
                     log::trace!(r#" next_index: {:x}"#, next_index);
 
-                    let mut prefix =
-                        InlinableString::from(current_prefix) + &key[start_pos..word_pos];
+                    let mut prefix: SmartString =
+                        format_args!("{current_prefix}{}", &key[start_pos..word_pos]).to_fmt();
                     prefix.write_char(replace_char).unwrap();
                     self.similar_items_(result, &prefix, key, next_index, replace_chars)?;
                 };
@@ -184,7 +185,7 @@ where
             #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#" index: {:x}"#, index);
 
-            let found_key = InlinableString::from(current_prefix) + subkey;
+            let found_key = format_args!("{current_prefix}{subkey}").to_fmt();
 
             #[cfg(feature = "log_trace_dawg")]
             log::trace!(r#" found_key: {}"#, found_key);

@@ -67,14 +67,12 @@ impl Pymorphy2Adapter {
 
         let mut profiler = profiler.resume();
 
-        let paradigm_prefixes: StringArray = {
-            pm2_meta
-                .compile_options
-                .paradigm_prefixes
-                .iter()
-                .map(|v| v.as_ref().into())
-                .collect()
-        };
+        let paradigm_prefixes: StringArray = pm2_meta
+            .compile_options
+            .paradigm_prefixes
+            .iter()
+            .map(|v| v.as_str())
+            .collect();
 
         profiler.waypoint("meta'");
 

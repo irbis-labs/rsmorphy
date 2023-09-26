@@ -1,5 +1,5 @@
-use inlinable_string::InlinableString;
 use smallvec::SmallVec;
+use smart_string::SmartString;
 
 use super::CompileOptions;
 use super::GramtabFormats;
@@ -9,12 +9,12 @@ use super::PTWOptions;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pymorphy2Meta {
     pub language_code: LanguageCode,
-    pub format_version: InlinableString,
-    pub pymorphy2_version: InlinableString,
-    pub compiled_at: InlinableString,
-    pub source: InlinableString,
-    pub source_version: InlinableString,
-    pub source_revision: InlinableString,
+    pub format_version: SmartString,
+    pub pymorphy2_version: SmartString,
+    pub compiled_at: SmartString,
+    pub source: SmartString,
+    pub source_version: SmartString,
+    pub source_revision: SmartString,
     pub source_lexemes_count: u32,
     pub source_links_count: u32,
     pub gramtab_length: u32,
@@ -25,7 +25,7 @@ pub struct Pymorphy2Meta {
     pub compile_options: CompileOptions,
     pub prediction_suffixes_dawg_lengths: SmallVec<[u32; 8]>,
     pub p_t_w: Option<PTWOptions>,
-    pub corpus_revision: Option<InlinableString>,
+    pub corpus_revision: Option<SmartString>,
 }
 
 mod serde_impl {
@@ -41,12 +41,12 @@ mod serde_impl {
     #[derive(Debug, Default)]
     struct Helper {
         language_code: Option<LanguageCode>,
-        format_version: Option<InlinableString>,
-        pymorphy2_version: Option<InlinableString>,
-        compiled_at: Option<InlinableString>,
-        source: Option<InlinableString>,
-        source_version: Option<InlinableString>,
-        source_revision: Option<InlinableString>,
+        format_version: Option<SmartString>,
+        pymorphy2_version: Option<SmartString>,
+        compiled_at: Option<SmartString>,
+        source: Option<SmartString>,
+        source_version: Option<SmartString>,
+        source_revision: Option<SmartString>,
         source_lexemes_count: Option<u32>,
         source_links_count: Option<u32>,
         gramtab_length: Option<u32>,
@@ -60,19 +60,19 @@ mod serde_impl {
         p_t_w_unique_words: Option<u32>,
         p_t_w_outcomes: Option<u32>,
         p_t_w_min_word_freq: Option<u32>,
-        corpus_revision: Option<InlinableString>,
+        corpus_revision: Option<SmartString>,
     }
 
     #[derive(Debug)]
     #[cfg_attr(test, derive(PartialEq, Eq, Clone))]
     pub enum Field {
         LanguageCode(LanguageCode),
-        FormatVersion(InlinableString),
-        Pymorphy2Version(InlinableString),
-        CompiledAt(InlinableString),
-        Source(InlinableString),
-        SourceVersion(InlinableString),
-        SourceRevision(InlinableString),
+        FormatVersion(SmartString),
+        Pymorphy2Version(SmartString),
+        CompiledAt(SmartString),
+        Source(SmartString),
+        SourceVersion(SmartString),
+        SourceRevision(SmartString),
         SourceLexemesCount(u32),
         SourceLinksCount(u32),
         GramtabLength(u32),
@@ -86,7 +86,7 @@ mod serde_impl {
         PTWUniqueWords(u32),
         PTWOutcomes(u32),
         PTWMinWordFreq(u32),
-        CorpusRevision(InlinableString),
+        CorpusRevision(SmartString),
     }
 
     impl Helper {
@@ -209,7 +209,7 @@ mod serde_impl {
                 where
                     V: SeqAccess<'de>,
                 {
-                    let key: InlinableString = seq
+                    let key: SmartString = seq
                         .next_element()?
                         .ok_or_else(|| Error::custom("Field key is missing"))?;
 
