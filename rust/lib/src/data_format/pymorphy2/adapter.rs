@@ -13,7 +13,7 @@ use crate::collections::gram_registry::GramRegistryStorage;
 use crate::collections::gram_registry::GramRow;
 use crate::collections::gram_sets::GramSetsOwned;
 use crate::collections::paradigm::ParadigmEntry;
-use crate::collections::string_list::StringArray;
+use crate::collections::str_stack::StrList;
 use crate::data_format::load_helper::LoadHelper;
 use crate::data_format::load_helper::Reader;
 use crate::data_format::pymorphy2::Pymorphy2Meta;
@@ -67,7 +67,7 @@ impl Pymorphy2Adapter {
 
         let mut profiler = profiler.resume();
 
-        let paradigm_prefixes: StringArray = pm2_meta
+        let paradigm_prefixes: StrList = pm2_meta
             .compile_options
             .paradigm_prefixes
             .iter()

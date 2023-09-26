@@ -4,7 +4,7 @@ use super::super::adapter::dawg::CompletionDawgAdapter;
 use super::super::adapter::dawg::DawgListAdapter;
 use super::super::adapter::letters::LettersAdapter;
 use super::super::adapter::paradigm_list::ParadigmListAdapter;
-use super::super::adapter::string_list::StringArrayAdapter;
+use super::super::adapter::str_list::StrListAdapter;
 use crate::binpack::BinPack;
 use crate::binpack::MemView;
 use crate::binpack::MemViewPack;
@@ -71,12 +71,12 @@ impl MemView for DictionaryAdapter {
 
         let suffixes = {
             let data = segments.get(Segment::Suffixes as usize).unwrap();
-            StringArrayAdapter::view(data)
+            StrListAdapter::view(data)
         };
 
         let prefixes = {
             let data = segments.get(Segment::ParadigmPrefixes as usize).unwrap();
-            StringArrayAdapter::view(data)
+            StrListAdapter::view(data)
         };
 
         let paradigms = {
@@ -168,13 +168,13 @@ impl MemViewPack for DictionaryAdapter {
         }
 
         {
-            let data = StringArrayAdapter::pack::<Order>(&view.suffixes);
+            let data = StrListAdapter::pack::<Order>(&view.suffixes);
             let num = segments.new_segment_from_slice(&data);
             assert_eq!(num, Segment::Suffixes as usize);
         }
 
         {
-            let data = StringArrayAdapter::pack::<Order>(&view.prefixes);
+            let data = StrListAdapter::pack::<Order>(&view.prefixes);
             let num = segments.new_segment_from_slice(&data);
             assert_eq!(num, Segment::ParadigmPrefixes as usize);
         }

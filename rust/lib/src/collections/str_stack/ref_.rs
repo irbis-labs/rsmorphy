@@ -1,18 +1,18 @@
 use std::str::from_utf8_unchecked;
 
-use crate::collections::string_list::StringArrayIter;
-use crate::collections::string_list::StringArraySuspended;
+use crate::collections::str_stack::StrListIter;
+use crate::collections::str_stack::StrListRefSuspended;
 use crate::cryostasis::Suspend;
 
 #[derive(Debug, Clone, Copy)]
-pub struct StringArrayRef<'a> {
+pub struct StrListRef<'a> {
     pub(super) data: &'a [u8],
     pub(super) ends: &'a [u32],
 }
 
-impl<'a> StringArrayRef<'a> {
+impl<'a> StrListRef<'a> {
     pub unsafe fn new_unchecked(data: &'a [u8], ends: &'a [u32]) -> Self {
-        StringArrayRef { data, ends }
+        StrListRef { data, ends }
     }
 
     pub fn into_inner(self) -> (&'a [u8], &'a [u32]) {
@@ -53,16 +53,16 @@ impl<'a> StringArrayRef<'a> {
         unsafe { from_utf8_unchecked(slice) }
     }
 
-    pub fn iter(self) -> StringArrayIter<'a> {
-        StringArrayIter::new(self)
+    pub fn iter(self) -> StrListIter<'a> {
+        StrListIter::new(self)
     }
 }
 
-impl Suspend for StringArrayRef<'_> {
-    type Suspended = StringArraySuspended;
+impl Suspend for StrListRef<'_> {
+    type Suspended = StrListRefSuspended;
 
     fn suspend(&self) -> Self::Suspended {
-        StringArraySuspended {
+        StrListRefSuspended {
             data: self.data as *const _,
             ends: self.ends as *const _,
         }

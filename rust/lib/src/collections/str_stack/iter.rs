@@ -1,23 +1,23 @@
-use crate::collections::string_list::array_ref::StringArrayRef;
+use crate::collections::str_stack::ref_::StrListRef;
 
 #[derive(Debug, Clone)]
-pub struct StringArrayIter<'a> {
-    array: StringArrayRef<'a>,
+pub struct StrListIter<'a> {
+    list: StrListRef<'a>,
     cursor: Option<(usize, usize)>,
 }
 
-impl<'a> StringArrayIter<'a> {
-    pub fn new(array: StringArrayRef<'a>) -> Self {
-        let cursor = if array.len() > 0 {
-            Some((0, array.len() - 1))
+impl<'a> StrListIter<'a> {
+    pub fn new(list: StrListRef<'a>) -> Self {
+        let cursor = if list.len() > 0 {
+            Some((0, list.len() - 1))
         } else {
             None
         };
-        StringArrayIter { array, cursor }
+        StrListIter { list, cursor }
     }
 }
 
-impl<'a> Iterator for StringArrayIter<'a> {
+impl<'a> Iterator for StrListIter<'a> {
     type Item = &'a str;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -29,11 +29,11 @@ impl<'a> Iterator for StringArrayIter<'a> {
         }
 
         // SAFETY: index is checked above.
-        Some(unsafe { self.array.get_unchecked(begin) })
+        Some(unsafe { self.list.get_unchecked(begin) })
     }
 }
 
-impl<'a> DoubleEndedIterator for StringArrayIter<'a> {
+impl<'a> DoubleEndedIterator for StrListIter<'a> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let (begin, end) = self.cursor.take()?;
 
@@ -43,11 +43,11 @@ impl<'a> DoubleEndedIterator for StringArrayIter<'a> {
         }
 
         // SAFETY: index is checked above.
-        Some(unsafe { self.array.get_unchecked(end) })
+        Some(unsafe { self.list.get_unchecked(end) })
     }
 }
 
-impl<'a> ExactSizeIterator for StringArrayIter<'a> {
+impl<'a> ExactSizeIterator for StrListIter<'a> {
     fn len(&self) -> usize {
         self.cursor.map_or(0, |(begin, end)| end - begin + 1)
     }

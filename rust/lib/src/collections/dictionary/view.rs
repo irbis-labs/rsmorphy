@@ -20,8 +20,8 @@ use crate::collections::letters::Letters;
 use crate::collections::letters::LettersSuspended;
 use crate::collections::paradigm::ParadigmList;
 use crate::collections::paradigm::ParadigmListSuspended;
-use crate::collections::string_list::StringArrayRef;
-use crate::collections::string_list::StringArraySuspended;
+use crate::collections::str_stack::StrListRef;
+use crate::collections::str_stack::StrListRefSuspended;
 use crate::collections::tag_registry::TagRegistry;
 use crate::collections::tag_registry::TagRegistrySuspended;
 use crate::cryostasis::Revive;
@@ -33,8 +33,8 @@ pub struct DictionaryView<'d> {
     pub words: CompletionDawg<'d, WordValue>,
     pub p_t_given_w: Option<CompletionDawg<'d, HH>>,
     pub prediction_suffixes_dawgs: DawgList<'d, PredictionSuffixValue>,
-    pub suffixes: StringArrayRef<'d>,
-    pub prefixes: StringArrayRef<'d>,
+    pub suffixes: StrListRef<'d>,
+    pub prefixes: StrListRef<'d>,
     pub paradigms: ParadigmList<'d>,
     pub initial_letters: Letters<'d>,
     pub char_substitutes: LetterPairs<'d>,
@@ -50,8 +50,8 @@ pub struct DictionaryViewSuspended {
     pub(super) words: CompletionDawgSuspended<WordValue>,
     pub(super) p_t_given_w: Option<CompletionDawgSuspended<HH>>,
     pub(super) prediction_suffixes_dawgs: DawgListSuspended<PredictionSuffixValue>,
-    pub(super) suffixes: StringArraySuspended,
-    pub(super) prefixes: StringArraySuspended,
+    pub(super) suffixes: StrListRefSuspended,
+    pub(super) prefixes: StrListRefSuspended,
     pub(super) paradigms: ParadigmListSuspended,
     pub(super) initial_letters: LettersSuspended,
     pub(super) char_substitutes: LetterPairsSuspended,
@@ -111,8 +111,8 @@ impl<'d> DictionaryView<'d> {
         words: CompletionDawg<'d, WordValue>,
         p_t_given_w: Option<CompletionDawg<'d, HH>>,
         prediction_suffixes_dawgs: DawgList<'d, PredictionSuffixValue>,
-        suffixes: StringArrayRef<'d>,
-        prefixes: StringArrayRef<'d>,
+        suffixes: StrListRef<'d>,
+        prefixes: StrListRef<'d>,
         paradigms: ParadigmList<'d>,
         initial_letters: Letters<'d>,
         char_substitutes: LetterPairs<'d>,

@@ -9,5 +9,5 @@ pub mod letter_pairs;
 pub mod letters;
 pub mod paradigm;
 pub mod prefixes;
-pub mod string_list;
+pub mod str_stack;
 pub mod tag_registry;

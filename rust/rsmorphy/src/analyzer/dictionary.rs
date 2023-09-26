@@ -21,7 +21,7 @@ use lib::collections::paradigm::ParadigmEntry;
 use lib::collections::paradigm::ParadigmId;
 use lib::collections::paradigm::ParadigmIndex;
 use lib::collections::paradigm::ParadigmList;
-use lib::collections::string_list::StringArrayRef;
+use lib::collections::str_stack::StrListRef;
 use lib::collections::tag_registry::TagRegistry;
 use lib::types::gram::GramSet;
 use lib::types::tag::TagReg;
@@ -59,7 +59,7 @@ impl Dictionary {
     }
 
     #[inline(always)]
-    fn suffixes(&self) -> StringArrayRef<'_> {
+    fn suffixes(&self) -> StrListRef<'_> {
         match self {
             #[cfg(feature = "dict_repr-classic")]
             Dictionary::Classic(inner) => inner.suffixes(),
@@ -109,7 +109,7 @@ impl Dictionary {
     }
 
     #[inline(always)]
-    pub fn paradigm_prefixes(&self) -> StringArrayRef {
+    pub fn paradigm_prefixes(&self) -> StrListRef {
         match self {
             #[cfg(feature = "dict_repr-classic")]
             Dictionary::Classic(inner) => inner.paradigm_prefixes(),

@@ -16,7 +16,7 @@ use crate::collections::gram_sets::GramSets;
 use crate::collections::letter_pairs::LetterPairs;
 use crate::collections::letters::Letters;
 use crate::collections::paradigm::ParadigmList;
-use crate::collections::string_list::StringArrayRef;
+use crate::collections::str_stack::StrListRef;
 use crate::collections::tag_registry::TagRegistry;
 use crate::cryostasis::Revive;
 use crate::cryostasis::Suspend;
@@ -70,7 +70,7 @@ impl DictionaryPack {
     }
 
     #[inline(always)]
-    pub fn suffixes(&self) -> StringArrayRef<'_> {
+    pub fn suffixes(&self) -> StrListRef<'_> {
         unsafe { self.suspended.suffixes.revive(&self.bin) }
     }
 
@@ -85,7 +85,7 @@ impl DictionaryPack {
     }
 
     #[inline(always)]
-    pub fn paradigm_prefixes(&self) -> StringArrayRef {
+    pub fn paradigm_prefixes(&self) -> StrListRef {
         unsafe { self.suspended.prefixes.revive(&self.bin) }
     }
 

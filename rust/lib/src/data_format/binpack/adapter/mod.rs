@@ -7,5 +7,5 @@ pub mod letter_pairs;
 pub mod letters;
 pub mod meta;
 pub mod paradigm_list;
-pub mod string_list;
+pub mod str_list;
 pub mod tag_registry;

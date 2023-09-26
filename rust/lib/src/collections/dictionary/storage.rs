@@ -20,8 +20,8 @@ use crate::collections::letter_pairs::LetterPairs;
 use crate::collections::letters::Letters;
 use crate::collections::paradigm::ParadigmEntry;
 use crate::collections::paradigm::ParadigmList;
-use crate::collections::string_list::StringArray;
-use crate::collections::string_list::StringArrayRef;
+use crate::collections::str_stack::StrList;
+use crate::collections::str_stack::StrListRef;
 use crate::collections::tag_registry::TagRegistry;
 use crate::types::gram::Gram;
 use crate::types::tag::TagReg;
@@ -33,9 +33,9 @@ pub struct DictionaryStorage {
     words: (Box<[DictEntry]>, Box<[GuideEntry]>),
     p_t_given_w: Option<(Box<[DictEntry]>, Box<[GuideEntry]>)>,
     prediction_suffixes_dawgs: Vec<(Box<[DictEntry]>, Box<[GuideEntry]>)>,
-    suffixes: StringArray,
+    suffixes: StrList,
     paradigms: (Box<[u32]>, Box<[ParadigmEntry]>),
-    paradigm_prefixes: StringArray,
+    paradigm_prefixes: StrList,
     initial_letters: SmallVec<[char; 32]>,
     char_substitutes: (SmallVec<[char; 4]>, SmallVec<[char; 4]>),
     rare_cases: SmallVec<[(Gram, Gram); 8]>,
@@ -50,12 +50,12 @@ impl DictionaryStorage {
         meta: DictionaryMetaOwned,
         grammemes: GramRegistryStorage,
         gramtab: Box<[TagReg]>,
-        suffixes: StringArray,
+        suffixes: StrList,
         paradigms: (Box<[u32]>, Box<[ParadigmEntry]>),
         words: (Box<[DictEntry]>, Box<[GuideEntry]>),
         p_t_given_w: Option<(Box<[DictEntry]>, Box<[GuideEntry]>)>,
         prediction_suffixes_dawgs: Vec<(Box<[DictEntry]>, Box<[GuideEntry]>)>,
-        paradigm_prefixes: StringArray,
+        paradigm_prefixes: StrList,
         initial_letters: SmallVec<[char; 32]>,
         char_substitutes: (SmallVec<[char; 4]>, SmallVec<[char; 4]>),
         rare_cases: SmallVec<[(Gram, Gram); 8]>,
@@ -89,8 +89,8 @@ impl DictionaryStorage {
     }
 
     #[inline(always)]
-    pub fn suffixes(&self) -> StringArrayRef<'_> {
-        self.suffixes.as_ref()
+    pub fn suffixes(&self) -> StrListRef<'_> {
+        self.suffixes.to_ref()
     }
 
     #[inline(always)]
@@ -137,8 +137,8 @@ impl DictionaryStorage {
     }
 
     #[inline(always)]
-    pub fn paradigm_prefixes(&self) -> StringArrayRef<'_> {
-        self.paradigm_prefixes.as_ref()
+    pub fn paradigm_prefixes(&self) -> StrListRef<'_> {
+        self.paradigm_prefixes.to_ref()
     }
 
     #[inline(always)]

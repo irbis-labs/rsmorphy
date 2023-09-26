@@ -6,9 +6,9 @@ use crate::binpack::MemViewPack;
 use crate::binsegments::SegmentsBuilder;
 use crate::binsegments::SegmentsView;
 use crate::binutils::convert_slice;
-use crate::collections::string_list::StringArrayRef;
+use crate::collections::str_stack::StrListRef;
 
-pub struct StringArrayAdapter;
+pub struct StrListAdapter;
 
 #[repr(usize)]
 enum Segment {
@@ -16,8 +16,8 @@ enum Segment {
     Data = 1,
 }
 
-impl MemView for StringArrayAdapter {
-    type View<'d> = StringArrayRef<'d>;
+impl MemView for StrListAdapter {
+    type View<'d> = StrListRef<'d>;
 
     fn view(bin: &[u8]) -> Self::View<'_> {
         let segments = SegmentsView::new(bin);
@@ -32,12 +32,12 @@ impl MemView for StringArrayAdapter {
             unsafe { convert_slice(segment) }.unwrap()
         };
 
-        unsafe { StringArrayRef::new_unchecked(data, ends) }
+        unsafe { StrListRef::new_unchecked(data, ends) }
     }
 }
 
-impl MemViewPack for StringArrayAdapter {
-    type View<'d> = StringArrayRef<'d>;
+impl MemViewPack for StrListAdapter {
+    type View<'d> = StrListRef<'d>;
 
     fn pack<Order: ByteOrder>(view: &Self::View<'_>) -> BinPack {
         let mut segments = SegmentsBuilder::new();

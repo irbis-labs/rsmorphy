@@ -1,20 +1,20 @@
-use crate::collections::string_list::array::StringArray;
-use crate::collections::string_list::array_ref::StringArrayRef;
-use crate::collections::string_list::StringArrayIter;
+use crate::collections::str_stack::list::StrList;
+use crate::collections::str_stack::ref_::StrListRef;
+use crate::collections::str_stack::StrListIter;
 
 #[derive(Debug, Default)]
-pub struct StringArrayBuilder {
+pub struct StrStack {
     pub(super) data: Vec<u8>,
     pub(super) ends: Vec<u32>,
 }
 
-impl StringArrayBuilder {
+impl StrStack {
     pub fn new() -> Self {
-        StringArrayBuilder::default()
+        StrStack::default()
     }
 
-    pub fn build(self) -> StringArray {
-        StringArray {
+    pub fn build(self) -> StrList {
+        StrList {
             data: self.data.into_boxed_slice(),
             ends: self.ends.into_boxed_slice(),
         }
@@ -25,30 +25,30 @@ impl StringArrayBuilder {
         self.ends.push(self.data.len() as u32);
     }
 
-    pub fn as_ref(&self) -> StringArrayRef<'_> {
-        StringArrayRef {
+    pub fn to_ref(&self) -> StrListRef<'_> {
+        StrListRef {
             data: &self.data,
             ends: &self.ends,
         }
     }
 
     pub fn len(&self) -> usize {
-        self.as_ref().len()
+        self.to_ref().len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.as_ref().is_empty()
+        self.to_ref().is_empty()
     }
 
     pub fn get(&self, index: usize) -> Option<&str> {
-        self.as_ref().get(index)
+        self.to_ref().get(index)
     }
 
     pub unsafe fn get_unchecked(&self, index: usize) -> &str {
-        self.as_ref().get_unchecked(index)
+        self.to_ref().get_unchecked(index)
     }
 
-    pub fn iter(&self) -> StringArrayIter<'_> {
-        self.as_ref().iter()
+    pub fn iter(&self) -> StrListIter<'_> {
+        self.to_ref().iter()
     }
 }
