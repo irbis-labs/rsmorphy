@@ -21,8 +21,8 @@ impl<'d> SegmentsView<'d> {
         #[cfg(all(feature = "log_trace_model", feature = "log_trace_large"))]
         log::trace!("bin: {:?}", bin);
 
-        assert!(bin.len() >= mem::size_of::<SegmentsMeta>());
-        let meta = unsafe { &*(&bin[0] as *const _ as *const SegmentsMeta) };
+        assert!(bin.len() >= SegmentsMeta::SIZE);
+        let meta = unsafe { &*(&bin[0..SegmentsMeta::SIZE] as *const _ as *const SegmentsMeta) };
 
         #[cfg(feature = "log_trace_model")]
         log::trace!("meta: {:?}", meta as *const _);

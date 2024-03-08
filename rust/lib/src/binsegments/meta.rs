@@ -47,6 +47,7 @@
 
 use std::io;
 use std::io::Write;
+use std::mem;
 
 use byteorder::ByteOrder;
 use byteorder::WriteBytesExt;
@@ -69,6 +70,8 @@ pub struct SegmentsMeta {
 }
 
 impl SegmentsMeta {
+    pub const SIZE: usize = mem::size_of::<Self>();
+
     pub fn new<Order: ByteOrder>(segments_number: u32, data_size: u64) -> Self {
         let is_big_endian = {
             let mut test = [0_u8; 2];
