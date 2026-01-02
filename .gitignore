@@ -8,3 +8,7 @@
 vagga*
 /env/
 **/.env
+
+# Rust lockfile (library repo: must not be committed; local lockfiles are fine but must stay untracked)
+Cargo.lock
+**/Cargo.lock
